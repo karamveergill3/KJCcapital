@@ -4,7 +4,7 @@ export default function SiteFooter({ lang, footer, firmName, risk }) {
   const base = `/${lang}`;
   const year = new Date().getFullYear();
   return (
-    <footer className="mt-24 border-t border-[var(--color-rule)] bg-[var(--color-paper-warm)]">
+    <footer className="border-t border-[var(--color-rule)] bg-[var(--color-paper-warm)]">
       <div className="mx-auto max-w-6xl px-6 md:px-10 py-12">
         <div className="serif text-sm text-[var(--color-ink-soft)] max-w-3xl leading-relaxed">
           {risk.banner}

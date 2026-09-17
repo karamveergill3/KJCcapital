@@ -90,8 +90,10 @@ export default function Hero({ lang, hero }) {
                 <span className="tabular">{hero.folio.reference}</span>
               </div>
             </div>
-            <div className="absolute -top-3 -right-3 w-3 h-3 border-t border-r border-[var(--color-gold)]" aria-hidden />
-            <div className="absolute -bottom-3 -left-3 w-3 h-3 border-b border-l border-[var(--color-gold)]" aria-hidden />
+            <span className="absolute -top-2 -left-2 w-4 h-4 border-t border-l border-[var(--color-gold)]" aria-hidden />
+            <span className="absolute -top-2 -right-2 w-4 h-4 border-t border-r border-[var(--color-gold)]" aria-hidden />
+            <span className="absolute -bottom-2 -left-2 w-4 h-4 border-b border-l border-[var(--color-gold)]" aria-hidden />
+            <span className="absolute -bottom-2 -right-2 w-4 h-4 border-b border-r border-[var(--color-gold)]" aria-hidden />
           </aside>
         </div>
       </div>
