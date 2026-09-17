@@ -5,7 +5,7 @@ export default function SiteFooter({ lang, footer, firmName, risk }) {
   const year = new Date().getFullYear();
   return (
     <footer className="border-t border-[var(--color-rule)] bg-[var(--color-paper-warm)]">
-      <div className="mx-auto max-w-6xl px-6 md:px-10 py-12">
+      <div className="shell py-12">
         <div className="serif text-sm text-[var(--color-ink-soft)] max-w-3xl leading-relaxed">
           {risk.banner}
         </div>
@@ -13,7 +13,9 @@ export default function SiteFooter({ lang, footer, firmName, risk }) {
         <div className="grid gap-10 md:grid-cols-3">
           <div>
             <div className="smallcaps mb-3">Firm</div>
-            <div className="serif text-lg">{firmName}</div>
+            <div className="wordmark">
+              KJC<span className="wordmark-sep">·</span>Capital
+            </div>
             <div className="text-sm text-[var(--color-ink-mute)] mt-2 max-w-xs leading-relaxed">
               {footer.regulatory}
             </div>

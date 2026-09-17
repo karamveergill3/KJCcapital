@@ -2,13 +2,13 @@ import Reveal from "@/components/Reveal";
 
 const ROMAN = ["I", "II", "III", "IV", "V"];
 
-export default function Principles({ label, title, items }) {
+export default function Principles({ file, label, title, items }) {
   return (
-    <section className="mx-auto max-w-6xl px-6 md:px-10 py-16 md:py-24 border-t border-[var(--color-rule)]">
-      <div className="grid gap-10 md:grid-cols-[16rem_1fr]">
+    <section className="shell py-16 md:py-24 border-t border-[var(--color-rule)]">
+      <div className="grid gap-10 md:grid-cols-[16rem_1fr] xl:grid-cols-[22rem_1fr]">
         <div>
           <Reveal className="smallcaps flex items-center gap-3">
-            <span className="folio-num">File 02</span>
+            <span className="folio-num">{file}</span>
             <span aria-hidden className="text-[var(--color-ink-faint)]">·</span>
             <span>{label}</span>
           </Reveal>
@@ -34,7 +34,7 @@ export default function Principles({ label, title, items }) {
               </div>
               <div>
                 <div className="serif text-xl text-[var(--color-ink)] mb-3">{p.title}</div>
-                <p className="prose-editorial max-w-2xl">{p.body}</p>
+                <p className="prose-editorial prose-wide max-w-none">{p.body}</p>
               </div>
             </Reveal>
           ))}

@@ -23,6 +23,7 @@
   --color-gain: #35553a;
   --color-loss: #8a3d3d;
 
+  --font-display: "Cormorant Garamond", "Cormorant", Didot, "Bodoni MT", Garamond, serif;
   --font-serif: "Source Serif 4", "Source Serif Pro", Cambria, Georgia, serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
@@ -87,6 +88,28 @@
 }
 
 @layer components {
+  /* Full-bleed shell: the page runs edge to edge, with gutters that grow
+     with the viewport instead of a fixed centred column. */
+  .shell {
+    width: 100%;
+    padding-inline: clamp(1.25rem, 4vw, 5rem);
+  }
+
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: 1.02rem;
+    line-height: 1;
+    color: var(--color-ink);
+  }
+
+  .wordmark-sep {
+    color: var(--color-gold);
+    margin-inline: 0.15em;
+  }
+
   .serif {
     font-family: var(--font-serif);
     font-weight: 400;
@@ -141,6 +164,15 @@
     font-size: 1.02rem;
     line-height: 1.75;
     color: var(--color-ink-soft);
+  }
+
+  /* On a wide viewport the measure can grow without becoming unreadable,
+     which keeps the full-bleed sections from leaving a void on the right. */
+  @media (min-width: 1280px) {
+    .prose-wide {
+      max-width: 74ch;
+      font-size: 1.06rem;
+    }
   }
 
   .prose-editorial p + p {

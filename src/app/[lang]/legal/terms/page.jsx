@@ -7,7 +7,7 @@ export default function TermsPage() {
     <LegalPage label="Legal" title="Terms of use" updated="17 September 2026">
       <p>
         These terms govern the use of the KJC Capital website by any visitor. They are not the
-        terms on which the KJC FX Growth Fund is offered; the offering terms are set out in the
+        terms on which the KJC Growth Fund is offered; the offering terms are set out in the
         subscription agreement furnished to prospective investors by introduction.
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Nature of this website</h3>

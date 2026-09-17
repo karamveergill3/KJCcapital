@@ -1,12 +1,12 @@
 import Reveal from "@/components/Reveal";
 
-export default function Ledger({ label, title, rows }) {
+export default function Ledger({ file, label, title, rows }) {
   return (
-    <section className="mx-auto max-w-6xl px-6 md:px-10 py-16 md:py-20 border-t border-[var(--color-rule)]">
-      <div className="grid gap-10 md:grid-cols-[16rem_1fr]">
+    <section className="shell py-16 md:py-20 border-t border-[var(--color-rule)]">
+      <div className="grid gap-10 md:grid-cols-[16rem_1fr] xl:grid-cols-[22rem_1fr]">
         <div>
           <Reveal className="smallcaps flex items-center gap-3">
-            <span className="folio-num">File 03</span>
+            <span className="folio-num">{file}</span>
             <span aria-hidden className="text-[var(--color-ink-faint)]">·</span>
             <span>{label}</span>
           </Reveal>
