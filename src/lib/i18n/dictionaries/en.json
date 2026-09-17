@@ -1,0 +1,136 @@
+{
+  "meta": {
+    "firmName": "KJC Capital",
+    "fundName": "KJC FX Growth Fund",
+    "tagline": "Currency risk, managed with discipline.",
+    "story": "A firm running a proprietary FX algorithm on behalf of a small number of private clients since 2023."
+  },
+  "nav": {
+    "firm": "The Firm",
+    "programme": "Programme",
+    "governance": "Governance",
+    "contact": "Contact",
+    "portal": "Investor Portal"
+  },
+  "home": {
+    "leadIntro": "KJC Capital manages a discretionary FX programme for a small number of private clients.",
+    "leadBody": "Our approach is deliberate and single-minded. One strategy, one instrument class, and a bounded number of investors who receive a monthly statement and, otherwise, considered silence.",
+    "principlesLabel": "Principles",
+    "principles": [
+      {
+        "title": "Discipline over prediction.",
+        "body": "The programme is executed to written rules. It is not a view on the direction of any currency, nor a story about macroeconomic conditions. It is a process, applied consistently, day after day."
+      },
+      {
+        "title": "A small book, by choice.",
+        "body": "The fund is capped at twenty investors and USD twenty million in assets. The purpose of the ceiling is fidelity: to run the same programme in the same way, without the drift that attends scale."
+      },
+      {
+        "title": "Considered silence.",
+        "body": "Investors receive a monthly statement and are otherwise not asked to attend to their capital. The absence of noise is intentional; it is one of the reasons the programme works."
+      }
+    ],
+    "ledgerLabel": "Structure at a glance",
+    "ledger": [
+      { "term": "Fund vehicle", "value": "BVI Incubator Fund" },
+      { "term": "Investor cap", "value": "Twenty" },
+      { "term": "Asset ceiling", "value": "USD 20 million" },
+      { "term": "Minimum subscription", "value": "USD 20,000" },
+      { "term": "Reporting", "value": "Monthly statement" },
+      { "term": "Redemption notice", "value": "Thirty days" }
+    ],
+    "outroLabel": "An invitation",
+    "outroBody": "The programme is offered by introduction. If you would like to explore it, write to us and a director will reply.",
+    "outroCta": "Request an introduction"
+  },
+  "firm": {
+    "leadTitle": "The Firm",
+    "leadIntro": "KJC Capital is a private investment firm based in the British Virgin Islands. The firm was established in 2023 and manages a single strategy on behalf of a small book of private clients.",
+    "sections": [
+      {
+        "label": "History",
+        "body": "The firm's founding was unassuming. A quantitative approach that had been refined over several years, run first on personal capital and subsequently on the accounts of family and close acquaintances, was formalised into a fund in 2023. The purpose of the formalisation was not growth. It was to draw a clear line between the firm's capital and its clients', to establish the reporting cadence that its clients had come to expect informally, and to bring the arrangement within a recognisable regulatory shape."
+      },
+      {
+        "label": "People",
+        "body": "The firm is small on purpose. Its principals hold the majority of the fund's capital themselves. That is the first fact worth stating; the alignment of interest between the manager and the client is not an aspiration but a structural feature."
+      },
+      {
+        "label": "Domicile",
+        "body": "The fund is registered in the British Virgin Islands as an Incubator Fund under the Securities and Investment Business (Incubator and Approved Funds) Regulations 2015. The Incubator regime is a light-touch category designed for the early period of a fund's life. It caps investor count at twenty, assets at USD twenty million, and requires graduation to a heavier category within two years. The firm views this ceiling as a discipline, not a limit."
+      }
+    ]
+  },
+  "programme": {
+    "leadTitle": "Programme",
+    "leadIntro": "The KJC FX Growth Fund runs a single, rules-based programme in the currency markets. What follows is a description of the shape of the engagement; the mechanics of the strategy itself are the firm's proprietary matter and are not disclosed.",
+    "sections": [
+      {
+        "label": "What it is",
+        "body": "A discretionary FX programme, run to written rules and executed algorithmically. The programme trades a small set of currency pairs on a continuous basis. Positions are typically held for hours to days and are sized according to a fixed risk budget."
+      },
+      {
+        "label": "What an investor sees",
+        "body": "One number. The investor's balance, valued at the most recent monthly NAV strike. There is no view of the underlying positions, no live P&L feed, no strategy commentary. This is deliberate. The programme's edge is in its consistency of execution, and a running commentary on daily fluctuations would ask investors to attend to the wrong thing."
+      },
+      {
+        "label": "What it does not do",
+        "body": "The programme does not trade equities, credit, commodities, or cryptocurrency. It does not offer capital guarantees, targeted returns, or a fixed distribution. It does not accept US persons as investors."
+      }
+    ]
+  },
+  "governance": {
+    "leadTitle": "Governance",
+    "leadIntro": "The firm operates within a framework that is intentionally boring. What matters at the size of this fund is not the number of controls but that the ones in place are followed, every time.",
+    "sections": [
+      {
+        "label": "Fund structure",
+        "body": "The BVI Incubator Fund holds all investor capital in a segregated account. Investor money is never commingled with the firm's operating capital. Subscriptions are settled at the following month's NAV strike; redemptions are settled at the NAV strike following a thirty-day notice period."
+      },
+      {
+        "label": "Net Asset Value",
+        "body": "NAV is struck on the first business day of each month. The calculation is performed in-house, with a written procedure applied identically each month, and every strike is recorded immutably. Because the Incubator regime does not require an external administrator, the discipline of the procedure carries the weight that an administrator would otherwise carry."
+      },
+      {
+        "label": "Fees",
+        "body": "The firm charges a management fee of two per cent per annum, accrued daily and charged against the fund on a quarterly basis. A performance fee of twenty per cent is applied against each investor's individual high-water mark, at each quarterly reset, so that no investor is charged a performance fee on ground previously covered."
+      },
+      {
+        "label": "Reporting and records",
+        "body": "Every action taken by the firm on the fund's book is logged, timestamped, and retained. The audit record is available on request to any investor, and to counsel for any investor, at any time."
+      }
+    ]
+  },
+  "contact": {
+    "leadTitle": "An introduction",
+    "leadIntro": "The programme is offered by introduction. If you would like to explore it, write to a director at the address below. Replies are ordinarily within two business days.",
+    "sections": [
+      {
+        "label": "Direct",
+        "body": "director@kjccapital.com"
+      },
+      {
+        "label": "By post",
+        "body": "KJC Capital, Craigmuir Chambers, Road Town, Tortola, British Virgin Islands, VG1110."
+      },
+      {
+        "label": "What to expect",
+        "body": "A director will reply personally. If, after that exchange, both parties consider a subscription to be a fit, the firm will issue an offering summary and a subscription agreement, and the onboarding process will begin."
+      }
+    ]
+  },
+  "footer": {
+    "notice": "KJC Capital and the KJC FX Growth Fund are offered only by introduction and only to persons the firm has satisfied itself are eligible under the Incubator Fund regime. Nothing on this site constitutes an offer to the public.",
+    "legal": {
+      "terms": "Terms of use",
+      "privacy": "Privacy",
+      "cookies": "Cookies",
+      "risk": "Risk warning",
+      "disclosures": "Disclosures"
+    },
+    "regulatory": "The KJC FX Growth Fund is registered in the British Virgin Islands as an Incubator Fund under the Securities and Investment Business (Incubator and Approved Funds) Regulations 2015."
+  },
+  "risk": {
+    "banner": "Capital is at risk. The programme is speculative and may result in the loss of the entire investment. Past performance is not a guide to future returns. The fund is not available to US persons."
+  }
+}

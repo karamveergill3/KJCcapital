@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+protected="main"
+current="$(git rev-parse --abbrev-ref HEAD)"
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [[ "$remote_ref" == "refs/heads/$protected" ]]; then
+    echo "Refusing direct push to $protected."
+    echo "Push a ready/ branch instead. .github/workflows/auto-merge.yml will merge it after checks."
+    exit 1
+  fi
+done
+
+if [[ "$current" == "$protected" ]]; then
+  echo "Refusing push while HEAD is $protected."
+  exit 1
+fi
