@@ -1,27 +1,31 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #131313;
-  --color-ink-soft: #3b3b3a;
-  --color-ink-mute: #6b6a66;
+  --color-ink: #0f0f0e;
+  --color-ink-soft: #34332f;
+  --color-ink-mute: #6b6a63;
+  --color-ink-faint: #a19d92;
 
-  --color-paper: #faf8f4;
-  --color-paper-warm: #f4efe6;
-  --color-paper-white: #ffffff;
+  --color-paper: #f6f2e9;
+  --color-paper-warm: #efe8d8;
+  --color-paper-deep: #e9e0cc;
+  --color-paper-white: #fdfbf5;
 
-  --color-rule: #d8d3c6;
-  --color-rule-strong: #b8b1a0;
+  --color-rule: #ddd6c2;
+  --color-rule-strong: #b8b09a;
+  --color-rule-faint: #ebe4d1;
 
-  --color-gold: #b08a3c;
-  --color-gold-soft: #d1b170;
-  --color-gold-deep: #8a6b2c;
+  --color-gold: #a37e2c;
+  --color-gold-soft: #cba762;
+  --color-gold-deep: #7a5a1c;
+  --color-gold-wash: #e8d9a7;
 
-  --color-gain: #3b5b3c;
+  --color-gain: #35553a;
   --color-loss: #8a3d3d;
 
   --font-serif: "Source Serif 4", "Source Serif Pro", Cambria, Georgia, serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 
   --breakpoint-2xs: 22rem;
   --breakpoint-3xl: 96rem;
@@ -37,7 +41,7 @@ html, body {
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
-  font-feature-settings: "kern", "liga", "calt";
+  font-feature-settings: "kern", "liga", "calt", "ss01";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -45,25 +49,44 @@ html, body {
 
 body {
   min-height: 100vh;
+  background-image:
+    radial-gradient(1200px 800px at 88% -10%, rgba(203, 167, 98, 0.10), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(163, 126, 44, 0.06), transparent 60%);
+  background-attachment: fixed;
 }
 
 h1, h2, h3, h4, h5, h6, .serif {
   font-family: var(--font-serif);
   font-weight: 400;
-  letter-spacing: -0.005em;
+  letter-spacing: -0.008em;
+}
+
+.serif-italic {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
 }
 
 .tabular {
   font-variant-numeric: tabular-nums lining-nums;
+  font-family: var(--font-mono);
 }
 
 .smallcaps {
   font-family: var(--font-sans);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 500;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-ink-mute);
+}
+
+.smallcaps-ink {
+  color: var(--color-ink);
+}
+
+.smallcaps-gold {
+  color: var(--color-gold-deep);
 }
 
 .rule {
@@ -75,6 +98,12 @@ h1, h2, h3, h4, h5, h6, .serif {
 .rule-gold {
   border: 0;
   border-top: 1px solid var(--color-gold);
+  margin: 0;
+}
+
+.rule-faint {
+  border: 0;
+  border-top: 1px solid var(--color-rule-faint);
   margin: 0;
 }
 
@@ -91,14 +120,14 @@ a:hover {
 }
 
 ::selection {
-  background: var(--color-gold-soft);
+  background: var(--color-gold-wash);
   color: var(--color-ink);
 }
 
 .prose-editorial {
   max-width: 62ch;
-  font-size: 1.05rem;
-  line-height: 1.7;
+  font-size: 1.02rem;
+  line-height: 1.75;
   color: var(--color-ink-soft);
 }
 
@@ -108,8 +137,8 @@ a:hover {
 
 .prose-editorial .lead {
   font-family: var(--font-serif);
-  font-size: 1.35rem;
-  line-height: 1.55;
+  font-size: 1.4rem;
+  line-height: 1.5;
   color: var(--color-ink);
   margin-bottom: 1.6rem;
 }
@@ -123,16 +152,21 @@ table.editorial {
 
 table.editorial th,
 table.editorial td {
-  padding: 0.65rem 0.75rem;
+  padding: 0.85rem 0.75rem;
   border-bottom: 1px solid var(--color-rule);
   text-align: left;
+}
+
+table.editorial tr:last-child th,
+table.editorial tr:last-child td {
+  border-bottom: 0;
 }
 
 table.editorial th {
   font-family: var(--font-sans);
   font-weight: 500;
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-ink-mute);
 }
@@ -141,3 +175,209 @@ table.editorial td.num,
 table.editorial th.num {
   text-align: right;
 }
+
+/* Folio numbering */
+.folio-num {
+  font-family: var(--font-serif);
+  font-feature-settings: "lnum", "onum" off;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--color-gold-deep);
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.folio-num::before {
+  content: "";
+}
+
+/* Entrance animations */
+@media (prefers-reduced-motion: no-preference) {
+  .fade-up {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 800ms cubic-bezier(0.2, 0.6, 0.2, 1),
+      transform 800ms cubic-bezier(0.2, 0.6, 0.2, 1);
+  }
+
+  .fade-up.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .fade-up.delay-1 { transition-delay: 90ms; }
+  .fade-up.delay-2 { transition-delay: 180ms; }
+  .fade-up.delay-3 { transition-delay: 270ms; }
+  .fade-up.delay-4 { transition-delay: 360ms; }
+  .fade-up.delay-5 { transition-delay: 450ms; }
+
+  .letter-settle {
+    animation: letterSettle 1200ms cubic-bezier(0.2, 0.6, 0.2, 1) both;
+  }
+
+  .rule-draw {
+    transform-origin: left center;
+    animation: ruleDraw 900ms cubic-bezier(0.2, 0.6, 0.2, 1) 200ms both;
+  }
+
+  .ticker-scroll {
+    animation: tickerScroll 60s linear infinite;
+  }
+
+  .ticker-strip:hover .ticker-scroll {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes letterSettle {
+  0% {
+    opacity: 0;
+    letter-spacing: 0.08em;
+    filter: blur(2px);
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    letter-spacing: -0.008em;
+    filter: blur(0);
+  }
+}
+
+@keyframes ruleDraw {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+@keyframes tickerScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes softPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.pulse-dot {
+  animation: softPulse 2400ms ease-in-out infinite;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 0.9rem 1.4rem;
+  border: 1px solid var(--color-ink);
+  color: var(--color-ink);
+  text-decoration: none;
+  background: transparent;
+  transition: background 240ms ease, color 240ms ease, border-color 240ms ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-ink);
+  transform: translateY(101%);
+  transition: transform 320ms cubic-bezier(0.2, 0.6, 0.2, 1);
+  z-index: 0;
+}
+
+.btn > * {
+  position: relative;
+  z-index: 1;
+}
+
+.btn:hover::after {
+  transform: translateY(0);
+}
+
+.btn:hover {
+  color: var(--color-paper-white);
+  border-color: var(--color-ink);
+}
+
+.btn-gold {
+  border-color: var(--color-gold);
+  color: var(--color-gold-deep);
+}
+
+.btn-gold::after {
+  background: var(--color-gold-deep);
+}
+
+.btn-gold:hover {
+  color: var(--color-paper-white);
+  border-color: var(--color-gold-deep);
+}
+
+/* Link underline slide */
+.link-slide {
+  position: relative;
+  text-decoration: none;
+  color: var(--color-ink);
+  padding-bottom: 3px;
+}
+
+.link-slide::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--color-gold);
+  transform-origin: right center;
+  transform: scaleX(0);
+  transition: transform 320ms cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+
+.link-slide:hover::after {
+  transform-origin: left center;
+  transform: scaleX(1);
+}
+
+/* Grain overlay for paper feel */
+.paper-grain {
+  position: relative;
+}
+
+.paper-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.08  0 0 0 0 0.07  0 0 0 0 0.05  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  opacity: 0.55;
+  mix-blend-mode: multiply;
+  z-index: 0;
+}
+
+.paper-grain > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Marker dot */
+.marker {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  display: inline-block;
+}
+
+.marker-ink { background: var(--color-ink); }
+.marker-mute { background: var(--color-ink-mute); }
