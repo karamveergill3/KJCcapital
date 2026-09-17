@@ -1,13 +1,13 @@
 import Reveal from "@/components/Reveal";
 
-export default function Cadence({ label, title, lead, steps }) {
+export default function Cadence({ file, label, title, lead, steps }) {
   return (
     <section className="border-t border-[var(--color-rule)] bg-[var(--color-paper-warm)]/60">
-      <div className="mx-auto max-w-6xl px-6 md:px-10 py-16 md:py-24">
-        <div className="grid gap-10 md:grid-cols-[16rem_1fr]">
+      <div className="shell py-16 md:py-24">
+        <div className="grid gap-10 md:grid-cols-[16rem_1fr] xl:grid-cols-[22rem_1fr]">
           <div>
             <Reveal className="smallcaps flex items-center gap-3">
-              <span className="folio-num">File 04</span>
+              <span className="folio-num">{file}</span>
               <span aria-hidden className="text-[var(--color-ink-faint)]">·</span>
               <span>{label}</span>
             </Reveal>
@@ -49,7 +49,7 @@ export default function Cadence({ label, title, lead, steps }) {
                   <span>{step.stage}</span>
                 </div>
                 <div className="serif text-xl mt-3 text-[var(--color-ink)]">{step.title}</div>
-                <p className="prose-editorial mt-3 max-w-xl">{step.body}</p>
+                <p className="prose-editorial prose-wide mt-3 max-w-none">{step.body}</p>
               </Reveal>
             ))}
           </ol>

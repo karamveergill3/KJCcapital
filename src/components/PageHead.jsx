@@ -1,6 +1,6 @@
 export default function PageHead({ label, title, lead }) {
   return (
-    <header className="mx-auto max-w-6xl px-6 md:px-10 pt-16 md:pt-24 pb-10">
+    <header className="shell pt-16 md:pt-24 pb-10">
       {label ? (
         <div className="smallcaps letter-settle mb-8 flex items-center gap-3">
           <span aria-hidden className="folio-num">§</span>

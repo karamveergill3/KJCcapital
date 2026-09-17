@@ -1,14 +1,14 @@
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
 
-export default function Invitation({ lang, label, title, body, cta, signoff }) {
+export default function Invitation({ file, lang, label, title, body, cta, signoff }) {
   return (
-    <section className="mx-auto max-w-6xl px-6 md:px-10 py-20 md:py-28 border-t border-[var(--color-rule)]">
+    <section className="shell py-20 md:py-28 border-t border-[var(--color-rule)]">
       <Reveal className="relative border border-[var(--color-rule-strong)] bg-[var(--color-paper-white)] p-10 md:p-16">
         <span className="paper-grain-layer" aria-hidden />
         <div className="relative z-10">
           <div className="smallcaps flex items-center gap-3">
-            <span className="folio-num">File 05</span>
+            <span className="folio-num">{file}</span>
             <span aria-hidden className="text-[var(--color-ink-faint)]">·</span>
             <span>{label}</span>
           </div>

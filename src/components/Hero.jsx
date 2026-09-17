@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function Hero({ lang, hero }) {
   return (
     <section className="relative overflow-hidden">
-      <div className="mx-auto max-w-6xl px-6 md:px-10 pt-16 md:pt-24 pb-16 md:pb-24">
+      <div className="shell pt-16 md:pt-24 pb-16 md:pb-24">
         <div className="grid gap-14 md:grid-cols-[1.4fr_1fr] md:gap-16 items-start">
           <div>
             <div className="smallcaps letter-settle flex items-center gap-3">
@@ -11,7 +11,7 @@ export default function Hero({ lang, hero }) {
               <span aria-hidden className="text-[var(--color-ink-faint)]">·</span>
               <span>Mandate</span>
             </div>
-            <h1 className="serif text-[2.6rem] md:text-[4.4rem] leading-[1.02] tracking-tight mt-8 text-[var(--color-ink)] max-w-3xl">
+            <h1 className="serif text-[2.6rem] md:text-[4.4rem] xl:text-[5.2rem] leading-[1.02] tracking-tight mt-8 text-[var(--color-ink)] max-w-none">
               <span className="letter-settle inline-block">A precision</span>{" "}
               <span className="letter-settle inline-block" style={{ animationDelay: "120ms" }}>
                 instrument
@@ -27,7 +27,7 @@ export default function Hero({ lang, hero }) {
               </span>
             </h1>
             <p
-              className="serif mt-10 text-lg md:text-xl leading-snug text-[var(--color-ink-soft)] max-w-xl fade-up is-visible delay-3"
+              className="serif mt-10 text-lg md:text-xl xl:text-2xl leading-snug text-[var(--color-ink-soft)] max-w-2xl fade-up is-visible delay-3"
             >
               {hero.lead}
             </p>

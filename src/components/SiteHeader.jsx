@@ -1,16 +1,16 @@
 import Link from "next/link";
-import Monogram from "@/components/Monogram";
+import Fleur from "@/components/Fleur";
 import LocalTime from "@/components/LocalTime";
 
-export default function SiteHeader({ lang, nav, firmName }) {
+export default function SiteHeader({ lang, nav }) {
   const base = `/${lang}`;
   return (
     <header className="border-b border-[var(--color-rule)] bg-[var(--color-paper)]/85 backdrop-blur-[6px] sticky top-0 z-40">
-      <div className="mx-auto max-w-6xl px-6 md:px-10 py-5 flex items-center justify-between gap-8">
-        <Link href={base} className="flex items-center gap-3 no-underline group">
-          <Monogram size={26} />
-          <span className="serif text-lg tracking-tight text-[var(--color-ink)]">
-            {firmName}
+      <div className="shell py-5 flex items-center justify-between gap-8">
+        <Link href={base} className="flex items-center gap-3.5 no-underline">
+          <Fleur size={26} />
+          <span className="wordmark">
+            KJC<span className="wordmark-sep">·</span>Capital
           </span>
         </Link>
         <nav className="hidden md:flex items-center gap-8 smallcaps">
@@ -27,7 +27,7 @@ export default function SiteHeader({ lang, nav, firmName }) {
         </nav>
       </div>
       <div className="border-t border-[var(--color-rule-faint)] bg-[var(--color-paper-warm)]/50">
-        <div className="mx-auto max-w-6xl px-6 md:px-10 py-2 flex items-center justify-between gap-4">
+        <div className="shell py-2 flex items-center justify-between gap-4">
           <LocalTime />
           <div className="smallcaps hidden sm:block">
             Tortola <span className="text-[var(--color-ink-faint)]">·</span> London <span className="text-[var(--color-ink-faint)]">·</span> Zürich

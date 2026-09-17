@@ -13,7 +13,7 @@ export default function DisclosuresPage() {
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">The fund</h3>
       <p>
-        The KJC FX Growth Fund is a segregated portfolio of KJC Capital Ltd, registered with
+        The KJC Growth Fund is a segregated portfolio of KJC Capital Ltd, registered with
         the British Virgin Islands Financial Services Commission as an Incubator Fund under
         the Securities and Investment Business (Incubator and Approved Funds) Regulations 2015.
         The fund is subject to the investor cap of twenty, the asset ceiling of USD twenty

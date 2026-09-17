@@ -1,8 +1,12 @@
 # KJC Capital
 
-Managed FX Growth Fund. BVI-registered Incubator Fund under the Securities and
+Gold-led managed fund. BVI-registered Incubator Fund under the Securities and
 Investment Business (Incubator and Approved Funds) Regulations 2015. Web
 platform for investor onboarding, subscription, redemption, and NAV reporting.
+
+The book runs across four registers: precious metals (the anchor), proprietary
+algorithmic strategies, a bounded digital-asset allocation, and select
+alternatives taken by exception.
 
 Public site: https://kjccapital.co.uk
 
