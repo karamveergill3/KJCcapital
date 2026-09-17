@@ -4,6 +4,8 @@ Managed FX Growth Fund. BVI-registered Incubator Fund under the Securities and
 Investment Business (Incubator and Approved Funds) Regulations 2015. Web
 platform for investor onboarding, subscription, redemption, and NAV reporting.
 
+Public site: https://kjccapital.co.uk
+
 The trading strategy is proprietary and is not exposed to investors. The
 public site presents the firm. The investor portal shows one number: the
 investor's current balance.
