@@ -13,9 +13,35 @@
     "portal": "Investor Portal"
   },
   "home": {
+    "hero": {
+      "lead": "A rules-based currency programme, offered by introduction, to a small book of private clients.",
+      "ctaPrimary": "Request an introduction",
+      "ctaSecondary": "The programme",
+      "meta": [
+        { "label": "Vehicle", "value": "BVI Incubator" },
+        { "label": "Inception", "value": "2023" },
+        { "label": "Domicile", "value": "Tortola, BVI" },
+        { "label": "Reporting", "value": "Monthly" }
+      ],
+      "folio": {
+        "label": "Fund at a glance",
+        "badge": "Confidential",
+        "title": "KJC FX Growth Fund",
+        "body": "One strategy, one instrument class, and a book bounded at twenty investors and USD twenty million. The ceiling is the point.",
+        "items": [
+          { "term": "Vehicle", "value": "BVI Incubator" },
+          { "term": "Investor cap", "value": "20" },
+          { "term": "Asset ceiling", "value": "USD 20m" },
+          { "term": "Minimum", "value": "USD 20,000" },
+          { "term": "Notice", "value": "30 days" }
+        ],
+        "reference": "KJC · MMXXIII"
+      }
+    },
     "leadIntro": "KJC Capital manages a discretionary FX programme for a small number of private clients.",
     "leadBody": "Our approach is deliberate and single-minded. One strategy, one instrument class, and a bounded number of investors who receive a monthly statement and, otherwise, considered silence.",
     "principlesLabel": "Principles",
+    "principlesTitle": "How the firm works",
     "principles": [
       {
         "title": "Discipline over prediction.",
@@ -31,6 +57,7 @@
       }
     ],
     "ledgerLabel": "Structure at a glance",
+    "ledgerTitle": "The fund on paper",
     "ledger": [
       { "term": "Fund vehicle", "value": "BVI Incubator Fund" },
       { "term": "Investor cap", "value": "Twenty" },
@@ -39,9 +66,42 @@
       { "term": "Reporting", "value": "Monthly statement" },
       { "term": "Redemption notice", "value": "Thirty days" }
     ],
+    "cadence": {
+      "label": "Cadence",
+      "title": "One rhythm, held to.",
+      "lead": "The month is the unit of measurement. Everything else is left to the programme.",
+      "steps": [
+        {
+          "when": "01",
+          "stage": "Strike",
+          "title": "Net asset value is struck.",
+          "body": "On the first business day of each month, NAV is calculated to a written procedure and recorded immutably. Subscriptions received in the preceding month are settled at this strike."
+        },
+        {
+          "when": "05",
+          "stage": "Statement",
+          "title": "The statement is issued.",
+          "body": "Each investor receives one page: opening balance, contributions, distributions, and closing balance. No commentary, no chart, no exposure detail."
+        },
+        {
+          "when": "—",
+          "stage": "Interval",
+          "title": "The programme runs.",
+          "body": "Between strikes there is nothing to attend to. The programme executes to rules. Investors are not asked to hold a view."
+        },
+        {
+          "when": "T-30",
+          "stage": "Redemption",
+          "title": "Notice window opens.",
+          "body": "Redemption is settled at the strike following a thirty-day notice period, on the same page as subscription. There is no gate."
+        }
+      ]
+    },
     "outroLabel": "An invitation",
-    "outroBody": "The programme is offered by introduction. If you would like to explore it, write to us and a director will reply.",
-    "outroCta": "Request an introduction"
+    "outroTitle": "Written to a director.",
+    "outroBody": "The programme is offered by introduction. If it appears to fit, write to us, and a director will reply personally. Replies are ordinarily within two business days.",
+    "outroCta": "Request an introduction",
+    "outroSignoff": "The firm is not registered with the U.S. Securities and Exchange Commission and does not accept U.S. persons."
   },
   "firm": {
     "leadTitle": "The Firm",
