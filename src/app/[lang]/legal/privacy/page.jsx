@@ -20,16 +20,16 @@ export default function PrivacyPage() {
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">What is collected</h3>
       <p>
         For a visitor to this website, the firm records only the pages requested and the country
-        of origin, in an aggregated form. For a prospective or admitted investor, the firm
+        of origin, in an aggregated form. For a prospective or existing client, the firm
         collects and retains the identity, address, source of funds, and tax residence
-        information required to satisfy the fund's know-your-client and anti-money-laundering
+        information required to satisfy its know-your-client and anti-money-laundering
         obligations.
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Why it is retained</h3>
       <p>
-        The information is retained to satisfy the firm's regulatory obligations, to administer
-        the fund, and to communicate with the investor about their subscription. It is not
-        used for marketing to third parties, and it is not sold.
+        The information is retained to satisfy the firm's regulatory obligations, to manage the
+        client's account, and to communicate with the client about it. It is not used for
+        marketing to third parties, and it is not sold.
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">How long it is kept</h3>
       <p>

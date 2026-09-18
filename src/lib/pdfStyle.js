@@ -48,7 +48,7 @@ export function drawLetterhead(doc, { firmName, docTitle }) {
     .font(TYPE.sans)
     .fontSize(SIZES.micro)
     .fillColor(COLORS.inkMute)
-    .text("KJC GROWTH FUND", left, top - 60 + 20, {
+    .text("KJC CAPITAL", left, top - 60 + 20, {
       align: "left",
       characterSpacing: 1.4
     });
@@ -145,4 +145,4 @@ export function body(doc, text) {
 }
 
 export const DISCLOSURE_LINE =
-  "The KJC Growth Fund is domiciled in the British Virgin Islands. Capital is at risk. Past performance is not a guide to future returns. Not available to United States persons.";
+  "KJC Capital manages clients' own broker accounts and does not hold client money. Capital is at risk. Past performance is not a guide to future returns. Not available to United States persons.";

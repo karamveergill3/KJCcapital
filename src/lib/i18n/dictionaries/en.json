@@ -1,9 +1,9 @@
 {
   "meta": {
     "firmName": "KJC Capital",
-    "fundName": "KJC Growth Fund",
-    "tagline": "Gold-led capital, managed with discipline.",
-    "story": "A firm placing capital across precious metals, proprietary algorithmic strategies, digital assets, and select alternatives, on behalf of private clients since 2023."
+    "programmeName": "KJC Managed Account",
+    "tagline": "Gold-led capital, managed in your own account.",
+    "story": "A firm managing private clients' own broker accounts across precious metals, proprietary algorithmic strategies, digital assets, and select alternatives, since 2023."
   },
   "nav": {
     "firm": "The Firm",
@@ -14,26 +14,26 @@
   },
   "home": {
     "hero": {
-      "lead": "A gold-led programme, algorithmically informed, offered by introduction to private and institutional capital.",
+      "lead": "A gold-led programme, algorithmically informed, run inside your own account. Your money never leaves your name.",
       "ctaPrimary": "Request an introduction",
       "ctaSecondary": "The programme",
       "meta": [
         { "label": "Strategy", "value": "Four registers" },
         { "label": "Inception", "value": "2023" },
-        { "label": "Domicile", "value": "Tortola, BVI" },
-        { "label": "Reporting", "value": "Monthly" }
+        { "label": "Account", "value": "In your name" },
+        { "label": "Visibility", "value": "Live" }
       ],
       "folio": {
-        "label": "Fund at a glance",
-        "badge": "Confidential",
-        "title": "KJC Growth Fund",
-        "body": "Four registers and one discipline, led by metal and executed to written rules. Capacity is a risk decision, taken by the firm.",
+        "label": "The arrangement",
+        "badge": "By introduction",
+        "title": "Your account, your name",
+        "body": "The account is opened with a broker in your name, not ours. We are given authority to trade it. Nothing is pooled, so nothing depends on what another client does.",
         "items": [
-          { "term": "Domicile", "value": "British Virgin Islands" },
-          { "term": "Inception", "value": "2023" },
-          { "term": "Minimum", "value": "USD 20,000" },
-          { "term": "Valuation", "value": "Monthly" },
-          { "term": "Notice", "value": "30 days" }
+          { "term": "Held by", "value": "You" },
+          { "term": "Traded by", "value": "KJC Capital" },
+          { "term": "Pooled", "value": "No" },
+          { "term": "Visibility", "value": "Your own login" },
+          { "term": "Access", "value": "Revocable" }
         ],
         "reference": "KJC · MMXXIII"
       }
@@ -63,8 +63,8 @@
         "body": "Positions taken outside the listed markets, one at a time, and only where the firm can see the whole of what it is buying."
       }
     ],
-    "leadIntro": "KJC Capital places capital across four registers on behalf of private and institutional clients.",
-    "leadBody": "Our approach is deliberate. Four registers, one discipline, and investors who receive a monthly statement and, otherwise, considered silence.",
+    "leadIntro": "KJC Capital manages private clients' own broker accounts across four registers.",
+    "leadBody": "Our approach is deliberate. Four registers, one discipline, and clients whose capital stays in their own name throughout, visible to them at any hour they care to look.",
     "principlesLabel": "Principles",
     "principlesTitle": "How the firm works",
     "principles": [
@@ -77,48 +77,48 @@
         "body": "The size of the book is set by what the programme can execute without degrading it, and by nothing else. Capacity is reviewed rather than assumed, and it is the firm's decision to make, not the market's."
       },
       {
-        "title": "Considered silence.",
-        "body": "Investors receive a monthly statement and are otherwise not asked to attend to their capital. The absence of noise is intentional; it is one of the reasons the programme works."
+        "title": "Nothing you cannot see.",
+        "body": "Because the account is yours, the record is yours: every position and every trade, in your own login, as it happens. A pooled fund can offer one number a month. This arrangement cannot hide anything from you, by construction rather than by promise."
       }
     ],
-    "ledgerLabel": "Structure at a glance",
-    "ledgerTitle": "The fund on paper",
+    "ledgerLabel": "The arrangement at a glance",
+    "ledgerTitle": "Where your money sits",
     "ledger": [
-      { "term": "Domicile", "value": "British Virgin Islands" },
-      { "term": "Strategy", "value": "Four registers, gold-led" },
-      { "term": "Minimum subscription", "value": "USD 20,000" },
-      { "term": "Valuation", "value": "Monthly NAV strike" },
-      { "term": "Reporting", "value": "Monthly statement" },
-      { "term": "Redemption notice", "value": "Thirty days" }
+      { "term": "Account holder", "value": "You" },
+      { "term": "Held with", "value": "A broker, in your name" },
+      { "term": "Pooled with others", "value": "No" },
+      { "term": "Our authority", "value": "To trade the account" },
+      { "term": "Your visibility", "value": "Your own broker login" },
+      { "term": "Withdrawing", "value": "Yours to initiate" }
     ],
     "cadence": {
-      "label": "Cadence",
-      "title": "One rhythm, held to.",
-      "lead": "The month is the unit of measurement. Everything else is left to the programme.",
+      "label": "How it works",
+      "title": "Four steps, and none of them move your money.",
+      "lead": "The account is opened by you, funded by you, and closed by you. We are only ever given permission to trade inside it.",
       "steps": [
         {
-          "when": "01",
-          "stage": "Strike",
-          "title": "Net asset value is struck.",
-          "body": "On the first business day of each month, NAV is calculated to a written procedure and recorded immutably. Subscriptions received in the preceding month are settled at this strike."
+          "when": "I",
+          "stage": "Open",
+          "title": "You open the account.",
+          "body": "An account with a broker, in your name, with your identification and your credentials. We help you through it, but it is your account and it always remains so."
         },
         {
-          "when": "05",
-          "stage": "Statement",
-          "title": "The statement is issued.",
-          "body": "Each investor receives one page: opening balance, contributions, distributions, and closing balance. No commentary, no chart, no exposure detail."
+          "when": "II",
+          "stage": "Authorise",
+          "title": "You grant trading authority.",
+          "body": "A limited authority that lets us place trades in the account. It is granted by you, it is narrow, and it can be withdrawn by you at any time without asking us."
         },
         {
-          "when": "·",
-          "stage": "Interval",
+          "when": "III",
+          "stage": "Run",
           "title": "The programme runs.",
-          "body": "Between strikes there is nothing to attend to. The programme executes to rules. Investors are not asked to hold a view."
+          "body": "Four registers, executed to written rules. You can watch every position and every trade from your own login while it happens. Nothing is reported to you second-hand."
         },
         {
-          "when": "T-30",
-          "stage": "Redemption",
-          "title": "Notice window opens.",
-          "body": "Redemption is settled at the strike following a thirty-day notice period, on the same page as subscription. There is no gate."
+          "when": "IV",
+          "stage": "Withdraw",
+          "title": "You take money out.",
+          "body": "Withdrawals are instructed by you to the broker. We do not hold your capital, so we are not a step in taking it back, and there is nothing for us to gate or delay."
         }
       ]
     },
@@ -135,22 +135,22 @@
     "sections": [
       {
         "label": "History",
-        "body": "The firm's founding was unassuming. A quantitative approach that had been refined over several years, run first on personal capital and subsequently on the accounts of family and close acquaintances, was formalised into a fund in 2023. The purpose of the formalisation was not growth. It was to draw a clear line between the firm's capital and its clients', to establish the reporting cadence that its clients had come to expect informally, and to bring the arrangement within a recognisable regulatory shape."
+        "body": "The firm's founding was unassuming. A quantitative approach that had been refined over several years, run first on personal capital and subsequently on the accounts of family and close acquaintances, was formalised in 2023. The purpose of the formalisation was not growth. It was to draw a clear line between the firm's capital and its clients', and to put in writing an arrangement that had until then rested on trust alone."
       },
       {
         "label": "People",
-        "body": "The firm is small on purpose. Its principals hold the majority of the fund's capital themselves. That is the first fact worth stating; the alignment of interest between the manager and the client is not an aspiration but a structural feature."
+        "body": "The firm is small on purpose. Its principals run the same programme on their own capital, in their own accounts, alongside yours. The alignment of interest between the manager and the client is not an aspiration but a structural feature."
       },
       {
         "label": "Domicile",
-        "body": "The fund is domiciled in the British Virgin Islands. Investor capital is held separately from the firm's own operating capital, subscriptions and redemptions are settled against a stated monthly valuation, and the terms on which the fund is offered are set out in the offering documents rather than on this site."
+        "body": "The firm is based in the British Virgin Islands. Client capital is never held by the firm at all: it sits in the client's own account with a broker, which is a stronger separation than any policy of ours could provide. The terms of the arrangement are set out in the client agreement rather than on this site."
       }
     ]
   },
   "programme": {
     "leadTitle": "Programme",
     "metaDescription": "A gold-led programme across four registers: precious metals, proprietary algorithmic strategies, a bounded digital-asset allocation, and select alternatives.",
-    "leadIntro": "The KJC Growth Fund runs a single, rules-based programme across four registers. What follows is a description of the shape of the engagement; the mechanics of the strategy itself are the firm's proprietary matter and are not disclosed.",
+    "leadIntro": "KJC Capital runs a single, rules-based programme across four registers, inside each client's own account. What follows is a description of the shape of the engagement; the mechanics of the strategy itself are the firm's proprietary matter and are not disclosed.",
     "sections": [
       {
         "label": "What it is",
@@ -158,38 +158,38 @@
       },
       {
         "label": "What an investor sees",
-        "body": "One number. The investor's balance, valued at the most recent monthly NAV strike. There is no view of the underlying positions, no live profit and loss feed, no strategy commentary. This is deliberate. The programme's edge is in its consistency of execution, and a running commentary on daily fluctuations would ask investors to attend to the wrong thing."
+        "body": "Everything. The account is the client's, so the broker's record is the client's: every position, every trade, every fee, live, through their own login. We do not stand between a client and their own account, and there is no version of the numbers that only we can see. What we ask is restraint rather than ignorance. The programme's edge is in consistency of execution, and watching it hour by hour is a good way to talk yourself out of a process that is working."
       },
       {
         "label": "What it does not do",
-        "body": "The programme does not offer capital guarantees, targeted returns, or a fixed distribution. It does not lend the fund's assets, and it does not take a position the firm could not exit in ordinary market conditions. It does not accept US persons as investors."
+        "body": "The programme does not offer capital guarantees or targeted returns. The firm does not hold client money, does not take custody of client assets, and does not have authority to withdraw from a client's account. It does not take a position it could not exit in ordinary market conditions. It does not accept US persons as clients."
       }
     ]
   },
   "governance": {
     "leadTitle": "Governance",
-    "metaDescription": "Fund structure, the monthly NAV strike, valuation across registers, fees and the audit record for the KJC Growth Fund.",
-    "leadIntro": "The firm operates within a framework that is intentionally boring. What matters at the size of this fund is not the number of controls but that the ones in place are followed, every time.",
+    "metaDescription": "Where client money sits, the limits on KJC Capital's authority, how the firm is paid, and the record it keeps.",
+    "leadIntro": "The firm operates within a framework that is intentionally boring. What matters at this size is not the number of controls but that the ones in place are followed, every time.",
     "sections": [
       {
-        "label": "Fund structure",
-        "body": "The fund holds all investor capital in a segregated account. Investor money is never commingled with the firm's operating capital. Subscriptions are settled at the following month's NAV strike; redemptions are settled at the NAV strike following a thirty-day notice period."
+        "label": "Where the money sits",
+        "body": "Nothing is pooled. Each client's capital sits in an account with a broker, opened in the client's own name and under the client's own credentials. The firm never takes possession of it. Money is added and withdrawn by the client, instructing the broker directly, which means the firm is not a step in either direction and has nothing to gate."
       },
       {
-        "label": "Net Asset Value",
-        "body": "NAV is struck on the first business day of each month, to a written procedure applied identically each month, and every strike is recorded immutably. Where the calculation is performed in-house rather than by an external administrator, the discipline of the procedure carries the weight an administrator would otherwise carry."
+        "label": "The limits of our authority",
+        "body": "The firm holds a limited authority to place trades in the client's account, and nothing beyond it. It cannot withdraw, transfer, or pledge a client's assets, and it cannot change who the account belongs to. The authority is granted by the client to the broker, so it is withdrawn the same way, by the client, without the firm's agreement and without notice to us."
       },
       {
-        "label": "Valuation across registers",
-        "body": "Each register is valued on a stated basis and the basis does not move between strikes. Precious metals are struck against an established afternoon benchmark price; digital assets against the volume-weighted price at the strike on the venues the fund actually trades; alternatives at cost until an event supports a different figure. Where a register cannot be valued cleanly, it is held at the more conservative of the available figures and the reason is written into the record."
+        "label": "Valuation",
+        "body": "The firm does not value your account. Your broker does, on its own statements, from its own records, and those statements are the authoritative account of what you hold and what it is worth. There is no valuation of ours for a broker's figure to disagree with, which removes the question that occupies most of the diligence done on a small manager."
       },
       {
         "label": "Fees",
-        "body": "The firm charges a management fee of two per cent per annum, accrued daily and charged against the fund on a quarterly basis. A performance fee of twenty per cent is applied against each investor's individual high-water mark, at each quarterly reset, so that no investor is charged a performance fee on ground previously covered."
+        "body": "The fee basis is stated in the client agreement and agreed before any authority is granted. It is not varied during an engagement without the client's written consent, and it is not deducted by the firm from a client's account on its own initiative, because the firm has no authority to move money out of one."
       },
       {
         "label": "Reporting and records",
-        "body": "Every action taken by the firm on the fund's book is logged, timestamped, and retained. The audit record is available on request to any investor, and to counsel for any investor, at any time."
+        "body": "Every instruction the firm places in a client's account is logged, timestamped, and retained. That record is the firm's own, and it is deliberately redundant: the broker holds the same history independently, and the client can read it without asking us. Ours is available on request to any client, and to their counsel, at any time."
       }
     ]
   },
@@ -208,12 +208,12 @@
       },
       {
         "label": "What to expect",
-        "body": "A director will reply personally. If, after that exchange, both parties consider a subscription to be a fit, the firm will issue an offering summary and a subscription agreement, and the onboarding process will begin."
+        "body": "A director will reply personally. If, after that exchange, both parties consider the arrangement to be a fit, the firm will issue a client agreement setting out the fee basis and the scope of the trading authority, and will walk you through opening the account in your own name."
       }
     ]
   },
   "footer": {
-    "notice": "KJC Capital and the KJC Growth Fund are offered only by introduction, and only to persons the firm has satisfied itself are eligible to receive the offer. Nothing on this site constitutes an offer to the public.",
+    "notice": "The KJC Capital programme is offered only by introduction, and only to persons the firm has satisfied itself are eligible. Nothing on this site constitutes an offer to the public, a recommendation, or investment advice.",
     "legal": {
       "terms": "Terms of use",
       "privacy": "Privacy",
@@ -221,9 +221,9 @@
       "risk": "Risk warning",
       "disclosures": "Disclosures"
     },
-    "regulatory": "The KJC Growth Fund is domiciled in the British Virgin Islands. Its terms are set out in the offering documents, which are provided on introduction."
+    "regulatory": "KJC Capital is based in the British Virgin Islands. It manages clients' own broker accounts under a limited trading authority and does not hold client money. Terms are set out in the client agreement, provided on introduction."
   },
   "risk": {
-    "banner": "Capital is at risk. The programme is speculative and may result in the loss of the entire investment. Past performance is not a guide to future returns. The fund is not available to US persons."
+    "banner": "Capital is at risk. The programme is speculative and may result in the loss of everything committed to it. Past performance is not a guide to future returns. The programme is not available to US persons."
   }
 }
