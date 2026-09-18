@@ -50,10 +50,10 @@ test("sitemap covers every locale and every advertised path, on the site origin"
   }
 });
 
-// The firm holds kjccapital.co.uk and kjccapital.com, and .co.uk is the
-// canonical one. Only one of the two may appear in a canonical tag, a sitemap
-// entry or a published contact address; the other is a redirect and must never
-// be what the site declares about itself.
+// kjccapital.co.uk is the only domain the firm holds. kjccapital.com belongs to
+// someone else, and it has already been committed here once by mistake, which
+// put a canonical tag, a sitemap and a published contact address on a domain a
+// stranger controls. That is the failure these two tests exist to catch.
 const CANONICAL_DOMAIN = "kjccapital.co.uk";
 
 test("the site declares the canonical domain, apex or www", () => {
@@ -63,7 +63,7 @@ test("the site declares the canonical domain, apex or www", () => {
   );
 });
 
-test("no published address sits on the redirect domain", async () => {
+test("no published address sits on a domain the firm does not hold", async () => {
   const files = [
     "README.md",
     ".env.local.example",
@@ -74,10 +74,9 @@ test("no published address sits on the redirect domain", async () => {
   const offenders = [];
   for (const file of files) {
     const body = await readFile(resolve(root, file), "utf8");
-    // kjccapital.com, but not the .com inside kjccapital.co.uk-adjacent text.
     if (/kjccapital\.com(?![a-z])/i.test(body)) offenders.push(file);
   }
-  assert.deepEqual(offenders, [], `redirect domain published in: ${offenders.join(", ")}`);
+  assert.deepEqual(offenders, [], `domain the firm does not hold, published in: ${offenders.join(", ")}`);
 });
 
 test("robots points at the sitemap on the same origin and keeps the portal out", async () => {
