@@ -130,6 +130,7 @@
   },
   "firm": {
     "leadTitle": "The Firm",
+    "metaDescription": "KJC Capital is a private investment firm registered in the British Virgin Islands, running a single programme for a small book of private clients since 2023.",
     "leadIntro": "KJC Capital is a private investment firm based in the British Virgin Islands. The firm was established in 2023 and runs a single programme on behalf of a small book of private clients.",
     "sections": [
       {
@@ -148,6 +149,7 @@
   },
   "programme": {
     "leadTitle": "Programme",
+    "metaDescription": "A gold-led programme across four registers: precious metals, proprietary algorithmic strategies, a bounded digital-asset allocation, and select alternatives.",
     "leadIntro": "The KJC Growth Fund runs a single, rules-based programme across four registers. What follows is a description of the shape of the engagement; the mechanics of the strategy itself are the firm's proprietary matter and are not disclosed.",
     "sections": [
       {
@@ -166,6 +168,7 @@
   },
   "governance": {
     "leadTitle": "Governance",
+    "metaDescription": "Fund structure, the monthly NAV strike, valuation across registers, fees and the audit record for the KJC Growth Fund, a BVI Incubator Fund.",
     "leadIntro": "The firm operates within a framework that is intentionally boring. What matters at the size of this fund is not the number of controls but that the ones in place are followed, every time.",
     "sections": [
       {
@@ -192,6 +195,7 @@
   },
   "contact": {
     "leadTitle": "An introduction",
+    "metaDescription": "The programme is offered by introduction. Write to a director at KJC Capital; replies are ordinarily within two business days.",
     "leadIntro": "The programme is offered by introduction. If you would like to explore it, write to a director at the address below. Replies are ordinarily within two business days.",
     "sections": [
       {

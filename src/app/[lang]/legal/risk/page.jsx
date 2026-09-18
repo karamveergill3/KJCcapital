@@ -4,6 +4,7 @@ export async function generateMetadata({ params }) {
   const { lang } = await params;
   return {
     title: "Risk warning",
+    description: "Capital is at risk. Risk warning for the KJC Growth Fund, a BVI Incubator Fund, including the risks specific to each register.",
     alternates: { canonical: `/${lang}/legal/risk` },
     openGraph: { title: "Risk warning", url: `/${lang}/legal/risk` }
   };

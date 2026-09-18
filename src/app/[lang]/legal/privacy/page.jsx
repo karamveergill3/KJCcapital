@@ -4,6 +4,7 @@ export async function generateMetadata({ params }) {
   const { lang } = await params;
   return {
     title: "Privacy",
+    description: "How KJC Capital collects, uses and retains personal data submitted through this site.",
     alternates: { canonical: `/${lang}/legal/privacy` },
     openGraph: { title: "Privacy", url: `/${lang}/legal/privacy` }
   };
