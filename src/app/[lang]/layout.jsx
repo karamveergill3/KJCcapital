@@ -14,7 +14,11 @@ export default async function LocaleLayout({ children, params }) {
   const dict = await getDictionary(lang);
   return (
     <div className="min-h-screen flex flex-col">
-      <SiteHeader lang={lang} nav={dict.nav} />
+      <SiteHeader
+        lang={lang}
+        nav={dict.nav}
+        ticker={{ ...dict.ticker, rows: dict.home.ledger }}
+      />
       <main className="flex-1">{children}</main>
       <SiteFooter lang={lang} footer={dict.footer} firmName={dict.meta.firmName} risk={dict.risk} />
     </div>

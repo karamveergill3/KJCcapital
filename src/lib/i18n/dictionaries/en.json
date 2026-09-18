@@ -128,6 +128,16 @@
     "outroCta": "Request an introduction",
     "outroSignoff": "The firm is not registered with the U.S. Securities and Exchange Commission and does not accept U.S. persons."
   },
+  "ticker": {
+    "label": "Terms of the arrangement",
+    "extra": [
+      { "term": "Client money we hold", "value": "None" },
+      { "term": "Statements from", "value": "Your broker, not us" },
+      { "term": "Revoking our authority", "value": "Yours, direct with the broker" },
+      { "term": "New clients", "value": "By introduction only" },
+      { "term": "United States persons", "value": "Not accepted" }
+    ]
+  },
   "firm": {
     "leadTitle": "The Firm",
     "metaDescription": "KJC Capital is a private investment firm based in the British Virgin Islands, running a single gold-led programme across four registers since 2023.",
