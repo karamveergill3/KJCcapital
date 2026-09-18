@@ -4,6 +4,7 @@ export async function generateMetadata({ params }) {
   const { lang } = await params;
   return {
     title: "Cookies",
+    description: "The cookies used by the KJC Capital website and what each one is for.",
     alternates: { canonical: `/${lang}/legal/cookies` },
     openGraph: { title: "Cookies", url: `/${lang}/legal/cookies` }
   };

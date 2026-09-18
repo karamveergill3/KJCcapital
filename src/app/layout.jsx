@@ -28,7 +28,12 @@ export const metadata = {
   robots: {
     index: true,
     follow: true
-  }
+  },
+  // Set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION in Vercel to the token Search
+  // Console gives you; the meta tag only renders once it is present.
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } }
+    : {})
 };
 
 const ORGANISATION_LD = {

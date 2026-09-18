@@ -7,8 +7,13 @@ export async function generateMetadata({ params }) {
   const dict = await getDictionary(lang);
   return {
     title: dict.contact.leadTitle,
+    description: dict.contact.metaDescription,
     alternates: { canonical: `/${lang}/contact` },
-    openGraph: { title: dict.contact.leadTitle, url: `/${lang}/contact` }
+    openGraph: {
+      title: dict.contact.leadTitle,
+      description: dict.contact.metaDescription,
+      url: `/${lang}/contact`
+    }
   };
 }
 

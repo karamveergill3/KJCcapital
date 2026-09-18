@@ -4,6 +4,7 @@ export async function generateMetadata({ params }) {
   const { lang } = await params;
   return {
     title: "Disclosures",
+    description: "Regulatory disclosures for KJC Capital and the KJC Growth Fund, a British Virgin Islands Incubator Fund.",
     alternates: { canonical: `/${lang}/legal/disclosures` },
     openGraph: { title: "Disclosures", url: `/${lang}/legal/disclosures` }
   };

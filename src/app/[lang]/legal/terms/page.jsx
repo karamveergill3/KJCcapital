@@ -4,6 +4,7 @@ export async function generateMetadata({ params }) {
   const { lang } = await params;
   return {
     title: "Terms of use",
+    description: "Terms of use for the KJC Capital website. Nothing on this site is an offer to the public or the offering terms of the fund.",
     alternates: { canonical: `/${lang}/legal/terms` },
     openGraph: { title: "Terms of use", url: `/${lang}/legal/terms` }
   };
