@@ -1,4 +1,7 @@
-const FALLBACK = "https://kjccapital.co.uk";
+// Vercel serves www as the production domain and 308-redirects the apex to it,
+// so www is what the site must declare. An apex canonical would point every
+// page at a URL that immediately redirects.
+const FALLBACK = "https://www.kjccapital.co.uk";
 
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || FALLBACK).replace(/\/+$/, "");
 
