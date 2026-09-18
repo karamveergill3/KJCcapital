@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { NAV_ITEMS } from "@/lib/site";
 
 export default function MobileNav({ lang, nav }) {
   const [open, setOpen] = useState(false);
@@ -14,13 +15,10 @@ export default function MobileNav({ lang, nav }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  const items = [
-    { href: `${base}/firm`, label: nav.firm },
-    { href: `${base}/programme`, label: nav.programme },
-    { href: `${base}/governance`, label: nav.governance },
-    { href: `${base}/contact`, label: nav.contact },
-    { href: `${base}/portal`, label: nav.portal }
-  ];
+  const items = NAV_ITEMS.map((item) => ({
+    href: `${base}${item.path}`,
+    label: nav[item.key]
+  }));
 
   return (
     <div className="md:hidden">

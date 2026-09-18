@@ -21,6 +21,20 @@ export const PUBLIC_PATHS = [
   "/legal/disclosures"
 ];
 
+/**
+ * Routes reachable from the site navigation, relative to a locale root. The
+ * header and the mobile menu both read this, so a link cannot be offered in one
+ * and missing from the other, and tests/site.test.mjs can check that every one
+ * of them actually has a page. /portal was linked from both and 404d from both.
+ */
+export const NAV_ITEMS = [
+  { key: "firm", path: "/firm" },
+  { key: "programme", path: "/programme" },
+  { key: "governance", path: "/governance" },
+  { key: "contact", path: "/contact" },
+  { key: "portal", path: "/portal", rule: true }
+];
+
 export function absolute(path = "/") {
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
