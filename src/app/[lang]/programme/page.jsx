@@ -5,7 +5,11 @@ import EditorialSection from "@/components/EditorialSection";
 export async function generateMetadata({ params }) {
   const { lang } = await params;
   const dict = await getDictionary(lang);
-  return { title: dict.programme.leadTitle };
+  return {
+    title: dict.programme.leadTitle,
+    alternates: { canonical: `/${lang}/programme` },
+    openGraph: { title: dict.programme.leadTitle, url: `/${lang}/programme` }
+  };
 }
 
 export default async function ProgrammePage({ params }) {

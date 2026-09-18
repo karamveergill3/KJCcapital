@@ -1,6 +1,13 @@
 import LegalPage from "@/components/LegalPage";
 
-export const metadata = { title: "Terms of use" };
+export async function generateMetadata({ params }) {
+  const { lang } = await params;
+  return {
+    title: "Terms of use",
+    alternates: { canonical: `/${lang}/legal/terms` },
+    openGraph: { title: "Terms of use", url: `/${lang}/legal/terms` }
+  };
+}
 
 export default function TermsPage() {
   return (

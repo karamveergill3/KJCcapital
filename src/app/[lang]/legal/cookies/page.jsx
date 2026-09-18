@@ -1,6 +1,13 @@
 import LegalPage from "@/components/LegalPage";
 
-export const metadata = { title: "Cookies" };
+export async function generateMetadata({ params }) {
+  const { lang } = await params;
+  return {
+    title: "Cookies",
+    alternates: { canonical: `/${lang}/legal/cookies` },
+    openGraph: { title: "Cookies", url: `/${lang}/legal/cookies` }
+  };
+}
 
 export default function CookiesPage() {
   return (

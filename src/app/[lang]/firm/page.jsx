@@ -5,7 +5,11 @@ import EditorialSection from "@/components/EditorialSection";
 export async function generateMetadata({ params }) {
   const { lang } = await params;
   const dict = await getDictionary(lang);
-  return { title: dict.firm.leadTitle };
+  return {
+    title: dict.firm.leadTitle,
+    alternates: { canonical: `/${lang}/firm` },
+    openGraph: { title: dict.firm.leadTitle, url: `/${lang}/firm` }
+  };
 }
 
 export default async function FirmPage({ params }) {
