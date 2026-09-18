@@ -35,7 +35,7 @@ test("schema.sql includes the audit_events table", async () => {
   assert.match(sql, /create table if not exists audit_events/);
 });
 
-test("subscription minimum matches the BVI Incubator floor (USD 20,000)", async () => {
+test("subscription minimum is enforced in the database (USD 20,000)", async () => {
   const sql = await readFile(schemaPath, "utf8");
   assert.match(sql, /amount_usd\s*>=\s*20000/);
 });

@@ -48,7 +48,7 @@ export function drawLetterhead(doc, { firmName, docTitle }) {
     .font(TYPE.sans)
     .fontSize(SIZES.micro)
     .fillColor(COLORS.inkMute)
-    .text("BVI INCUBATOR FUND", left, top - 60 + 20, {
+    .text("KJC GROWTH FUND", left, top - 60 + 20, {
       align: "left",
       characterSpacing: 1.4
     });
@@ -145,4 +145,4 @@ export function body(doc, text) {
 }
 
 export const DISCLOSURE_LINE =
-  "The KJC Growth Fund is a British Virgin Islands Incubator Fund. Capital is at risk. Past performance is not a guide to future returns. Not available to United States persons.";
+  "The KJC Growth Fund is domiciled in the British Virgin Islands. Capital is at risk. Past performance is not a guide to future returns. Not available to United States persons.";

@@ -3,7 +3,7 @@
     "firmName": "KJC Capital",
     "fundName": "KJC Growth Fund",
     "tagline": "Gold-led capital, managed with discipline.",
-    "story": "A firm placing capital across precious metals, proprietary algorithmic strategies, digital assets, and select alternatives, for a small number of private clients since 2023."
+    "story": "A firm placing capital across precious metals, proprietary algorithmic strategies, digital assets, and select alternatives, on behalf of private clients since 2023."
   },
   "nav": {
     "firm": "The Firm",
@@ -14,11 +14,11 @@
   },
   "home": {
     "hero": {
-      "lead": "A gold-led programme, algorithmically informed, offered by introduction to a small book of private clients.",
+      "lead": "A gold-led programme, algorithmically informed, offered by introduction to private and institutional capital.",
       "ctaPrimary": "Request an introduction",
       "ctaSecondary": "The programme",
       "meta": [
-        { "label": "Vehicle", "value": "BVI Incubator" },
+        { "label": "Strategy", "value": "Four registers" },
         { "label": "Inception", "value": "2023" },
         { "label": "Domicile", "value": "Tortola, BVI" },
         { "label": "Reporting", "value": "Monthly" }
@@ -27,12 +27,12 @@
         "label": "Fund at a glance",
         "badge": "Confidential",
         "title": "KJC Growth Fund",
-        "body": "Four registers, one discipline, and a book bounded at twenty investors and USD twenty million. The ceiling is the point.",
+        "body": "Four registers and one discipline, led by metal and executed to written rules. Capacity is a risk decision, taken by the firm.",
         "items": [
-          { "term": "Vehicle", "value": "BVI Incubator" },
-          { "term": "Investor cap", "value": "20" },
-          { "term": "Asset ceiling", "value": "USD 20m" },
+          { "term": "Domicile", "value": "British Virgin Islands" },
+          { "term": "Inception", "value": "2023" },
           { "term": "Minimum", "value": "USD 20,000" },
+          { "term": "Valuation", "value": "Monthly" },
           { "term": "Notice", "value": "30 days" }
         ],
         "reference": "KJC · MMXXIII"
@@ -63,8 +63,8 @@
         "body": "Positions taken outside the listed markets, one at a time, and only where the firm can see the whole of what it is buying."
       }
     ],
-    "leadIntro": "KJC Capital places capital across four registers for a small number of private clients.",
-    "leadBody": "Our approach is deliberate. Four registers, one discipline, and a bounded number of investors who receive a monthly statement and, otherwise, considered silence.",
+    "leadIntro": "KJC Capital places capital across four registers on behalf of private and institutional clients.",
+    "leadBody": "Our approach is deliberate. Four registers, one discipline, and investors who receive a monthly statement and, otherwise, considered silence.",
     "principlesLabel": "Principles",
     "principlesTitle": "How the firm works",
     "principles": [
@@ -73,8 +73,8 @@
         "body": "The programme is executed to written rules. It is not a view on the direction of any single market, nor a story about macroeconomic conditions. It is a process, applied consistently, day after day."
       },
       {
-        "title": "A small book, by choice.",
-        "body": "The fund is capped at twenty investors and USD twenty million in assets. The purpose of the ceiling is fidelity: to run the same programme in the same way, without the drift that attends scale."
+        "title": "Capacity is a risk decision.",
+        "body": "The size of the book is set by what the programme can execute without degrading it, and by nothing else. Capacity is reviewed rather than assumed, and it is the firm's decision to make, not the market's."
       },
       {
         "title": "Considered silence.",
@@ -84,10 +84,10 @@
     "ledgerLabel": "Structure at a glance",
     "ledgerTitle": "The fund on paper",
     "ledger": [
-      { "term": "Fund vehicle", "value": "BVI Incubator Fund" },
-      { "term": "Investor cap", "value": "Twenty" },
-      { "term": "Asset ceiling", "value": "USD 20 million" },
+      { "term": "Domicile", "value": "British Virgin Islands" },
+      { "term": "Strategy", "value": "Four registers, gold-led" },
       { "term": "Minimum subscription", "value": "USD 20,000" },
+      { "term": "Valuation", "value": "Monthly NAV strike" },
       { "term": "Reporting", "value": "Monthly statement" },
       { "term": "Redemption notice", "value": "Thirty days" }
     ],
@@ -130,8 +130,8 @@
   },
   "firm": {
     "leadTitle": "The Firm",
-    "metaDescription": "KJC Capital is a private investment firm registered in the British Virgin Islands, running a single programme for a small book of private clients since 2023.",
-    "leadIntro": "KJC Capital is a private investment firm based in the British Virgin Islands. The firm was established in 2023 and runs a single programme on behalf of a small book of private clients.",
+    "metaDescription": "KJC Capital is a private investment firm based in the British Virgin Islands, running a single gold-led programme across four registers since 2023.",
+    "leadIntro": "KJC Capital is a private investment firm based in the British Virgin Islands. The firm was established in 2023 and runs a single programme on behalf of its clients.",
     "sections": [
       {
         "label": "History",
@@ -143,7 +143,7 @@
       },
       {
         "label": "Domicile",
-        "body": "The fund is registered in the British Virgin Islands as an Incubator Fund under the Securities and Investment Business (Incubator and Approved Funds) Regulations 2015. The Incubator regime is a light-touch category designed for the early period of a fund's life. It caps investor count at twenty, assets at USD twenty million, and requires graduation to a heavier category within two years. The firm views this ceiling as a discipline, not a limit."
+        "body": "The fund is domiciled in the British Virgin Islands. Investor capital is held separately from the firm's own operating capital, subscriptions and redemptions are settled against a stated monthly valuation, and the terms on which the fund is offered are set out in the offering documents rather than on this site."
       }
     ]
   },
@@ -168,16 +168,16 @@
   },
   "governance": {
     "leadTitle": "Governance",
-    "metaDescription": "Fund structure, the monthly NAV strike, valuation across registers, fees and the audit record for the KJC Growth Fund, a BVI Incubator Fund.",
+    "metaDescription": "Fund structure, the monthly NAV strike, valuation across registers, fees and the audit record for the KJC Growth Fund.",
     "leadIntro": "The firm operates within a framework that is intentionally boring. What matters at the size of this fund is not the number of controls but that the ones in place are followed, every time.",
     "sections": [
       {
         "label": "Fund structure",
-        "body": "The BVI Incubator Fund holds all investor capital in a segregated account. Investor money is never commingled with the firm's operating capital. Subscriptions are settled at the following month's NAV strike; redemptions are settled at the NAV strike following a thirty-day notice period."
+        "body": "The fund holds all investor capital in a segregated account. Investor money is never commingled with the firm's operating capital. Subscriptions are settled at the following month's NAV strike; redemptions are settled at the NAV strike following a thirty-day notice period."
       },
       {
         "label": "Net Asset Value",
-        "body": "NAV is struck on the first business day of each month. The calculation is performed in-house, with a written procedure applied identically each month, and every strike is recorded immutably. Because the Incubator regime does not require an external administrator, the discipline of the procedure carries the weight that an administrator would otherwise carry."
+        "body": "NAV is struck on the first business day of each month, to a written procedure applied identically each month, and every strike is recorded immutably. Where the calculation is performed in-house rather than by an external administrator, the discipline of the procedure carries the weight an administrator would otherwise carry."
       },
       {
         "label": "Valuation across registers",
@@ -213,7 +213,7 @@
     ]
   },
   "footer": {
-    "notice": "KJC Capital and the KJC Growth Fund are offered only by introduction and only to persons the firm has satisfied itself are eligible under the Incubator Fund regime. Nothing on this site constitutes an offer to the public.",
+    "notice": "KJC Capital and the KJC Growth Fund are offered only by introduction, and only to persons the firm has satisfied itself are eligible to receive the offer. Nothing on this site constitutes an offer to the public.",
     "legal": {
       "terms": "Terms of use",
       "privacy": "Privacy",
@@ -221,7 +221,7 @@
       "risk": "Risk warning",
       "disclosures": "Disclosures"
     },
-    "regulatory": "The KJC Growth Fund is registered in the British Virgin Islands as an Incubator Fund under the Securities and Investment Business (Incubator and Approved Funds) Regulations 2015."
+    "regulatory": "The KJC Growth Fund is domiciled in the British Virgin Islands. Its terms are set out in the offering documents, which are provided on introduction."
   },
   "risk": {
     "banner": "Capital is at risk. The programme is speculative and may result in the loss of the entire investment. Past performance is not a guide to future returns. The fund is not available to US persons."

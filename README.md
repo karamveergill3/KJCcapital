@@ -1,8 +1,8 @@
 # KJC Capital
 
-Gold-led managed fund. BVI-registered Incubator Fund under the Securities and
-Investment Business (Incubator and Approved Funds) Regulations 2015. Web
-platform for investor onboarding, subscription, redemption, and NAV reporting.
+Gold-led managed fund domiciled in the British Virgin Islands. Web platform for
+investor onboarding, subscription, redemption, and NAV reporting. See
+**Regulatory shape** below before adding any claim about the fund's structure.
 
 The book runs across four registers: precious metals (the anchor), proprietary
 algorithmic strategies, a bounded digital-asset allocation, and select
@@ -38,12 +38,24 @@ Before pushing: `npm run scan:secrets`, then `npm test`, then `npm run build`.
 
 ## Regulatory shape
 
-- **BVI Incubator Fund.** Maximum 20 investors, USD 20 million cap, 2-year
-  runway before graduation to Approved or Professional Fund is required.
-- **Minimum subscription:** USD 20,000 (regulatory floor).
+**Unconfirmed. Do not add regulatory claims to the site without checking here
+first.** The scaffold described the fund as a BVI Incubator Fund, capped at 20
+investors and USD 20 million. The owner has since said the fund is not capped by
+investor count, which the Incubator regime requires, so that description was
+removed from every public page rather than left to contradict itself.
+
+What the site currently asserts, and nothing beyond it:
+
+- **Domiciled in the British Virgin Islands.**
+- **Minimum subscription:** USD 20,000, enforced by a check constraint in
+  `supabase/schema.sql`. A commercial minimum, not a regulatory floor.
 - **No US persons.**
-- **No fund administrator, no auditor** at the Incubator stage. NAV is
-  calculated in-house, so the code has to be right.
+- Regulatory category, offer terms and any limits are deferred to the offering
+  documents rather than stated on the site.
+
+Still to confirm with the owner: the actual fund vehicle, whether an
+administrator or auditor is appointed, and how the fund may lawfully be
+promoted. NAV is calculated in-house, so the code has to be right.
 
 ## Conventions
 

@@ -4,7 +4,7 @@ export async function generateMetadata({ params }) {
   const { lang } = await params;
   return {
     title: "Disclosures",
-    description: "Regulatory disclosures for KJC Capital and the KJC Growth Fund, a British Virgin Islands Incubator Fund.",
+    description: "Regulatory disclosures for KJC Capital and the KJC Growth Fund.",
     alternates: { canonical: `/${lang}/legal/disclosures` },
     openGraph: { title: "Disclosures", url: `/${lang}/legal/disclosures` }
   };
@@ -21,11 +21,10 @@ export default function DisclosuresPage() {
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">The fund</h3>
       <p>
-        The KJC Growth Fund is a segregated portfolio of KJC Capital Ltd, registered with
-        the British Virgin Islands Financial Services Commission as an Incubator Fund under
-        the Securities and Investment Business (Incubator and Approved Funds) Regulations 2015.
-        The fund is subject to the investor cap of twenty, the asset ceiling of USD twenty
-        million, and the two-year graduation requirement prescribed by the regulations.
+        The KJC Growth Fund is a segregated portfolio of KJC Capital Ltd, domiciled in the
+        British Virgin Islands. The fund&apos;s regulatory category, the terms on which
+        interests are offered, and any limits that apply to it are set out in the offering
+        documents, which are provided on introduction and prevail over anything on this site.
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Custody of capital</h3>
       <p>
