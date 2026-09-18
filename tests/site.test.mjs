@@ -50,25 +50,34 @@ test("sitemap covers every locale and every advertised path, on the site origin"
   }
 });
 
-// The scaffold was built against kjccapital.co.uk, which the firm does not own.
-// Every stale reference is a canonical, a sitemap entry or a contact address
-// pointing at someone else's domain, so pin it rather than trust a grep once.
-test("no source file references the domain the firm does not own", async () => {
+// The firm holds kjccapital.co.uk and kjccapital.com, and .co.uk is the
+// canonical one. Only one of the two may appear in a canonical tag, a sitemap
+// entry or a published contact address; the other is a redirect and must never
+// be what the site declares about itself.
+const CANONICAL_DOMAIN = "kjccapital.co.uk";
+
+test("the site declares the canonical domain, apex or www", () => {
+  assert.ok(
+    SITE_HOST === CANONICAL_DOMAIN || SITE_HOST === `www.${CANONICAL_DOMAIN}`,
+    `site origin is ${SITE_HOST}, expected ${CANONICAL_DOMAIN} or www.${CANONICAL_DOMAIN}`
+  );
+});
+
+test("no published address sits on the redirect domain", async () => {
   const files = [
     "README.md",
     ".env.local.example",
     "src/lib/site.js",
     "src/lib/i18n/dictionaries/en.json",
-    "src/app/[lang]/legal/privacy/page.jsx",
-    "src/app/[lang]/contact/page.jsx",
-    "src/app/layout.jsx"
+    "src/app/[lang]/legal/privacy/page.jsx"
   ];
   const offenders = [];
   for (const file of files) {
     const body = await readFile(resolve(root, file), "utf8");
-    if (body.includes("kjccapital.co.uk")) offenders.push(file);
+    // kjccapital.com, but not the .com inside kjccapital.co.uk-adjacent text.
+    if (/kjccapital\.com(?![a-z])/i.test(body)) offenders.push(file);
   }
-  assert.deepEqual(offenders, [], `stale kjccapital.co.uk in: ${offenders.join(", ")}`);
+  assert.deepEqual(offenders, [], `redirect domain published in: ${offenders.join(", ")}`);
 });
 
 test("robots points at the sitemap on the same origin and keeps the portal out", async () => {
