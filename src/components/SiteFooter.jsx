@@ -28,12 +28,20 @@ export default function SiteFooter({ lang, footer, firmName, risk }) {
           </div>
           <div>
             <div className="smallcaps mb-3">Legal</div>
-            <ul className="space-y-2 text-sm">
-              <li><Link href={`${base}/legal/terms`}>{footer.legal.terms}</Link></li>
-              <li><Link href={`${base}/legal/privacy`}>{footer.legal.privacy}</Link></li>
-              <li><Link href={`${base}/legal/cookies`}>{footer.legal.cookies}</Link></li>
-              <li><Link href={`${base}/legal/risk`}>{footer.legal.risk}</Link></li>
-              <li><Link href={`${base}/legal/disclosures`}>{footer.legal.disclosures}</Link></li>
+            <ul className="text-sm list-none pl-0">
+              {[
+                [`${base}/legal/terms`, footer.legal.terms],
+                [`${base}/legal/privacy`, footer.legal.privacy],
+                [`${base}/legal/cookies`, footer.legal.cookies],
+                [`${base}/legal/risk`, footer.legal.risk],
+                [`${base}/legal/disclosures`, footer.legal.disclosures]
+              ].map(([href, label]) => (
+                <li key={href}>
+                  <Link href={href} className="flex min-h-11 items-center">
+                    {label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
