@@ -27,8 +27,10 @@ test("size scale is monotonically decreasing from title to micro", () => {
   }
 });
 
-test("disclosure line names the fund, the risk of loss, and excludes US persons", () => {
-  assert.match(DISCLOSURE_LINE, /KJC Growth Fund/);
+test("disclosure line names the firm, the risk of loss, and excludes US persons", () => {
+  assert.match(DISCLOSURE_LINE, /KJC Capital/);
+  // The firm manages accounts; it does not run a fund and does not hold client money.
+  assert.doesNotMatch(DISCLOSURE_LINE, /\bfund\b/i);
   assert.doesNotMatch(DISCLOSURE_LINE, /\bFX\b|currency/i);
   assert.match(DISCLOSURE_LINE, /Capital is at risk/i);
   assert.match(DISCLOSURE_LINE, /United States persons/i);

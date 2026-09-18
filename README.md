@@ -1,18 +1,19 @@
 # KJC Capital
 
-Gold-led managed fund domiciled in the British Virgin Islands. Web platform for
-investor onboarding, subscription, redemption, and NAV reporting. See
-**Regulatory shape** below before adding any claim about the fund's structure.
+**This is not a fund.** KJC Capital manages each client's own broker account
+under a limited trading authority. Nothing is pooled, the firm does not hold
+client money, and there are no units, no NAV strike, and no subscriptions or
+redemptions. See **Structure** below before adding any claim about where client
+money sits.
 
-The book runs across four registers: precious metals (the anchor), proprietary
-algorithmic strategies, a bounded digital-asset allocation, and select
-alternatives taken by exception.
+Gold-led programme across four registers: precious metals (the anchor),
+proprietary algorithmic strategies, a bounded digital-asset allocation, and
+select alternatives taken by exception.
 
 Public site: https://www.kjccapital.co.uk
 
-The trading strategy is proprietary and is not exposed to investors. The
-public site presents the firm. The investor portal shows one number: the
-investor's current balance.
+The trading strategy is proprietary and is not disclosed. The public site
+presents the firm.
 
 ## Stack
 
@@ -36,26 +37,52 @@ npm run build
 
 Before pushing: `npm run scan:secrets`, then `npm test`, then `npm run build`.
 
-## Regulatory shape
+## Structure
 
-**Unconfirmed. Do not add regulatory claims to the site without checking here
-first.** The scaffold described the fund as a BVI Incubator Fund, capped at 20
-investors and USD 20 million. The owner has since said the fund is not capped by
-investor count, which the Incubator regime requires, so that description was
-removed from every public page rather than left to contradict itself.
+**Read this before adding any claim about the arrangement.** The scaffold this
+repo grew from described a pooled BVI Incubator Fund: 20 investors, USD 20m cap,
+units, a monthly NAV strike, subscriptions and redemptions. None of that was
+true. It was removed in two passes once the owner corrected it.
 
-What the site currently asserts, and nothing beyond it:
+What the firm actually does, as stated by the owner:
 
-- **Domiciled in the British Virgin Islands.**
-- **Minimum subscription:** USD 20,000, enforced by a check constraint in
-  `supabase/schema.sql`. A commercial minimum, not a regulatory floor.
+- **Separate accounts, never pooled.** Each client has their own account.
+- **The account is the client's**, opened with a broker in the client's own name
+  and under the client's own credentials.
+- **KJC is the intermediary**, not the broker and not the custodian.
+- **The firm does not hold client money.** Its authority is to trade the account.
 - **No US persons.**
-- Regulatory category, offer terms and any limits are deferred to the offering
-  documents rather than stated on the site.
 
-Still to confirm with the owner: the actual fund vehicle, whether an
-administrator or auditor is appointed, and how the fund may lawfully be
-promoted. NAV is calculated in-house, so the code has to be right.
+Consequences that keep catching people out:
+
+- There is **no NAV strike**, no units, no subscriptions and no redemptions. Any
+  copy describing them is wrong.
+- There is **no notice period** the firm can impose, because it does not hold the
+  money and cannot gate a withdrawal.
+- The **broker's statement is authoritative**, not any valuation of ours.
+
+Still unconfirmed, and deliberately absent from the site rather than guessed:
+
+- Which broker the accounts are held with.
+- Whether the trading authority is genuinely trade-only, or also permits
+  withdrawal. The site currently states trade-only. **If that is wrong, the
+  governance and disclosures pages are wrong and must be corrected first.**
+- The fee basis. The site defers to the client agreement and states no numbers.
+- Whether USD 20,000 is a real minimum. It survives only as a check constraint
+  in `supabase/schema.sql` and appears nowhere on the site.
+- On what basis the firm is permitted to manage client accounts, and how the
+  programme may lawfully be promoted.
+
+Two things are still modelled on a pooled fund and were left alone deliberately,
+because redesigning a data model is a bigger decision than correcting copy:
+
+- `supabase/schema.sql` — `units_ledger`, `high_water_marks`, `subscriptions`,
+  `redemptions`.
+- `src/lib/audit.js` — `SUBSCRIPTION_*`, `REDEMPTION_*`, `NAV_STRIKE_RECORDED`.
+
+Neither is consumed by anything yet (`audit.js` has only its own test, and no
+portal exists). Both need redesigning around per-client accounts before the
+portal is built. Do not extend either as-is.
 
 ## Conventions
 
