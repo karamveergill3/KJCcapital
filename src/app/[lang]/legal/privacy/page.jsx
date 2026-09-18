@@ -1,6 +1,13 @@
 import LegalPage from "@/components/LegalPage";
 
-export const metadata = { title: "Privacy" };
+export async function generateMetadata({ params }) {
+  const { lang } = await params;
+  return {
+    title: "Privacy",
+    alternates: { canonical: `/${lang}/legal/privacy` },
+    openGraph: { title: "Privacy", url: `/${lang}/legal/privacy` }
+  };
+}
 
 export default function PrivacyPage() {
   return (

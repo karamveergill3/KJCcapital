@@ -1,6 +1,13 @@
 import LegalPage from "@/components/LegalPage";
 
-export const metadata = { title: "Risk warning" };
+export async function generateMetadata({ params }) {
+  const { lang } = await params;
+  return {
+    title: "Risk warning",
+    alternates: { canonical: `/${lang}/legal/risk` },
+    openGraph: { title: "Risk warning", url: `/${lang}/legal/risk` }
+  };
+}
 
 export default function RiskPage() {
   return (

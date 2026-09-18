@@ -11,7 +11,13 @@ export async function generateMetadata({ params }) {
   const dict = await getDictionary(lang);
   return {
     title: `${dict.meta.firmName} — ${dict.meta.tagline}`,
-    description: dict.meta.story
+    description: dict.meta.story,
+    alternates: { canonical: `/${lang}` },
+    openGraph: {
+      title: `${dict.meta.firmName} — ${dict.meta.tagline}`,
+      description: dict.meta.story,
+      url: `/${lang}`
+    }
   };
 }
 
