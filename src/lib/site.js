@@ -1,4 +1,4 @@
-const FALLBACK = "https://kjccapital.co.uk";
+const FALLBACK = "https://kjccapital.com";
 
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || FALLBACK).replace(/\/+$/, "");
 

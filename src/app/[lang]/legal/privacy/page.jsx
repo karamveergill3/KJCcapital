@@ -40,7 +40,7 @@ export default function PrivacyPage() {
       <p>
         An investor may request a copy of the information the firm holds about them, and may
         request that inaccuracies be corrected. Such requests are addressed to a director at
-        director@kjccapital.co.uk.
+        director@kjccapital.com.
       </p>
     </LegalPage>
   );

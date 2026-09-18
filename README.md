@@ -8,7 +8,7 @@ The book runs across four registers: precious metals (the anchor), proprietary
 algorithmic strategies, a bounded digital-asset allocation, and select
 alternatives taken by exception.
 
-Public site: https://kjccapital.co.uk
+Public site: https://kjccapital.com
 
 The trading strategy is proprietary and is not exposed to investors. The
 public site presents the firm. The investor portal shows one number: the
