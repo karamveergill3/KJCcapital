@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NAV_ITEMS } from "@/lib/site";
 import Fleur from "@/components/Fleur";
 import LocalTime from "@/components/LocalTime";
 import Ticker from "@/components/Ticker";
@@ -17,16 +18,19 @@ export default function SiteHeader({ lang, nav, ticker }) {
         </Link>
         <MobileNav lang={lang} nav={nav} />
         <nav className="hidden md:flex items-center gap-8 smallcaps">
-          <Link href={`${base}/firm`} className="link-slide">{nav.firm}</Link>
-          <Link href={`${base}/programme`} className="link-slide">{nav.programme}</Link>
-          <Link href={`${base}/governance`} className="link-slide">{nav.governance}</Link>
-          <Link href={`${base}/contact`} className="link-slide">{nav.contact}</Link>
-          <Link
-            href={`${base}/portal`}
-            className="border-l border-[var(--color-rule)] pl-8 link-slide"
-          >
-            {nav.portal}
-          </Link>
+          {NAV_ITEMS.map((item) => (
+            <Link
+              key={item.key}
+              href={`${base}${item.path}`}
+              className={
+                item.rule
+                  ? "border-l border-[var(--color-rule)] pl-8 link-slide"
+                  : "link-slide"
+              }
+            >
+              {nav[item.key]}
+            </Link>
+          ))}
         </nav>
       </div>
       <div className="border-t border-[var(--color-rule-faint)] bg-[var(--color-paper-warm)]/50">

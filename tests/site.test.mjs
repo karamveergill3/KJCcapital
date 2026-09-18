@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { SITE_URL, SITE_HOST, PUBLIC_PATHS, absolute } from "../src/lib/site.js";
+import { SITE_URL, SITE_HOST, PUBLIC_PATHS, NAV_ITEMS, absolute } from "../src/lib/site.js";
 import { locales } from "../src/lib/i18n/config.js";
 import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -36,6 +36,36 @@ test("every advertised path has a page on disk", async () => {
     }
   }
   assert.deepEqual(missing, [], `advertised in sitemap but no page: ${missing.join(", ")}`);
+});
+
+// The header and the mobile menu both offered an Investor Portal link, and both
+// 404d: nothing tied a link to the existence of the page behind it. Now they
+// read one list, and this checks every entry on it resolves.
+test("every link in the site navigation has a page and a label", async () => {
+  const dict = JSON.parse(
+    await readFile(resolve(root, "src", "lib", "i18n", "dictionaries", "en.json"), "utf8")
+  );
+  const missingPage = [];
+  const missingLabel = [];
+  for (const item of NAV_ITEMS) {
+    const dir = resolve(appDir, ...item.path.split("/").filter(Boolean));
+    try {
+      const entries = await readdir(dir);
+      if (!entries.some((e) => e.startsWith("page."))) missingPage.push(item.path);
+    } catch {
+      missingPage.push(item.path);
+    }
+    if (!dict.nav[item.key]) missingLabel.push(item.key);
+  }
+  assert.deepEqual(missingPage, [], `offered in the nav but 404s: ${missingPage.join(", ")}`);
+  assert.deepEqual(missingLabel, [], `offered in the nav but unlabelled: ${missingLabel.join(", ")}`);
+});
+
+// The portal is client-only, so it must stay out of the sitemap as well as out
+// of robots.txt. Advertising it would undo the disallow.
+test("the portal is reachable from the nav but never advertised", () => {
+  assert.ok(NAV_ITEMS.some((i) => i.path === "/portal"));
+  assert.ok(!PUBLIC_PATHS.includes("/portal"));
 });
 
 test("sitemap covers every locale and every advertised path, on the site origin", async () => {

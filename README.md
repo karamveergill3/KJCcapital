@@ -85,9 +85,17 @@ because redesigning a data model is a bigger decision than correcting copy:
   `redemptions`.
 - `src/lib/audit.js` — `SUBSCRIPTION_*`, `REDEMPTION_*`, `NAV_STRIKE_RECORDED`.
 
-Neither is consumed by anything yet (`audit.js` has only its own test, and no
-portal exists). Both need redesigning around per-client accounts before the
-portal is built. Do not extend either as-is.
+Neither is consumed by anything yet (`audit.js` has only its own test, and
+`/[lang]/portal` is a holding page with no login behind it). Both need
+redesigning around per-client accounts before the portal is built. Do not
+extend either as-is.
+
+When it is built, the portal is the record of the **relationship**, not the
+record of the money: the mandate and its limits, a log of what the firm did
+under it, documents, fees with the matching broker statement reference,
+notices, and a desk note. Balances, positions and trades stay with the broker.
+The programme page promises there is no version of the numbers only the firm
+can see, and a second dashboard would break that the first time it disagreed.
 
 ## Conventions
 

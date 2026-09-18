@@ -222,6 +222,26 @@
       }
     ]
   },
+  "portal": {
+    "leadTitle": "Investor portal",
+    "metaDescription": "Access to the KJC Capital investor portal is issued to clients directly. There is no public sign-up.",
+    "leadIntro": "Access is issued to clients directly. There is no public sign-up, and nothing behind it that a client cannot already see in their own account.",
+    "sections": [
+      {
+        "label": "What it holds",
+        "body": "The record of the relationship. The authority you granted and its exact limits, a log of every material thing the firm did under it, your documents, what you have been charged and the line on your broker statement that matches it, the notices the firm is obliged to give you, and a periodic note from the desk on how the book was being carried."
+      },
+      {
+        "label": "What it does not hold",
+        "body": "Your balance, your positions and your trades are not here. They sit with your broker, live, under your own login, and that record is the authoritative one. The firm keeps no second set of numbers, and there is no version of your account that only we can see."
+      },
+      {
+        "label": "Access",
+        "body": "Credentials are issued on account opening, to the client and to nobody else. The portal is in preparation, and clients will be written to directly when it opens. A client who needs something before then should write to a director."
+      }
+    ],
+    "cta": "Write to a director"
+  },
   "footer": {
     "notice": "The KJC Capital programme is offered only by introduction, and only to persons the firm has satisfied itself are eligible. Nothing on this site constitutes an offer to the public, a recommendation, or investment advice.",
     "legal": {
