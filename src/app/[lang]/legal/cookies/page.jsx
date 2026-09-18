@@ -20,14 +20,14 @@ export default function CookiesPage() {
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">What is set</h3>
       <p>
-        A session cookie is set for a signed-in investor to maintain the investor portal
+        A session cookie is set for a signed-in client to maintain the investor portal
         session. A preference cookie may be set to remember an accepted risk-warning notice.
         No further cookies are set on the public site.
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">How to remove them</h3>
       <p>
         A visitor may clear cookies at any time through the browser's settings. Doing so will
-        require an investor to sign in to the portal again, but has no other effect.
+        require a client to sign in to the portal again, but has no other effect.
       </p>
     </LegalPage>
   );

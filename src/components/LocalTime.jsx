@@ -20,6 +20,10 @@ export default function LocalTime() {
   const [now, setNow] = useState(null);
 
   useEffect(() => {
+    // The server has no client clock, so `now` starts null and both passes
+    // render the same placeholder. Setting it here is the only way to avoid a
+    // hydration mismatch, and it costs exactly one extra render on mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 15000);
     return () => clearInterval(id);
