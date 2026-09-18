@@ -35,7 +35,8 @@ npm run lint
 npm run build
 ```
 
-Before pushing: `npm run scan:secrets`, then `npm test`, then `npm run build`.
+Before pushing: `npm run scan:secrets`, `npm test`, `npm run lint`, then
+`npm run build`. All four must be clean.
 
 ## Structure
 
@@ -68,6 +69,9 @@ Still unconfirmed, and deliberately absent from the site rather than guessed:
   withdrawal. The site currently states trade-only. **If that is wrong, the
   governance and disclosures pages are wrong and must be corrected first.**
 - The fee basis. The site defers to the client agreement and states no numbers.
+- How long client records must be kept, and under which anti-money-laundering
+  framework. The privacy page used to claim seven years under the BVI regime;
+  that number was never verified, so it now states the obligation without one.
 - Whether USD 20,000 is a real minimum. It survives only as a check constraint
   in `supabase/schema.sql` and appears nowhere on the site.
 - On what basis the firm is permitted to manage client accounts, and how the

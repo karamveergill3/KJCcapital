@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { locales, defaultLocale, isLocale } from "../src/lib/i18n/config.js";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
@@ -54,4 +54,29 @@ test("no em-dash in visible copy (except structural title separators)", async ()
   };
 
   visit(dict, "root");
+});
+
+// The firm has clients, not investors: it manages each client's own account and
+// pools nothing. "Investor" survives only in the portal's name. This scans every
+// page as well as the dictionary, because fund-era wording outlived two rewrites
+// inside the legal pages, where nobody was looking.
+test("visible copy says client, not investor", async () => {
+  const appDir = resolve(here, "..", "src", "app");
+  const entries = await readdir(appDir, { recursive: true });
+  const files = [
+    resolve(here, "..", "src", "lib", "i18n", "dictionaries", "en.json"),
+    ...entries.filter((e) => e.endsWith("page.jsx")).map((e) => resolve(appDir, e))
+  ];
+
+  const offenders = [];
+  for (const file of files) {
+    const body = await readFile(file, "utf8");
+    for (const match of body.matchAll(/investors?\b/gi)) {
+      const tail = body.slice(match.index, match.index + 32).replace(/\s+/g, " ");
+      if (!/^investor portal/i.test(tail)) {
+        offenders.push(`${file.split("/src/")[1]}: ${tail}`);
+      }
+    }
+  }
+  assert.deepEqual(offenders, [], `say client, not investor:\n${offenders.join("\n")}`);
 });

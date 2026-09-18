@@ -33,13 +33,21 @@ export default function PrivacyPage() {
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">How long it is kept</h3>
       <p>
-        Investor records are retained for the life of the investment and for at least seven
-        years thereafter, as required by the anti-money-laundering framework of the British
-        Virgin Islands. Website records are retained for no more than twenty-four months.
+        Client records are retained for as long as the firm manages the account, and afterwards
+        for the period the anti-money-laundering framework applicable to the firm requires.
+        Website records are retained for no more than twenty-four months.
+      </p>
+      <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">What your broker holds</h3>
+      <p>
+        The account is opened in the client&apos;s own name with a broker, and that broker is a
+        separate company with its own relationship with the client. It collects and holds its
+        own records, including the identity documents it requires and the full history of the
+        account, under its own privacy notice and its own regulator. This notice does not
+        cover any of that, and the firm is not able to correct or erase anything held there.
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Access and correction</h3>
       <p>
-        An investor may request a copy of the information the firm holds about them, and may
+        A client may request a copy of the information the firm holds about them, and may
         request that inaccuracies be corrected. Such requests are addressed to a director at
         director@kjccapital.co.uk.
       </p>

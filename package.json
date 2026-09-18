@@ -10,7 +10,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "test": "node --test --import ./scripts/test-setup.mjs tests/**/*.test.mjs",
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "prepare": "node scripts/install-hooks.mjs"
