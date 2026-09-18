@@ -4,7 +4,7 @@ export async function generateMetadata({ params }) {
   const { lang } = await params;
   return {
     title: "Risk warning",
-    description: "Capital is at risk. Risk warning for the KJC Growth Fund, a BVI Incubator Fund, including the risks specific to each register.",
+    description: "Capital is at risk. Risk warning for the KJC Growth Fund, including the risks specific to each register.",
     alternates: { canonical: `/${lang}/legal/risk` },
     openGraph: { title: "Risk warning", url: `/${lang}/legal/risk` }
   };
@@ -44,10 +44,10 @@ export default function RiskPage() {
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Regulatory status</h3>
       <p>
-        The fund is registered in the British Virgin Islands as an Incubator Fund under the
-        Securities and Investment Business (Incubator and Approved Funds) Regulations 2015.
-        The Incubator regime is a light-touch category and does not require the appointment
-        of a fund administrator or an external auditor. Investors should read the offering
+        The fund is domiciled in the British Virgin Islands. Its regulatory category is
+        stated in the offering documents. Where a fund is not required to appoint an external
+        administrator or auditor, an investor is relying on the manager&apos;s own valuation
+        and records, which is a material consideration. Investors should read the offering
         summary and the subscription agreement before subscribing.
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Not for United States persons</h3>

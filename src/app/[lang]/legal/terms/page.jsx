@@ -22,8 +22,8 @@ export default function TermsPage() {
       <p>
         The site is informational. Nothing on it constitutes an offer to the public, an
         invitation to subscribe, a recommendation, or investment advice. The fund is
-        available only to persons the firm has satisfied itself are eligible to invest under
-        the Incubator Fund regime, and only by direct introduction.
+        available only to persons the firm has satisfied itself are eligible to invest, and
+        only by direct introduction.
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Eligibility</h3>
       <p>
