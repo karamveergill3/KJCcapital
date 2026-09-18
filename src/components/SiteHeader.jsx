@@ -1,9 +1,10 @@
 import Link from "next/link";
 import Fleur from "@/components/Fleur";
 import LocalTime from "@/components/LocalTime";
+import Ticker from "@/components/Ticker";
 import MobileNav from "@/components/MobileNav";
 
-export default function SiteHeader({ lang, nav }) {
+export default function SiteHeader({ lang, nav, ticker }) {
   const base = `/${lang}`;
   return (
     <header className="relative border-b border-[var(--color-rule)] bg-[var(--color-paper)]/85 backdrop-blur-[6px] sticky top-0 z-40">
@@ -29,10 +30,10 @@ export default function SiteHeader({ lang, nav }) {
         </nav>
       </div>
       <div className="border-t border-[var(--color-rule-faint)] bg-[var(--color-paper-warm)]/50">
-        <div className="shell py-2 flex items-center justify-between gap-4">
+        <div className="shell py-2 flex items-center gap-3 sm:gap-6">
           <LocalTime />
-          <div className="smallcaps hidden sm:block">
-            Tortola <span className="text-[var(--color-ink-faint)]">·</span> London <span className="text-[var(--color-ink-faint)]">·</span> Zürich
+          <div className="flex-1 min-w-0 sm:border-l sm:border-[var(--color-rule)] sm:pl-6">
+            <Ticker rows={ticker.rows} extra={ticker.extra} label={ticker.label} />
           </div>
         </div>
       </div>

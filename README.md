@@ -73,6 +73,11 @@ Still unconfirmed, and deliberately absent from the site rather than guessed:
 - On what basis the firm is permitted to manage client accounts, and how the
   programme may lawfully be promoted.
 
+The header tape is built in `src/lib/ticker.js` from `home.ledger` plus
+`ticker.extra` in the dictionary, so it cannot advertise a term the home page
+contradicts. `tests/ticker.test.mjs` rejects any digit or pooled-fund word on
+it: the tape carries terms, never figures.
+
 Two things are still modelled on a pooled fund and were left alone deliberately,
 because redesigning a data model is a bigger decision than correcting copy:
 
