@@ -46,13 +46,10 @@ export default function DisclosuresPage() {
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Conflicts of interest</h3>
       <p>
-        The principals of KJC Capital run the same programme on their own capital, in their own
-        accounts. The firm considers this the strongest available check on the manner in which
-        the programme is run. Because accounts are separate rather than pooled, orders for
-        different accounts may be filled at different prices; the firm allocates and sequences
-        orders on a stated basis rather than at its discretion after the fact. Where the
-        interests of the manager and of a client might nevertheless diverge, the manager will
-        act in the interests of the client.
+        Because accounts are separate rather than pooled, orders for different accounts may be
+        filled at different prices; the firm allocates and sequences orders on a stated basis
+        rather than at its discretion after the fact. Where the interests of the manager and of
+        a client might diverge, the manager will act in the interests of the client.
       </p>
     </LegalPage>
   );

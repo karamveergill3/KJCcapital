@@ -139,6 +139,8 @@ const IDENTITY = [
   /\bsince (19|20)\d\d\b/i,
   /\b(founded|established|formalised) in (19|20)\d\d\b/i,
   /\binception\b/i,
+  /\bprincipals?\b/i,
+  /\bsmall (manager|firm)\b|\bsmall on purpose\b|\bat this size\b/i,
   /\bdomicile\b/i,
   /\bMMXX/
 ];
