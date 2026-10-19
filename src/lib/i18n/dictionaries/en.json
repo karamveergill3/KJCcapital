@@ -209,6 +209,10 @@
       "label": "Live account",
       "body": "The figures at the top of this page are live, from one account, refreshed about once a minute from its trading terminal. Sections marked Example are illustrative until the portal has a sign-in."
     },
+    "snapshot": {
+      "label": "Account snapshot",
+      "body": "The figures at the top are real, from one account's trading terminal, but they are a snapshot taken {time}, not live. They update every minute once the live feed is switched on. Sections marked Example are illustrative until the portal has a sign-in."
+    },
     "exampleTag": "Example",
     "tapeLabel": "Your account",
     "quote": {
@@ -223,8 +227,18 @@
       "balance": "Balance",
       "capital": "Deposited",
       "asAt": "As at",
-      "sourceExample": "from your broker statement",
-      "sourceLive": "live from the account's trading terminal",
+      "closedReturn": "Closed return",
+      "openDrawdown": "Open drawdown",
+      "boardLabel": "$KJC quote",
+      "sparkLabel": "$KJC against closed return",
+      "statusLive": "Live",
+      "statusSnapshot": "Snapshot",
+      "statusExample": "Example account",
+      "source": {
+        "live": "live from the account's trading terminal",
+        "snapshot": "a snapshot from the account's trading terminal, not live",
+        "example": "from your broker statement"
+      },
       "explain": "$KJC counts open positions as well as closed ones. Profit already taken is offset by any loss still open, so the figure is what your account is worth now against what you put in."
     },
     "performance": {

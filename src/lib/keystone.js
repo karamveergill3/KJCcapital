@@ -8,6 +8,8 @@
 // shape) gives null, and the portal falls back to its labelled example account
 // rather than showing a broken page or a stale number as if it were live.
 
+import snapshotFeed from "@/lib/keystoneSnapshot.json" with { type: "json" };
+
 const REVALIDATE_SECONDS = 60;
 
 export function keystoneConfig(env = process.env) {
@@ -43,6 +45,17 @@ export async function fetchSiteFeed(config, fetchImpl = fetch) {
 }
 
 const number = (value) => (value === null || value === undefined || value === "" ? NaN : Number(value));
+
+/**
+ * The same feed, read once from Keystone and committed with the time it was
+ * taken. The portal shows it, labelled as a snapshot with that time, while the
+ * live feed is not switched on, so the real account is on the page rather
+ * than the invented one. It is never presented as live.
+ */
+export function snapshotAccount() {
+  const account = feedToAccount(snapshotFeed);
+  return account ? { ...account, mode: "snapshot" } : null;
+}
 
 /**
  * Turns the feed into the shape the portal draws. MT5 equity includes broker
@@ -83,7 +96,7 @@ export function feedToAccount(feed) {
   }
 
   return {
-    live: true,
+    mode: "live",
     currency: typeof feed.currency === "string" ? feed.currency : "USD",
     asAt,
     snapshot: { deposits, withdrawals, balance, equity },

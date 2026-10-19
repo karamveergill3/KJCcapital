@@ -24,7 +24,7 @@ const FEED = {
 
 test("the feed becomes a $KJC quote measured on equity", () => {
   const account = feedToAccount(FEED);
-  assert.equal(account.live, true);
+  assert.equal(account.mode, "live");
   const q = kjcQuote(account.snapshot);
   assert.equal(Number(q.capital.toFixed(2)), 500010.2);
   assert.equal(Number(q.closed.toFixed(2)), 168508.15);
@@ -80,7 +80,7 @@ test("fetching calls site_feed and swallows every failure", async () => {
   });
   assert.equal(seen.url, "https://x.supabase.co/rest/v1/rpc/site_feed");
   assert.equal(JSON.parse(seen.init.body).p_slug, "kjc");
-  assert.equal(ok.live, true);
+  assert.equal(ok.mode, "live");
 
   assert.equal(await fetchSiteFeed(null), null);
   assert.equal(await fetchSiteFeed(config, async () => ({ ok: false, json: async () => ({}) })), null);
