@@ -107,8 +107,8 @@ notices, and a desk note. Balances, positions and trades stay with the broker.
 The programme page promises there is no version of the numbers only the firm
 can see, and a second dashboard would break that the first time it disagreed.
 
-`supabase/schema.sql` is modelled on exactly that. Nothing consumes it yet
-(`/[lang]/portal` is a holding page with no login behind it):
+`supabase/schema.sql` is modelled on exactly that. Nothing reads its tables
+yet: the portal has a sign-in and a signed-in landing page, but no data pages.
 
 - `clients` — one row per enquiry or client, through the steps the contact
   and portal pages describe: enquiry, agreement issued, account opening,
@@ -136,6 +136,33 @@ can see, and a second dashboard would break that the first time it disagreed.
 `src/lib/audit.js` names its actions on the same model. Neither file has a
 table, column or action for units, NAV, subscriptions, redemptions, a balance
 or a valuation, and their tests fail if one appears.
+
+## Portal sign-in
+
+`/[lang]/portal` is the sign-in page and `/[lang]/portal/account` is where a
+signed-in client lands. Both render per request and are noindexed as well as
+disallowed in robots.txt.
+
+- **Off until Supabase is connected.** With `NEXT_PUBLIC_SUPABASE_URL` and
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY` unset, the form renders and answers that the
+  portal is not open yet, and the account page sends visitors back. Both values
+  are inlined at build time, so a redeploy is needed after setting them.
+- **No sign-up.** Credentials are created by the firm (Supabase dashboard, or
+  the admin API with the service-role key) when an account is opened. The
+  Supabase project must have public sign-ups disabled.
+- **Email and password**, through a server action. A wrong password and an
+  unknown address get the same message. A signed-in client always lands on the
+  account page; nothing takes a redirect target from the request.
+- **Sessions** are checked with `getUser()` (Supabase vouches for the token),
+  refreshed in `src/middleware.js` for portal routes only, and kept in a
+  Secure, HttpOnly, SameSite=Lax cookie. Nothing in the browser reads it.
+- Not yet: a second factor (the schema's `mfa_backup_codes` is ready for it),
+  password reset by email (a client writes to a director instead), and the
+  data pages.
+
+The flow was tested end to end against a local stand-in for Supabase Auth:
+wrong password, unknown address, sign-in, reload, sign-out, and a tampered
+cookie, which is refused.
 
 ## Conventions
 
