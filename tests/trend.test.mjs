@@ -82,13 +82,47 @@ test("the plot runs edge to edge in time, with the high above the low", () => {
   assert.ok(high < low, "a higher reading should sit higher on the plot");
   assert.ok(high > 0 && low < 100, "the extremes should have room above and below");
   for (const v of scale.yTicks) assert.ok(v >= scale.lo && v <= scale.hi, `tick ${v} is off the plot`);
-  assert.ok(scale.yTicks.length >= 2 && scale.yTicks.length <= 6);
+  assert.ok(scale.yTicks.length >= 4 && scale.yTicks.length <= 7);
 });
 
 test("a flat stretch stays flat instead of being stretched to fill the plot", () => {
   const flat = trendSeries([{ at: at(14), kjc: 5 }, { at: at(15), kjc: 5.001 }]);
   const scale = trendScale(flat);
   assert.ok(Math.abs(scale.y(5) - scale.y(5.001)) < 5);
+});
+
+// A price chart has about five gridlines at round steps. Rounding a fifth of
+// the height up to the next step left two or three, or a single label once
+// the latest figure's pill had hidden one.
+test("the y axis has four to seven gridlines at round steps, labelled to the step", () => {
+  const between = (low, high) => trendScale(trendSeries([{ at: at(14), kjc: low }, { at: at(15), kjc: high }]));
+  const grid = (low, high) => {
+    const { yTicks, yDigits } = between(low, high);
+    return [yTicks, yDigits];
+  };
+  // From 1, 2 or 5 times a power of ten only, these got three or two.
+  assert.deepEqual(grid(-3, 3), [[-3, -2, -1, 0, 1, 2, 3], 0]);
+  assert.deepEqual(grid(10, 10.08), [[10, 10.02, 10.04, 10.06, 10.08], 2]);
+  // A step of 2.5 shows one decimal, and 0.25 two.
+  assert.deepEqual(grid(0, 10), [[0, 2.5, 5, 7.5, 10], 1]);
+  assert.deepEqual(grid(0, 1), [[0, 0.25, 0.5, 0.75, 1], 2]);
+  assert.deepEqual(grid(0, 100), [[0, 25, 50, 75, 100], 0]);
+  // Where 0.025 would do as well, 0.02 keeps the labels to the headline's two decimals.
+  assert.deepEqual(grid(0, 0.1), [[0, 0.02, 0.04, 0.06, 0.08, 0.1], 2]);
+
+  for (const base of [-7.3, 0, 0.37, 16.2]) {
+    for (let width = 0.0001; width < 300; width *= 1.07) {
+      const scale = between(base, base + width);
+      const ticks = scale.yTicks;
+      assert.ok(ticks.length >= 4 && ticks.length <= 7, `${ticks.length} gridlines for ${base} to ${base + width}`);
+      const step = ticks[1] - ticks[0];
+      for (const [i, v] of ticks.entries()) {
+        assert.ok(v >= scale.lo && v <= scale.hi, `tick ${v} is off the plot`);
+        assert.ok(Math.abs(v - ticks[0] - i * step) < 1e-9, `tick ${v} is out of step`);
+        assert.equal(Number(v.toFixed(scale.yDigits)), v, `tick ${v} needs more than ${scale.yDigits} decimals`);
+      }
+    }
+  }
 });
 
 test("the ranges are the stock app's six, in order", () => {

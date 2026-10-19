@@ -152,10 +152,40 @@ export function defaultRange(ranges) {
   return enabled.reduce((best, r) => (!best || span(r) > span(best) ? r : best), null)?.key ?? "All";
 }
 
-function niceStep(raw) {
-  const power = 10 ** Math.floor(Math.log10(raw));
-  const f = raw / power;
-  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * power;
+/** The multiples of step from lo up to hi. */
+function gridlines(lo, hi, step) {
+  const values = [];
+  for (let k = Math.ceil(lo / step); k * step <= hi + 1e-9; k += 1) values.push(Number((k * step).toFixed(10)));
+  return values;
+}
+
+/** The decimals a step needs to be read exactly: none for 5, one for 2.5, two for 0.25. */
+function decimalsOf(step) {
+  let digits = 0;
+  while (digits < 6 && Math.abs(step * 10 ** digits - Math.round(step * 10 ** digits)) > 1e-6) digits += 1;
+  return digits;
+}
+
+// The y gridlines go at 1, 2, 2.5 or 5 times a power of ten: four to seven
+// of them, as close to five as the steps allow, as on a price chart (rounding
+// a fifth of the height up to the next step could leave only two). The labels
+// carry the decimals the step needs, and a step finer than the latest
+// figure's two decimals is taken only when no coarser one gives four to seven.
+function yGrid(lo, hi) {
+  const exponent = Math.floor(Math.log10((hi - lo) / 5));
+  let best = { ticks: [], digits: 0, miss: Infinity };
+  for (let e = exponent - 1; e <= exponent + 1; e += 1) {
+    for (const factor of [1, 2, 2.5, 5]) {
+      const step = factor * 10 ** e;
+      const ticks = gridlines(lo, hi, step);
+      const digits = decimalsOf(step);
+      const n = ticks.length;
+      const miss = (n < 4 || n > 7 ? 100 : 0) + (digits > 2 ? 10 : 0) + Math.abs(n - 5);
+      // On a tie the closer gridlines win, being found first.
+      if (miss < best.miss) best = { ticks, digits, miss };
+    }
+  }
+  return best;
 }
 
 // Labels are put together by hand rather than through Intl, so the server and
@@ -255,11 +285,7 @@ export function trendScale(series, { maxTimeTicks = 5 } = {}) {
   lo -= padding;
   hi += padding;
 
-  // Four to six gridlines, as on a price chart.
-  const step = niceStep((hi - lo) / 5);
-  const yTicks = [];
-  for (let k = Math.ceil(lo / step); k * step <= hi + 1e-9; k += 1) yTicks.push(Number((k * step).toFixed(10)));
-  const yDigits = step >= 1 ? 0 : step >= 0.1 ? 1 : 2;
+  const { ticks: yTicks, digits: yDigits } = yGrid(lo, hi);
 
   const x = (at) => (spanMs > 0 ? ((timeOf(at) - t0) / spanMs) * 100 : 100);
   const y = (value) => ((hi - value) / (hi - lo)) * 100;
