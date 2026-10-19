@@ -212,10 +212,40 @@
       },
       {
         "label": "Access",
-        "body": "Credentials are issued on account opening, to the client and to nobody else. The portal is in preparation, and clients will be written to directly when it opens. A client who needs something before then should write to a director."
+        "body": "Credentials are issued on account opening, to the client and to nobody else. There is no way to register here. A client who has lost access, or who needs something before the portal opens, should write to a director."
       }
     ],
-    "cta": "Write to a director"
+    "signIn": {
+      "label": "Sign in",
+      "email": "Email address",
+      "password": "Password",
+      "submit": "Sign in",
+      "pending": "Signing in",
+      "forgotten": "Forgotten your password?",
+      "forgottenLink": "Write to a director.",
+      "errors": {
+        "missing": "Enter your email address and your password.",
+        "mismatch": "That email address and password do not match an account.",
+        "throttled": "Too many attempts. Wait a few minutes, then try again.",
+        "unavailable": "Sign-in is unavailable at the moment. Try again shortly.",
+        "notOpen": "The portal is not open yet. Clients will be written to directly when it is."
+      }
+    },
+    "account": {
+      "title": "Your portal",
+      "signedInAs": "Signed in as",
+      "signOut": "Sign out",
+      "sections": [
+        {
+          "label": "In preparation",
+          "body": "Your mandate and its limits, the log of what the firm has done under it, your documents, your fees with the matching broker statement line, and the notices the firm gives you will appear here as they are issued."
+        },
+        {
+          "label": "Your account",
+          "body": "Your balance, your positions and your trades are not here. They sit with your broker, live, under your own login, and that record is the authoritative one."
+        }
+      ]
+    }
   },
   "footer": {
     "notice": "The KJC Capital programme is offered only by introduction, and only to persons the firm has satisfied itself are eligible. Nothing on this site constitutes an offer to the public, a recommendation, or investment advice.",
