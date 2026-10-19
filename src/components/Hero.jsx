@@ -4,7 +4,9 @@ export default function Hero({ lang, hero }) {
   return (
     <section className="relative overflow-hidden">
       <div className="shell pt-16 md:pt-24 pb-16 md:pb-24">
-        <div className="grid gap-14 md:grid-cols-[1.4fr_1fr] md:gap-16 items-start">
+        {/* minmax(0,1fr): an implicit column grows to its widest child's
+            min-content, which pushed the folio past a 320px screen. */}
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-14 md:grid-cols-[1.4fr_1fr] md:gap-16 items-start">
           <div>
             <div className="smallcaps letter-settle flex items-center gap-3">
               <span className="folio-num">File 01</span>
@@ -56,7 +58,7 @@ export default function Hero({ lang, hero }) {
 
           <aside className="relative">
             <div className="border border-[var(--color-rule)] bg-[var(--color-paper-white)] p-8 md:p-10 shadow-[0_1px_0_var(--color-rule),0_20px_40px_-30px_rgba(15,15,14,0.20)]">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
                 <div className="smallcaps flex items-center gap-2">
                   <span className="folio-num">Folio</span>
                   <span aria-hidden className="text-[var(--color-ink-faint)]">·</span>
@@ -85,9 +87,9 @@ export default function Hero({ lang, hero }) {
                 ))}
               </ul>
               <hr className="rule my-6" />
-              <div className="flex items-center justify-between text-xs text-[var(--color-ink-mute)]">
+              <div className="flex items-center justify-between gap-4 text-xs text-[var(--color-ink-mute)]">
                 <span className="smallcaps">Reference</span>
-                <span className="tabular">{hero.folio.reference}</span>
+                <span className="tabular text-right">{hero.folio.reference}</span>
               </div>
             </div>
             <span className="absolute -top-2 -left-2 w-4 h-4 border-t border-l border-[var(--color-gold)]" aria-hidden />

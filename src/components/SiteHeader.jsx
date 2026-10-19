@@ -10,8 +10,10 @@ export default function SiteHeader({ lang, nav, ticker }) {
   return (
     <header className="relative border-b border-[var(--color-rule)] bg-[var(--color-paper)]/85 backdrop-blur-[6px] sticky top-0 z-40">
       <div className="shell py-5 flex items-center justify-between gap-8">
-        <Link href={base} className="flex min-h-11 items-center gap-3.5 no-underline">
-          <Fleur size={26} />
+        {/* The wordmark's middle dot is typographic, so the link carries the
+            name as it is said. */}
+        <Link href={base} aria-label="KJC Capital" className="flex min-h-11 items-center gap-3.5 no-underline">
+          <Fleur size={26} decorative />
           <span className="wordmark">
             KJC<span className="wordmark-sep">·</span>Capital
           </span>

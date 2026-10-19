@@ -19,7 +19,7 @@ export default function RiskPage() {
         speculative, it is conducted in your own account, and it is possible to lose
         everything in that account.
       </p>
-      <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Nature of the strategy</h3>
+      <h2 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Nature of the strategy</h2>
       <p>
         The programme pursues a leveraged trading strategy across precious metals, proprietary
         systematic strategies, digital assets, and select alternatives. Leveraged strategies
@@ -27,7 +27,7 @@ export default function RiskPage() {
         from the returns of the underlying markets traded. Past performance is not a guide to
         future returns.
       </p>
-      <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Risks specific to the registers</h3>
+      <h2 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Risks specific to the registers</h2>
       <p>
         Precious metals carry no yield, and a position in them can fall in value for extended
         periods. Systematic strategies are fitted to conditions that may not recur, and a model
@@ -37,7 +37,7 @@ export default function RiskPage() {
         change against you. Alternatives may be illiquid, may be difficult to value, and may
         not be realisable at the figure most recently shown on a statement.
       </p>
-      <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">What the structure does and does not protect you from</h3>
+      <h2 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">What the structure does and does not protect you from</h2>
       <p>
         Because the account is yours, the firm does not hold your money and cannot withdraw
         from the account. That protects you from the firm failing, from the firm misapplying
@@ -45,7 +45,7 @@ export default function RiskPage() {
         does not protect you from losing money. A trading loss inside your own account is
         still your loss, and it is the ordinary and expected risk of the programme.
       </p>
-      <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Your broker</h3>
+      <h2 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Your broker</h2>
       <p>
         Your capital is exposed to the broker holding it. The protections available to you,
         including any compensation scheme and any segregation of client assets, are the
@@ -53,21 +53,21 @@ export default function RiskPage() {
         Satisfy yourself about the broker before funding an account, and understand what
         happens to your assets if that broker fails.
       </p>
-      <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Liquidity</h3>
+      <h2 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Liquidity</h2>
       <p>
         Committing capital to the programme is not a bank deposit. There is no notice period
         imposed by the firm and no gate, because the firm does not hold your money. Whether you
         can withdraw on a given day is a matter between you and your broker, and may be
         constrained by open positions and by the settlement terms of the instruments held.
       </p>
-      <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Regulatory status</h3>
+      <h2 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Regulatory status</h2>
       <p>
         Managing another person&apos;s account at the manager&apos;s discretion is a regulated
         activity in most jurisdictions, and the protections available to you depend on the basis
         on which the firm is permitted to conduct it. Ask the firm directly what that basis is,
         and read the client agreement, before granting any trading authority.
       </p>
-      <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Where you live</h3>
+      <h2 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Where you live</h2>
       <p>
         The protections available to you, and whether an arrangement of this kind may be entered
         into from your country, are set by the law where you live, not by the firm. Satisfy

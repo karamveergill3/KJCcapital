@@ -1,16 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { NAV_ITEMS } from "@/lib/site";
 
 export default function MobileNav({ lang, nav }) {
   const [open, setOpen] = useState(false);
+  const buttonRef = useRef(null);
   const base = `/${lang}`;
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    // The focused link unmounts with the panel, so focus goes back to the
+    // toggle rather than falling to <body>.
+    const onKey = (e) => {
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      buttonRef.current?.focus();
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
@@ -23,6 +30,7 @@ export default function MobileNav({ lang, nav }) {
   return (
     <div className="md:hidden">
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}

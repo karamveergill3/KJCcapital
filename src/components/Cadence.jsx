@@ -25,34 +25,37 @@ export default function Cadence({ file, label, title, lead, steps }) {
               </Reveal>
             ) : null}
           </div>
-          <ol className="relative list-none pl-0">
+          {/* The rule sits beside the list, not in it: an ol may only hold li. */}
+          <div className="relative">
             <span
               className="absolute left-4 top-4 bottom-4 w-px bg-[var(--color-rule-strong)]"
               aria-hidden
             />
-            {steps.map((step, i) => (
-              <Reveal
-                as="li"
-                key={step.title}
-                delay={i + 1}
-                className="relative pl-14 pb-10 last:pb-0"
-              >
-                <span
-                  className="absolute left-2 top-2 w-5 h-5 rounded-full border border-[var(--color-gold)] bg-[var(--color-paper-white)] flex items-center justify-center"
-                  aria-hidden
+            <ol className="list-none pl-0">
+              {steps.map((step, i) => (
+                <Reveal
+                  as="li"
+                  key={step.title}
+                  delay={i + 1}
+                  className="relative pl-14 pb-10 last:pb-0"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-gold)]" />
-                </span>
-                <div className="smallcaps flex items-baseline gap-3">
-                  <span className="tabular text-[var(--color-ink)]">{step.when}</span>
-                  <span aria-hidden className="text-[var(--color-ink-faint)]">·</span>
-                  <span>{step.stage}</span>
-                </div>
-                <div className="serif text-xl mt-3 text-[var(--color-ink)]">{step.title}</div>
-                <p className="prose-editorial prose-wide mt-3 max-w-none">{step.body}</p>
-              </Reveal>
-            ))}
-          </ol>
+                  <span
+                    className="absolute left-2 top-2 w-5 h-5 rounded-full border border-[var(--color-gold)] bg-[var(--color-paper-white)] flex items-center justify-center"
+                    aria-hidden
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-gold)]" />
+                  </span>
+                  <div className="smallcaps flex items-baseline gap-3">
+                    <span className="tabular text-[var(--color-ink)]">{step.when}</span>
+                    <span aria-hidden className="text-[var(--color-ink-faint)]">·</span>
+                    <span>{step.stage}</span>
+                  </div>
+                  <div className="serif text-xl mt-3 text-[var(--color-ink)]">{step.title}</div>
+                  <p className="prose-editorial prose-wide mt-3 max-w-none">{step.body}</p>
+                </Reveal>
+              ))}
+            </ol>
+          </div>
         </div>
       </div>
     </section>

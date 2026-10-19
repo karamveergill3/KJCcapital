@@ -1,11 +1,14 @@
-export default function Fleur({ size = 26, className = "" }) {
+// decorative: the mark sits beside text that already names the firm, so it is
+// hidden from assistive technology instead of being announced a second time.
+export default function Fleur({ size = 26, className = "", decorative = false }) {
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 48 48"
-      role="img"
-      aria-label="KJC Capital"
+      {...(decorative
+        ? { "aria-hidden": true, focusable: "false" }
+        : { role: "img", "aria-label": "KJC Capital" })}
       className={`text-[var(--color-gold-deep)] ${className}`.trim()}
       fill="currentColor"
     >

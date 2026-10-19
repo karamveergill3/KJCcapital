@@ -13,12 +13,12 @@ export async function generateMetadata({ params }) {
 export default function DisclosuresPage() {
   return (
     <LegalPage label="Legal" title="Disclosures" updated="19 October 2026">
-      <h3 className="serif text-xl mt-2 mb-3 text-[var(--color-ink)]">The firm</h3>
+      <h2 className="serif text-xl mt-2 mb-3 text-[var(--color-ink)]">The firm</h2>
       <p>
         The legal entity that contracts with a client, and the details of where it is
         established, are set out in the client agreement, which is provided on introduction.
       </p>
-      <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">What the firm does</h3>
+      <h2 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">What the firm does</h2>
       <p>
         KJC Capital manages accounts belonging to its clients. It does not operate a fund, does
         not issue units or shares, and does not pool one client&apos;s capital with
@@ -27,7 +27,7 @@ export default function DisclosuresPage() {
         the client agreement, which is provided on introduction and prevails over anything on
         this site.
       </p>
-      <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Custody of capital</h3>
+      <h2 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Custody of capital</h2>
       <p>
         KJC Capital does not hold client money and does not take custody of client assets. A
         client&apos;s capital sits in an account opened with a broker in that client&apos;s own
@@ -37,14 +37,14 @@ export default function DisclosuresPage() {
         ownership of the account, and the client may revoke it directly with the broker at any
         time.
       </p>
-      <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Fees</h3>
+      <h2 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Fees</h2>
       <p>
         The fee basis is agreed in the client agreement before any trading authority is
         granted, and is not varied during an engagement without the client&apos;s written
         consent. Because the firm has no authority to move money out of a client&apos;s
         account, it cannot deduct its own fees from that account on its own initiative.
       </p>
-      <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Conflicts of interest</h3>
+      <h2 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Conflicts of interest</h2>
       <p>
         Because accounts are separate rather than pooled, orders for different accounts may be
         filled at different prices; the firm allocates and sequences orders on a stated basis
