@@ -544,19 +544,71 @@
     margin-right: 0.18em;
   }
 
-  /* The trend under the figure: the plot, a gutter of percentages on its
-     right as on a price chart, and the times along the bottom. */
+  /* The chart under the figure, laid out like a stock app's: a row of range
+     tabs, then the plot with a gutter of percentages on its right and the
+     dates along the bottom. */
+  .kjc-chart {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .kjc-ranges {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+  }
+
+  .kjc-range {
+    min-width: 2.4rem;
+    min-height: 2rem;
+    padding: 0 0.55rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--kjc-muted);
+    cursor: pointer;
+  }
+
+  .kjc-range:hover:not(:disabled) { color: var(--kjc-text); }
+
+  .kjc-range[aria-pressed="true"] {
+    background: #e9e5da;
+    color: var(--kjc-bg);
+  }
+
+  /* A range the account is too young for: there, but greyed and inert. */
+  .kjc-range:disabled {
+    color: #57534a;
+    cursor: default;
+  }
+
+  .kjc-range:focus-visible {
+    outline: 2px solid var(--kjc-gold);
+    outline-offset: 2px;
+  }
+
+  /* The line takes the colour of the range's move: green when it ends at or
+     above where it began, red when below. The readout floats in the room
+     above the plot. */
   .kjc-trend {
+    --kjc-tone: var(--kjc-gain);
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    column-gap: 0.85rem;
+    column-gap: 0.6rem;
     margin: 0;
+    padding-top: 2.25rem;
   }
+
+  .kjc-trend.is-loss { --kjc-tone: var(--kjc-loss); }
 
   .kjc-trend-plot {
     position: relative;
-    height: clamp(9.5rem, 26vw, 17rem);
-    color: var(--kjc-gold);
+    height: clamp(12rem, 30vw, 20rem);
+    color: var(--kjc-tone);
     cursor: crosshair;
     /* A sideways drag reads the line; an up or down one still scrolls. */
     touch-action: pan-y;
@@ -570,9 +622,15 @@
     overflow: visible;
   }
 
-  .kjc-trend-gridline {
-    stroke: var(--kjc-rule);
-    stroke-width: 1;
+  .kjc-trend-grid span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    margin-top: -0.5px;
+    background-image: linear-gradient(to right, #46423a 0 2px, transparent 2px);
+    background-size: 6px 1px;
+    background-repeat: repeat-x;
   }
 
   .kjc-trend-line {
@@ -584,13 +642,14 @@
   }
 
   .kjc-trend-dot,
-  .kjc-trend-mark {
+  .kjc-trend-mark,
+  .kjc-trend-start {
     position: absolute;
     width: 9px;
     height: 9px;
     margin: -4.5px 0 0 -4.5px;
     border-radius: 50%;
-    background: var(--kjc-gold);
+    background: var(--kjc-tone);
     box-shadow: 0 0 0 3px var(--kjc-bg);
     pointer-events: none;
   }
@@ -598,6 +657,41 @@
   .kjc-trend-mark {
     background: var(--kjc-text);
   }
+
+  .kjc-trend-start {
+    width: 7px;
+    height: 7px;
+    margin: -3.5px 0 0 -3.5px;
+    background: var(--kjc-bg);
+    box-shadow: inset 0 0 0 2px var(--kjc-tone);
+  }
+
+  .kjc-trend-dot::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--kjc-tone);
+    opacity: 0;
+  }
+
+  /* The opening figure, by the first reading. */
+  .kjc-trend-open {
+    position: absolute;
+    transform: translate(-2px, calc(-100% - 8px));
+    padding: 0.12rem 0.45rem;
+    border: 1px solid #3a372f;
+    border-radius: 999px;
+    background: #1c1b18;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    line-height: 1.3;
+    color: var(--kjc-text);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .kjc-trend-open.is-below { transform: translate(-2px, 8px); }
 
   .kjc-trend-cross {
     position: absolute;
@@ -625,6 +719,7 @@
     color: var(--kjc-text);
     white-space: nowrap;
     pointer-events: none;
+    z-index: 1;
   }
 
   .kjc-trend-readout.at-start { transform: translate(0, calc(-100% - 0.5rem)); }
@@ -636,11 +731,11 @@
 
   .kjc-trend-y {
     position: relative;
-    min-width: 3.4rem;
+    min-width: 3.9rem;
   }
 
-  .kjc-trend-y span,
-  .kjc-trend-x span {
+  .kjc-trend-y > span,
+  .kjc-trend-x > span {
     position: absolute;
     font-family: var(--font-mono);
     font-size: 0.68rem;
@@ -649,9 +744,19 @@
     white-space: nowrap;
   }
 
-  .kjc-trend-y span {
+  .kjc-trend-y > span {
     left: 0;
     transform: translateY(-50%);
+  }
+
+  /* The latest figure, on the axis at its own height, in the line's colour. */
+  .kjc-trend-y .kjc-trend-last {
+    padding: 0.12rem 0.35rem;
+    border-radius: 3px;
+    background: var(--kjc-tone);
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--kjc-bg);
   }
 
   .kjc-trend-x {
@@ -660,13 +765,15 @@
     margin-top: 0.7rem;
   }
 
-  .kjc-trend-x span { transform: translateX(-50%); }
-  .kjc-trend-x span.at-start { transform: none; }
-  .kjc-trend-x span.at-end { transform: translateX(-100%); }
+  .kjc-trend-x > span { transform: translateX(-50%); }
+  .kjc-trend-x > span.at-start { transform: none; }
+  .kjc-trend-x > span.at-end { transform: translateX(-100%); }
 
-  /* On a phone five times run together; every other one is enough. */
+  /* On a phone five or six dates run together, so every other one is
+     enough, and a year goes under its month so it cannot reach the next. */
   @media (max-width: 30rem) {
-    .kjc-trend-x span:nth-child(even) { display: none; }
+    .kjc-trend-x:has(> span:nth-child(5)) > span:nth-child(even) { display: none; }
+    .kjc-trend-year { display: block; }
   }
 
   .marker {
@@ -737,8 +844,12 @@
       animation: livePulse 1600ms ease-in-out infinite;
     }
 
-    .kjc-trend-dot.is-live {
+    .kjc-trend-dot.is-live::after {
       animation: trendPulse 1800ms ease-out infinite;
+    }
+
+    .kjc-range {
+      transition: background-color 150ms ease, color 150ms ease;
     }
 
     .flash-up {
@@ -800,9 +911,10 @@
   50% { opacity: 0.55; box-shadow: 0 0 0 5px rgba(143, 207, 155, 0); }
 }
 
+/* A ring of the line's own colour spreading out from the latest reading. */
 @keyframes trendPulse {
-  0% { box-shadow: 0 0 0 3px #121210, 0 0 0 3px rgba(203, 167, 98, 0.6); }
-  100% { box-shadow: 0 0 0 3px #121210, 0 0 0 13px rgba(203, 167, 98, 0); }
+  0% { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 0; transform: scale(3.2); }
 }
 
 @keyframes flashUp {
