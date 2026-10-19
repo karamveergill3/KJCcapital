@@ -116,32 +116,54 @@ figures; a test rejects balance, equity and valuation columns. A live $KJC
 either reads the broker on each request, or needs a snapshots table, which
 means relaxing that guard on purpose. Nothing reads the schema's tables yet:
 
-- `clients` — one row per enquiry or client, through the steps the contact
-  and portal pages describe: enquiry, agreement issued, account opening,
-  active, paused, ended, declined. US-person status is recorded for tax
-  reporting but refuses nobody: clients are accepted from any country.
+- `clients` — one row per enquiry or client. The contact and portal pages
+  describe the first steps: an enquiry, a client agreement issued, the
+  account opened in the client's name, with portal credentials issued then
+  and not before (a check holds that). Active, paused, ended and declined
+  are the firm's own record of where the relationship stands; the site does
+  not describe them, and whether the firm may pause a relationship is not
+  confirmed. US-person status is recorded and refuses nobody: the owner
+  withdrew the US-person exclusion on 19 October 2026 (commit `a86dcc6`).
 - `broker_accounts` — the client's own account: broker name as free text,
   the last four characters of the account number, base currency, and when the
   authority was granted or revoked. No credential of any kind and no full
   account number.
 - `mandates` — the registers and limits the firm may trade under in one
-  account, tied to the client agreement. A check allows only a `trade_only`
-  authority scope. Terms are fixed once issued; an amendment is a new mandate
-  that supersedes the old one.
-- `mandate_activity` — append-only log of what the firm did under a mandate:
-  a kind, a summary and a broker reference, never a price, quantity or P&L.
+  account, issued under an issued client agreement or amendment. A check
+  allows only a `trade_only` authority scope. Terms are fixed once issued,
+  and an issued mandate cannot go back to draft; an amendment is a new
+  mandate that supersedes the old one.
+- `mandate_activity` — append-only log of what the firm did under an issued
+  mandate: a kind, a summary and a broker reference, never a price, quantity
+  or P&L.
 - `fee_charges` — the amount charged for a period, the agreement clause it
   rests on, and the broker statement line that matches it, which is required
-  before a charge can be marked paid. No rate and no basis.
-- `documents`, `notices` with `notice_acknowledgements`, and `desk_notes`
+  before a charge can be marked paid. No rate and no basis, and no assumption
+  that the fee is invoiced, since how it is collected is not stated. Fixed
+  once paid, waived or void; never deleted.
+- `documents` (fixed once issued, except that a missing signature date may
+  be filled in), `notices` with `notice_acknowledgements`, and `desk_notes`
   (readable only by active clients, once published).
 - `kyc_checks` — the identity, address, source of funds and tax residence
   checks the privacy page lists, plus the US-person determination. No regime
   is named.
 
-`src/lib/audit.js` names its actions on the same model. Neither file has a
-table, column or action for units, NAV, subscriptions, redemptions, a balance
-or a valuation, and their tests fail if one appears.
+`src/lib/audit.js` names its actions on the same model, its client lifecycle
+actions after the `client_status` each one moves to. Neither file has a
+table, column or action for units, shares, NAV, subscriptions, redemptions, a
+balance or a valuation. The tests read `CREATE TABLE` and `ALTER TABLE ...
+ADD` columns, enum labels and action names, and fail if one appears; they
+also fail on any statement the parser does not read, such as a policy or
+grant run from a `DO` block, so a guard cannot be stepped round by changing
+the form.
+
+One scaffold remnant is outside the data model: `.env.local.example` still
+sets `NEXT_PUBLIC_FUND_NAME` and a "single house terminal" block
+(`BROKER_ENC_KEY`, `BROKER_LOGIN`, `BROKER_SERVER`, `MT5_SYNC_SHARED_SECRET`)
+that assumes the firm holds one MT5 password and ingests trades from it.
+Nothing in `src` reads any of them, and they describe the opposite of the
+model above. `scripts/test-setup.mjs` and `scripts/scan-secrets.mjs` still
+name two of them. Remove them rather than build on them.
 
 ## Portal
 
@@ -234,9 +256,26 @@ triggers dropped before they are created. Row-level security on every table.
   `on delete set null` on `audit_events.actor_user_id` is itself an update, an
   auth user who appears in the audit trail cannot be deleted: ban them in
   Supabase Auth instead.
+- **Fixed once issued.** Issued mandates, issued documents, issued notices
+  and settled fee charges are held by trigger too. For a document or notice,
+  issued means `issued_at` has come, as the read policies have it, so a
+  scheduled notice can still be corrected before any client sees it.
+- **The database's clock.** `mandate_activity.recorded_at`,
+  `audit_events.occurred_at` and `notice_acknowledgements.acknowledged_at`
+  are set on insert whatever the writer sends, and a notice's `issued_at`
+  cannot be earlier than when it was set.
+- **Secrets stay server-side.** `ops_pin_hashes` and `mfa_backup_codes` have
+  no policy: a six-digit PIN's hash and salt in a browser session could be
+  brute-forced offline.
 - **Authority.** `mandates.authority_scope` is checked to be `trade_only`,
   because the governance and disclosures pages say so. If the real authority
   is broader, those pages are corrected first and the check after.
+- **Retention.** As written, nothing removes a client's records: every
+  `client_id` is `on delete restrict` and the tables above refuse deletion.
+  How long records must be kept is not confirmed. Once it is, removing a
+  client whose period has run is a deliberate manual job: disable the
+  triggers on the tables concerned, delete in dependency order, and enable
+  them again.
 
 The schema replaces a pooled-fund draft (`investors`, `nav_strikes`,
 `subscriptions`, `redemptions`, `units_ledger`, `high_water_marks`). That draft
@@ -245,7 +284,7 @@ applied somewhere, drop those tables and their enum types by hand.
 
 CI has no Postgres, so `tests/schema.test.mjs` parses the file. What a parse
 cannot show is behaviour: two clients isolated from each other in every table,
-the triggers firing, the US-person and authority checks refusing a row. That
-was exercised against a local Postgres 16, with Supabase's roles and
-`auth.uid()` stubbed, when this model was written. Do it again after any
-change to the schema.
+the triggers firing, the authority and credential checks refusing a row. That
+was exercised against PostgreSQL 16, with Supabase's roles and `auth.uid()`
+stubbed, when this model was written and again when it was corrected. Do it
+again after any change to the schema.

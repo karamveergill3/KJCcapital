@@ -118,6 +118,16 @@ function parenthesised(text, from = 0) {
 
 const squash = (s) => s.toLowerCase().replace(/\s+/g, "");
 
+// The only DO block the file has a use for: an enum created once.
+const enumGuard = /^do \$\$ begin create type ([a-z_][a-z0-9_]*) as enum \(('[a-z0-9_]+'(?:, '[a-z0-9_]+')*)\); exception when duplicate_object then null; end \$\$$/i;
+
+// Statements read as they stand, with nothing inside them to parse.
+const plainForms = [
+  /^set search_path = [a-z_]+$/i,
+  /^alter table [a-z_][a-z0-9_]* enable row level security$/i,
+  /^drop (policy|trigger) if exists [a-z_][a-z0-9_]* on [a-z_][a-z0-9_]*$/i
+];
+
 function parseSchema(sql) {
   const statements = statementsOf(sql);
   const tables = new Map();
@@ -128,6 +138,11 @@ function parseSchema(sql) {
   const indexes = [];
   const revokes = [];
   const grants = [];
+  const addedColumns = [];
+  // Anything the parser does not read is listed here, and a test fails on
+  // it: a guard below cannot be stepped round by writing the same thing in a
+  // form it does not look at.
+  const unrecognised = [];
 
   statements.forEach((stmt, index) => {
     const lower = stmt.toLowerCase();
@@ -146,6 +161,33 @@ function parseSchema(sql) {
         }
       }
       tables.set(table[2].toLowerCase(), { ifNotExists: Boolean(table[1]), columns, constraints, stmt });
+      return;
+    }
+
+    if (plainForms.some((re) => re.test(stmt))) return;
+
+    // ALTER TABLE ... ADD is how a column reaches a table that already
+    // exists, since CREATE TABLE IF NOT EXISTS skips it. Its columns and
+    // constraints join the table's, so every guard sees them.
+    const alter = /^alter table (?:if exists )?(?:only )?([a-z_][a-z0-9_.]*) (.+)$/i.exec(stmt);
+    if (alter) {
+      const t = tables.get(alter[1].toLowerCase());
+      if (!t) {
+        unrecognised.push(`alters a table this file does not create: ${stmt.slice(0, 80)}`);
+        return;
+      }
+      for (const action of splitTopLevel(alter[2])) {
+        const constraint = /^add ((?:constraint [a-z_][a-z0-9_]* )?(?:check|unique|primary key|foreign key|exclude)\b.*)$/i.exec(action);
+        const column = /^add (?:column )?(if not exists )?([a-z_][a-z0-9_]*) (.+)$/i.exec(action);
+        if (constraint) {
+          t.constraints.push(constraint[1]);
+        } else if (column) {
+          t.columns.set(column[2].toLowerCase(), column[3]);
+          addedColumns.push({ table: alter[1].toLowerCase(), column: column[2].toLowerCase(), ifNotExists: Boolean(column[1]) });
+        } else {
+          unrecognised.push(`ALTER TABLE action the parser does not read: ${action.slice(0, 80)}`);
+        }
+      }
       return;
     }
 
@@ -199,24 +241,31 @@ function parseSchema(sql) {
       return;
     }
 
-    if (/^do \$/i.test(stmt)) {
-      for (const m of stmt.matchAll(/create type ([a-z_][a-z0-9_]*) as enum \(([^)]*)\)/gi)) {
-        enums.set(m[1].toLowerCase(), {
-          labels: [...m[2].matchAll(/'([^']*)'/g)].map((l) => l[1]),
-          guarded: /exception when duplicate_object then null/i.test(stmt)
-        });
+    // A DO block runs arbitrary code, so a policy, grant or column created
+    // inside one would be invisible to every test here. Only the enum guard
+    // is accepted; any other DO block is unrecognised.
+    if (/^do\b/i.test(stmt)) {
+      const m = enumGuard.exec(stmt);
+      if (!m) {
+        unrecognised.push(`DO block other than an enum guard: ${stmt.slice(0, 80)}`);
+        return;
       }
+      enums.set(m[1].toLowerCase(), {
+        labels: [...m[2].matchAll(/'([^']*)'/g)].map((l) => l[1]),
+        guarded: true
+      });
       return;
     }
 
     const idx = /^create (unique )?index (if not exists )?([a-z_][a-z0-9_]*) on ([a-z_][a-z0-9_]*) \(/i.exec(stmt);
     if (idx) {
-      const cols = parenthesised(stmt, idx[0].length - 1).inner;
+      const cols = splitTopLevel(parenthesised(stmt, idx[0].length - 1).inner).map((c) => c.split(" ")[0].toLowerCase());
       indexes.push({
         ifNotExists: Boolean(idx[2]),
         name: idx[3].toLowerCase(),
         table: idx[4].toLowerCase(),
-        leading: splitTopLevel(cols)[0].split(" ")[0].toLowerCase()
+        leading: cols[0],
+        columns: cols
       });
       return;
     }
@@ -231,15 +280,20 @@ function parseSchema(sql) {
       return;
     }
 
-    if (/^grant\b/.test(lower)) grants.push(stmt);
+    if (/^grant\b/.test(lower)) {
+      grants.push(stmt);
+      return;
+    }
+
+    unrecognised.push(stmt.slice(0, 80));
   });
 
-  return { statements, tables, policies, triggers, functions, enums, indexes, revokes, grants };
+  return { statements, tables, policies, triggers, functions, enums, indexes, revokes, grants, addedColumns, unrecognised };
 }
 
 const sql = await readFile(schemaPath, "utf8");
 const dict = JSON.parse(await readFile(dictPath, "utf8"));
-const { statements, tables, policies, triggers, functions, enums, indexes, revokes, grants } = parseSchema(sql);
+const { statements, tables, policies, triggers, functions, enums, indexes, revokes, grants, addedColumns, unrecognised } = parseSchema(sql);
 
 // Every CHECK that touches a column: inline on the column or table-level.
 function checksOn(tableName, column) {
@@ -280,6 +334,13 @@ test("the parser sees the schema it is meant to guard", () => {
   assert.equal(count(/\bcreate type\b/i), enums.size, "a CREATE TYPE escaped the parser");
 });
 
+// A column added by ALTER TABLE, a policy or grant run from a DO block, an
+// ALTER POLICY, a CREATE VIEW or a bare SELECT would each slip past guards
+// that only read the forms below. Anything else fails here first.
+test("every statement is one the parser reads", () => {
+  assert.deepEqual(unrecognised, [], `statements the guards cannot see:\n${unrecognised.join("\n")}`);
+});
+
 test("schema.sql is re-runnable (idempotent guards)", () => {
   for (const [name, t] of tables) {
     assert.ok(t.ifNotExists, `create table ${name} is not IF NOT EXISTS`);
@@ -292,6 +353,9 @@ test("schema.sql is re-runnable (idempotent guards)", () => {
   }
   for (const [name, e] of enums) {
     assert.ok(e.guarded, `enum ${name} is not guarded by a duplicate_object handler`);
+  }
+  for (const c of addedColumns) {
+    assert.ok(c.ifNotExists, `alter table ${c.table} add column ${c.column} is not IF NOT EXISTS`);
   }
   for (const stmt of statements) {
     assert.doesNotMatch(stmt, /^create type\b/i, `unguarded create type: ${stmt.slice(0, 60)}`);
@@ -339,10 +403,12 @@ test("schema.sql includes the audit_events table with the columns recordAuditEve
 });
 
 // The firm manages each client's own account. Nothing is pooled, so there is
-// nothing to divide into units, no NAV to strike, nobody subscribing or
-// redeeming, and no high-water mark computed from a valuation of ours.
+// nothing to divide into units or shares, no NAV to strike, nobody
+// subscribing or redeeming, and no high-water mark computed from a valuation
+// of ours. The disclosures page says the firm does not issue units or shares
+// and does not pool.
 test("no table, column or enum belongs to the pooled-fund model", () => {
-  const banned = new Set(["investor", "investors", "subscription", "subscriptions", "subscribe", "redemption", "redemptions", "redeem", "redeeming", "redeemed", "nav", "unit", "units", "hwm", "strike", "strikes", "fund"]);
+  const banned = new Set(["investor", "investors", "subscription", "subscriptions", "subscribe", "redemption", "redemptions", "redeem", "redeeming", "redeemed", "nav", "unit", "units", "hwm", "strike", "strikes", "fund", "share", "shares", "shareholder", "shareholders", "pool", "pools", "pooled", "pooling"]);
   const check = (name, where) => {
     const tokens = tokensOf(name);
     for (const token of tokens) {
@@ -370,12 +436,31 @@ test("no column stores a balance, a position, a price or a result", () => {
   }
 });
 
-// A numeric column can hold a balance whatever it is called. The only money
-// the firm records is the fee it charged.
-test("the only decimal column is the fee charged", () => {
-  const numeric = /^(numeric|decimal|money|real|double precision|float\d*)\b/i;
+// A numeric column can hold a balance whatever it is called, in cents as an
+// integer as easily as in a decimal. The only money the firm records is the
+// fee it charged.
+test("the only number column is the fee charged", () => {
+  const numeric = /^(numeric|decimal|money|real|double precision|float\d*|smallint|integer|int\d?|bigint|smallserial|serial\d?|bigserial)\b/i;
   const found = allColumns().filter(({ def }) => numeric.test(def)).map(({ table, column }) => `${table}.${column}`);
   assert.deepEqual(found, ["fee_charges.amount"]);
+});
+
+// Every column's type is one the model accounts for. A bytea column could
+// hold an encrypted password, a domain over numeric a balance; neither gets
+// past this without the list being changed on purpose.
+test("every column has a type the model accounts for", () => {
+  const known = new Set(["uuid", "text", "boolean", "timestamptz", "date", "jsonb", "inet", ...enums.keys()]);
+  for (const { table, column, def } of allColumns()) {
+    const m = /^([a-z_][a-z0-9_]*)(\s*\([^)]*\))?(\[\])?(\s|$)/i.exec(def);
+    assert.ok(m, `${table}.${column} has a type the test cannot read: ${def}`);
+    const type = m[1].toLowerCase();
+    if (`${table}.${column}` === "fee_charges.amount") {
+      assert.match(def, /^numeric\(20, 2\) /i, "fee_charges.amount must stay numeric(20, 2)");
+      continue;
+    }
+    assert.ok(!m[2], `${table}.${column} has a sized type: ${def}`);
+    assert.ok(known.has(type), `${table}.${column} is ${type}, which the model does not account for`);
+  }
 });
 
 // jsonb can hide anything. Each one in use is accounted for.
@@ -415,6 +500,10 @@ test("the authority scope admits trade_only and nothing else", () => {
     for (const m of stmt.matchAll(/'([^']*)'/g)) {
       assert.doesNotMatch(m[1], /withdraw|transfer|pledge/i, `the schema names a wider authority: '${m[1]}'`);
     }
+  }
+  // A flag such as may_withdraw would widen it as surely as a scope label.
+  for (const { table, column } of allColumns()) {
+    assert.doesNotMatch(column, /withdraw|transfer|pledge|deposit|payout|disburs/i, `${table}.${column} names an authority over money`);
   }
 });
 
@@ -513,9 +602,9 @@ test("every function pins search_path", () => {
   }
 });
 
-// The programme is offered in any country. US-person status is still recorded,
-// because it carries tax-reporting obligations, but nothing refuses a client
-// on it or on where they live.
+// The owner withdrew the US-person exclusion on 19 October 2026: the
+// programme is offered in any country. US-person status is still recorded,
+// but nothing refuses a client on it or on where they live.
 test("no client is refused by nationality or residence", () => {
   const clients = tables.get("clients");
   assert.match(clients.columns.get("us_person"), /^boolean not null$/i, "us_person must be recorded, boolean not null, with no default");
@@ -525,6 +614,102 @@ test("no client is refused by nationality or residence", () => {
   }
   for (const c of checksOn("clients", "country_of_residence")) {
     assert.doesNotMatch(c, /'US'|<>|!=|is distinct from '/i, `residence is filtered: ${c}`);
+  }
+});
+
+// The portal page: credentials are issued on account opening, to the client
+// and to nobody else.
+test("nobody has portal credentials before account opening", () => {
+  const labels = enums.get("client_status").labels;
+  const check = checksOn("clients", "auth_user_id").find((c) => /status/i.test(c));
+  assert.ok(check, "no check ties auth_user_id to status");
+  const m = /^\(?\s*auth_user_id\s+is\s+null\s+or\s+status\s+in\s*\(([^)]*)\)\s*\)?$/i.exec(check.trim());
+  assert.ok(m, `the credentials check is not of the form "auth_user_id is null or status in (...)": ${check}`);
+  const allowed = [...m[1].matchAll(/'([^']*)'/g)].map((x) => x[1]);
+  for (const label of allowed) assert.ok(labels.includes(label), `${label} is not a client_status`);
+  for (const before of ["enquiry", "agreement_issued", "declined"]) {
+    assert.ok(labels.includes(before), `client_status lost ${before}`);
+    assert.ok(!allowed.includes(before), `a client at ${before} may hold credentials`);
+  }
+  assert.ok(allowed.includes("account_opening"), "credentials must be allowed from account opening");
+});
+
+// A six-digit PIN is a million guesses offline. Its hash and salt, and the
+// backup-code hashes, are read by the service role only.
+test("no policy exposes the ops PIN hashes or the backup-code hashes", () => {
+  for (const table of ["ops_pin_hashes", "mfa_backup_codes", "audit_events"]) {
+    const found = policies.filter((p) => p.table === table).map((p) => p.name);
+    assert.deepEqual(found, [], `${table} has a policy, so a browser session can read it`);
+  }
+});
+
+const bodyOf = (name) => {
+  const f = functions.get(name);
+  assert.ok(f, `${name} is missing`);
+  return squash(f.body);
+};
+const hasTrigger = (table, timing, events, name) =>
+  triggers.some((t) => t.table === table && t.timing === timing && t.level === "row" && events.every((e) => t.events.includes(e)) && t.fn === name);
+
+// An amendment is a new mandate. Going back to draft would open the terms
+// again, allow a delete and hide the mandate from the client.
+test("an issued mandate keeps its terms and does not return to draft", () => {
+  assert.ok(hasTrigger("mandates", "before", ["update", "delete"], "freeze_mandate_terms"), "mandates has no freeze trigger");
+  const body = bodyOf("freeze_mandate_terms");
+  assert.ok(body.includes("ifnew.status='draft'thenraiseexception"), "an issued mandate can return to draft");
+  assert.ok(
+    body.includes("(to_jsonb(new)-'status'-'effective_to'-'updated_at')isdistinctfrom(to_jsonb(old)-'status'-'effective_to'-'updated_at')"),
+    "the freeze must compare the whole row less status, effective_to and updated_at"
+  );
+  assert.ok(hasTrigger("mandates", "before", ["insert", "update"], "check_mandate_agreement"), "mandates has no agreement check");
+  assert.ok(bodyOf("check_mandate_agreement").includes("d.kindin('client_agreement','agreement_amendment')"), "a mandate may be issued under a document that is not an agreement");
+});
+
+test("issued documents, issued notices and settled fees are fixed", () => {
+  assert.ok(hasTrigger("documents", "before", ["update", "delete"], "freeze_issued_document"), "documents has no freeze trigger");
+  assert.ok(hasTrigger("notices", "before", ["insert", "update", "delete"], "freeze_issued_notice"), "notices has no freeze trigger on insert, update and delete");
+  // Issued means what the read policy means: issued_at has come.
+  assert.ok(bodyOf("freeze_issued_notice").includes("old.issued_at<=now()"), "the notice freeze disagrees with the read policy on what issued means");
+  assert.ok(hasTrigger("fee_charges", "before", ["update", "delete"], "freeze_settled_fee"), "fee_charges has no freeze trigger");
+});
+
+// The append-only records are the firm's evidence. The time each was written
+// is the database's, not whatever the writer sent.
+test("the database stamps when evidence was recorded", () => {
+  assert.ok(hasTrigger("mandate_activity", "before", ["insert"], "admit_mandate_activity"), "mandate_activity has no insert trigger");
+  assert.ok(bodyOf("admit_mandate_activity").includes("new.recorded_at:=now()"), "mandate_activity.recorded_at is the writer's");
+  assert.ok(bodyOf("admit_mandate_activity").includes("m.status='draft'"), "activity may be logged under a draft mandate");
+  assert.ok(hasTrigger("audit_events", "before", ["insert"], "stamp_audit_event"), "audit_events has no insert trigger");
+  assert.ok(bodyOf("stamp_audit_event").includes("new.occurred_at:=now()"), "audit_events.occurred_at is the writer's");
+  assert.ok(hasTrigger("notice_acknowledgements", "before", ["insert"], "check_notice_acknowledgement"), "notice_acknowledgements has no insert trigger");
+  assert.ok(bodyOf("check_notice_acknowledgement").includes("new.acknowledged_at:=now()"), "acknowledged_at is the writer's");
+  assert.ok(bodyOf("freeze_issued_notice").includes("ifnew.issued_at<now()thennew.issued_at:=now()"), "a notice can be backdated");
+});
+
+// Supabase's unindexed_foreign_keys advisor wants an index whose leading
+// columns are the foreign key's, in order. A composite key needs a
+// composite index; one on its first column alone is flagged.
+test("every foreign key has an index leading on its columns", () => {
+  const cols = (text) => splitTopLevel(text).map((c) => c.trim().toLowerCase());
+  for (const [name, t] of tables) {
+    const keys = [];
+    const covered = indexes.filter((i) => i.table === name).map((i) => i.columns);
+    for (const [column, def] of t.columns) {
+      if (/\breferences\b/i.test(def)) keys.push([column]);
+      if (/\b(primary key|unique)\b/i.test(def)) covered.push([column]);
+    }
+    for (const c of t.constraints) {
+      const fk = /^(?:constraint [a-z_][a-z0-9_]* )?foreign key \(([^)]*)\)/i.exec(c);
+      if (fk) keys.push(cols(fk[1]));
+      const own = /^(?:constraint [a-z_][a-z0-9_]* )?(?:primary key|unique) \(([^)]*)\)/i.exec(c);
+      if (own) covered.push(cols(own[1]));
+    }
+    for (const key of keys) {
+      assert.ok(
+        covered.some((index) => key.every((column, i) => index[i] === column)),
+        `${name} (${key.join(", ")}) is a foreign key with no index leading on it`
+      );
+    }
   }
 });
 
@@ -559,6 +744,15 @@ test("fee charges carry the agreement clause and statement line, never a basis",
     paid.some((c) => c.includes("status<>'paid'") && c.includes("broker_statement_reference")),
     "a fee must not be marked paid without its broker statement line"
   );
+  // How a fee is collected is not stated, so nothing presumes an invoice.
+  for (const column of fees.columns.keys()) {
+    assert.doesNotMatch(column, /invoic/i, `fee_charges.${column} presumes the fee is invoiced`);
+  }
+  for (const name of ["fee_charge_status", "document_kind"]) {
+    for (const label of enums.get(name).labels) {
+      assert.doesNotMatch(label, /invoic/i, `${name} '${label}' presumes the fee is invoiced`);
+    }
+  }
 });
 
 test("the registers are the four the site names", () => {

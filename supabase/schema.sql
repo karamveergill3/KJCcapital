@@ -35,8 +35,13 @@
 -- revoked from anon and authenticated at the end of the file.
 --
 -- Client rows are never deleted while anything refers to them (every
--- client_id is ON DELETE RESTRICT): records outlive the relationship for as
--- long as the applicable anti-money-laundering framework requires.
+-- client_id is ON DELETE RESTRICT), and the append-only and frozen tables
+-- refuse deletion from every role. As written, the schema therefore keeps a
+-- client's records indefinitely. The privacy page says they are kept for the
+-- period the applicable anti-money-laundering framework requires, and that
+-- period is not confirmed. Once it is, removing a client whose period has run
+-- is a deliberate manual operation: disable the triggers on the tables
+-- concerned, delete in dependency order, and enable them again.
 
 set search_path = public;
 
@@ -76,11 +81,14 @@ do $$ begin
 exception when duplicate_object then null; end $$;
 
 do $$ begin
-  create type document_kind as enum ('client_agreement', 'agreement_amendment', 'trading_authority', 'identity_record', 'fee_invoice', 'notice', 'disclosure', 'correspondence', 'other');
+  create type document_kind as enum ('client_agreement', 'agreement_amendment', 'trading_authority', 'identity_record', 'fee_charge', 'notice', 'disclosure', 'correspondence', 'other');
 exception when duplicate_object then null; end $$;
 
+-- How a fee is collected is not stated on the site, so a charge is just
+-- charged until it is paid, waived or voided. Nothing here presumes an
+-- invoice.
 do $$ begin
-  create type fee_charge_status as enum ('invoiced', 'paid', 'waived', 'void');
+  create type fee_charge_status as enum ('charged', 'paid', 'waived', 'void');
 exception when duplicate_object then null; end $$;
 
 do $$ begin
@@ -88,9 +96,10 @@ do $$ begin
 exception when duplicate_object then null; end $$;
 
 -- The checks the privacy notice says the firm makes (identity, address,
--- source of funds, tax residence), plus the US-person determination the site
--- depends on. No regime is named, because which anti-money-laundering
--- framework applies to the firm is not confirmed.
+-- source of funds, tax residence), plus the US-person determination, which
+-- is recorded and refuses nobody (see clients.us_person). No regime is named,
+-- because which anti-money-laundering framework applies to the firm is not
+-- confirmed.
 do $$ begin
   create type kyc_check_kind as enum ('identity', 'address', 'source_of_funds', 'tax_residence', 'us_person');
 exception when duplicate_object then null; end $$;
@@ -130,10 +139,14 @@ begin
 end;
 $$;
 
--- A mandate's terms do not change once it has left draft. An amendment is a
--- new mandate that supersedes the old one, so the limits that applied on any
--- given day can always be read back. Only the status and end date of an
--- issued mandate move, and a superseded or ended mandate does not move at all.
+-- A mandate's terms do not change once it has left draft, and it does not go
+-- back to draft, where its terms would be open again and the client could no
+-- longer see it. An amendment is a new mandate that supersedes the old one,
+-- so the limits that applied on any given day can always be read back. Only
+-- the status and end date of an issued mandate move, and a superseded or
+-- ended mandate does not move at all. The row is compared whole, less those
+-- columns and updated_at, so a column added later is fixed without being
+-- listed here.
 create or replace function freeze_mandate_terms() returns trigger
 language plpgsql
 set search_path = ''
@@ -148,14 +161,12 @@ begin
   if tg_op = 'DELETE' then
     raise exception 'mandate % has been issued and cannot be deleted', old.id;
   end if;
-  if new.client_id is distinct from old.client_id
-    or new.broker_account_id is distinct from old.broker_account_id
-    or new.registers is distinct from old.registers
-    or new.limits is distinct from old.limits
-    or new.authority_scope is distinct from old.authority_scope
-    or new.agreement_document_id is distinct from old.agreement_document_id
-    or new.supersedes_id is distinct from old.supersedes_id
-    or new.effective_from is distinct from old.effective_from
+  if new.status = 'draft' then
+    raise exception 'mandate % has been issued and cannot return to draft', old.id
+      using hint = 'Issue a new mandate that supersedes it.';
+  end if;
+  if (to_jsonb(new) - 'status' - 'effective_to' - 'updated_at')
+    is distinct from (to_jsonb(old) - 'status' - 'effective_to' - 'updated_at')
   then
     raise exception 'mandate % has been issued and its terms are fixed', old.id
       using hint = 'Issue a new mandate that supersedes it.';
@@ -170,30 +181,139 @@ end;
 $$;
 
 -- A notice that has been issued is not edited or withdrawn. A correction is a
--- further notice, so the client's record shows both.
+-- further notice, so the client's record shows both. Issued means what the
+-- read policy and the acknowledgement check mean by it: issued_at has come.
+-- A notice with a future issued_at is scheduled, not yet seen by anyone, and
+-- can still be corrected or withdrawn.
+--
+-- The database, not the writer, says when a notice went out. An issue time
+-- already past is taken as now, so a notice cannot be backdated to look as
+-- if a client had it earlier than they did.
 create or replace function freeze_issued_notice() returns trigger
 language plpgsql
 set search_path = ''
 as $$
 begin
-  if old.issued_at is not null then
+  if tg_op <> 'INSERT' and old.issued_at <= now() then
     raise exception 'notice % has been issued and cannot change', old.id
       using hint = 'Issue a further notice.';
   end if;
   if tg_op = 'DELETE' then
     return old;
   end if;
+  if new.issued_at < now() then
+    new.issued_at := now();
+  end if;
+  return new;
+end;
+$$;
+
+-- A document that has been issued to, or received from, the client is the
+-- record of what they were given or gave, and is not edited or deleted. The
+-- one change allowed is filling in a signature date that was not yet known.
+-- A replacement is a new document. issued_at itself is the writer's: a
+-- document received by post is entered after the day it arrived.
+create or replace function freeze_issued_document() returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if old.issued_at is null or old.issued_at > now() then
+    if tg_op = 'DELETE' then
+      return old;
+    end if;
+    return new;
+  end if;
+  if tg_op = 'DELETE' then
+    raise exception 'document % has been issued and cannot be deleted', old.id;
+  end if;
+  if (to_jsonb(new) - 'signed_at' - 'updated_at') is distinct from (to_jsonb(old) - 'signed_at' - 'updated_at')
+    or (old.signed_at is not null and new.signed_at is distinct from old.signed_at)
+  then
+    raise exception 'document % has been issued and cannot change', old.id
+      using hint = 'Issue a replacement as a new document.';
+  end if;
+  return new;
+end;
+$$;
+
+-- A mandate is issued under the client agreement, or an amendment to it,
+-- once that document has itself been issued. The composite foreign key
+-- already makes the document this client's; this makes it an agreement.
+create or replace function check_mandate_agreement() returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if new.status <> 'draft' and not exists (
+    select 1
+    from public.documents d
+    where d.id = new.agreement_document_id
+      and d.kind in ('client_agreement', 'agreement_amendment')
+      and d.issued_at <= now()
+  ) then
+    raise exception 'mandate % is not issued under an issued client agreement', new.id;
+  end if;
+  return new;
+end;
+$$;
+
+-- Activity is logged under a mandate that has been issued: a draft confers
+-- no authority, and the client cannot see it. The database stamps when the
+-- entry was recorded, so a late entry cannot pass for a contemporaneous one;
+-- occurred_at is the writer's statement of when the thing happened.
+create or replace function admit_mandate_activity() returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if exists (select 1 from public.mandates m where m.id = new.mandate_id and m.status = 'draft') then
+    raise exception 'mandate % has not been issued, so nothing is logged under it', new.mandate_id;
+  end if;
+  new.recorded_at := now();
+  return new;
+end;
+$$;
+
+-- When an audit event happened is the database's clock, not the caller's.
+create or replace function stamp_audit_event() returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  new.occurred_at := now();
+  return new;
+end;
+$$;
+
+-- A fee charge is on the client's record from the moment it is entered, so
+-- it is never deleted: one entered in error is voided. Once paid, waived or
+-- void it is settled and does not change.
+create or replace function freeze_settled_fee() returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if tg_op = 'DELETE' then
+    raise exception 'fee charge % is on the client''s record and cannot be deleted', old.id
+      using hint = 'Void it instead.';
+  end if;
+  if old.status <> 'charged' then
+    raise exception 'fee charge % is % and cannot change', old.id, old.status;
+  end if;
   return new;
 end;
 $$;
 
 -- An acknowledgement must be of a notice that had been issued, by a client it
--- was addressed to: that client alone, or every client.
+-- was addressed to: that client alone, or every client. It is stamped with
+-- the database's time, since it is the firm's evidence of when.
 create or replace function check_notice_acknowledgement() returns trigger
 language plpgsql
 set search_path = ''
 as $$
 begin
+  new.acknowledged_at := now();
   if not exists (
     select 1
     from public.notices n
@@ -222,15 +342,25 @@ create table if not exists clients (
   -- ISO 3166-1 alpha-2. May be unknown at enquiry; required from then on.
   country_of_residence text check (country_of_residence ~ '^[A-Z]{2}$'),
   status client_status not null default 'enquiry',
-  -- Recorded, not refused: clients are accepted from any country, but a US
-  -- person carries tax-reporting obligations the firm has to know about. No
-  -- default, so nobody is entered without the question having been asked. The
-  -- check that settles it is recorded as a us_person row in kyc_checks.
+  -- Recorded, not refused. The site once excluded US persons; the owner
+  -- withdrew that exclusion on 19 October 2026 and the programme is offered
+  -- in any country, so no check here turns anyone away by nationality or
+  -- residence. What the answer means for a given client is for the firm's
+  -- procedure, like the other checks in kyc_checks. No default, so nobody is
+  -- entered without the question having been asked. The check that settles
+  -- it is recorded as a us_person row in kyc_checks.
   us_person boolean not null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint clients_residence_known check (
     country_of_residence is not null or status in ('enquiry', 'declined')
+  ),
+  -- The portal page says credentials are issued on account opening, to the
+  -- client and to nobody else. Nobody at enquiry, with an agreement still
+  -- out, or declined has a login, and declining someone who had one means
+  -- clearing it.
+  constraint clients_credentials_from_account_opening check (
+    auth_user_id is null or status in ('account_opening', 'active', 'paused', 'ended')
   )
 );
 
@@ -308,7 +438,8 @@ create table if not exists documents (
   -- A path inside the bucket, never a URL.
   storage_path text not null unique check (storage_path !~ '^[A-Za-z][A-Za-z0-9+.-]*://'),
   -- When the document was issued to, or received from, the client. Until
-  -- then it is a draft and the client cannot see it.
+  -- then it is a draft and the client cannot see it; from then on it is
+  -- fixed (freeze_issued_document).
   issued_at timestamptz,
   signed_at timestamptz,
   created_at timestamptz not null default now(),
@@ -322,6 +453,11 @@ create table if not exists documents (
 create index if not exists documents_client_idx on documents (client_id, issued_at desc);
 
 alter table documents enable row level security;
+
+drop trigger if exists documents_freeze_issued on documents;
+create trigger documents_freeze_issued
+  before update or delete on documents
+  for each row execute function freeze_issued_document();
 
 drop trigger if exists documents_updated_at on documents;
 create trigger documents_updated_at
@@ -365,17 +501,23 @@ create table if not exists mandates (
   foreign key (broker_account_id, client_id) references broker_accounts (id, client_id) on delete restrict,
   foreign key (agreement_document_id, client_id) references documents (id, client_id) on delete restrict,
   foreign key (supersedes_id, client_id) references mandates (id, client_id) on delete restrict,
+  -- check_mandate_agreement goes further: an issued agreement or amendment.
   constraint mandates_issued_under_agreement check (status = 'draft' or agreement_document_id is not null),
   constraint mandates_effective_order check (effective_to is null or effective_to > effective_from)
 );
 
 create index if not exists mandates_client_idx on mandates (client_id);
 create index if not exists mandates_broker_account_idx on mandates (broker_account_id, client_id);
-create index if not exists mandates_agreement_idx on mandates (agreement_document_id);
-create index if not exists mandates_supersedes_idx on mandates (supersedes_id);
+create index if not exists mandates_agreement_idx on mandates (agreement_document_id, client_id);
+create index if not exists mandates_supersedes_idx on mandates (supersedes_id, client_id);
 create unique index if not exists mandates_one_active_per_account on mandates (broker_account_id) where status = 'active';
 
 alter table mandates enable row level security;
+
+drop trigger if exists mandates_agreement_issued on mandates;
+create trigger mandates_agreement_issued
+  before insert or update on mandates
+  for each row execute function check_mandate_agreement();
 
 drop trigger if exists mandates_freeze_terms on mandates;
 create trigger mandates_freeze_terms
@@ -402,6 +544,7 @@ create table if not exists mandate_activity (
   client_id uuid not null references clients(id) on delete restrict,
   mandate_id uuid not null,
   occurred_at timestamptz not null,
+  -- Set by admit_mandate_activity, whatever the writer sends.
   recorded_at timestamptz not null default now(),
   kind mandate_activity_kind not null,
   summary text not null check (length(btrim(summary)) > 0),
@@ -413,6 +556,11 @@ create index if not exists mandate_activity_client_idx on mandate_activity (clie
 create index if not exists mandate_activity_mandate_idx on mandate_activity (mandate_id, client_id);
 
 alter table mandate_activity enable row level security;
+
+drop trigger if exists mandate_activity_admit on mandate_activity;
+create trigger mandate_activity_admit
+  before insert on mandate_activity
+  for each row execute function admit_mandate_activity();
 
 drop trigger if exists mandate_activity_append_only on mandate_activity;
 create trigger mandate_activity_append_only
@@ -431,10 +579,12 @@ create trigger mandate_activity_no_truncate
 -- basis is not confirmed and the site defers to the agreement.
 --
 -- The firm has no authority to move money out of an account, so it never
--- deducts a fee itself. A charge can be recorded before it reaches a broker
--- statement, so the reference may be empty while it is invoiced, waived or
--- void; it cannot be marked paid without the line on the broker statement
--- that matches it, which is what the portal shows beside it.
+-- deducts a fee itself. How a fee is collected is not stated, so nothing
+-- here assumes an invoice. A charge can be recorded before it reaches a
+-- broker statement, so the reference may be empty while it is charged,
+-- waived or void; it cannot be marked paid without the line on the broker
+-- statement that matches it, which is what the portal shows beside it. A
+-- settled charge is fixed, and no charge is deleted (freeze_settled_fee).
 -- ---------------------------------------------------------------------------
 
 create table if not exists fee_charges (
@@ -446,15 +596,16 @@ create table if not exists fee_charges (
   amount numeric(20, 2) not null check (amount >= 0),
   currency text not null check (currency ~ '^[A-Z]{3}$'),
   agreement_clause text not null check (length(btrim(agreement_clause)) > 0),
-  invoice_document_id uuid,
+  -- A document setting out the charge, if one was issued.
+  document_id uuid,
   broker_statement_reference text,
-  status fee_charge_status not null default 'invoiced',
-  invoiced_at timestamptz not null default now(),
+  status fee_charge_status not null default 'charged',
+  charged_at timestamptz not null default now(),
   paid_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   foreign key (broker_account_id, client_id) references broker_accounts (id, client_id) on delete restrict,
-  foreign key (invoice_document_id, client_id) references documents (id, client_id) on delete restrict,
+  foreign key (document_id, client_id) references documents (id, client_id) on delete restrict,
   constraint fee_charges_period_order check (period_end >= period_start),
   constraint fee_charges_paid_matches_statement check (
     status <> 'paid'
@@ -464,9 +615,14 @@ create table if not exists fee_charges (
 
 create index if not exists fee_charges_client_idx on fee_charges (client_id, period_start desc);
 create index if not exists fee_charges_broker_account_idx on fee_charges (broker_account_id, client_id);
-create index if not exists fee_charges_invoice_idx on fee_charges (invoice_document_id);
+create index if not exists fee_charges_document_idx on fee_charges (document_id, client_id);
 
 alter table fee_charges enable row level security;
+
+drop trigger if exists fee_charges_freeze_settled on fee_charges;
+create trigger fee_charges_freeze_settled
+  before update or delete on fee_charges
+  for each row execute function freeze_settled_fee();
 
 drop trigger if exists fee_charges_updated_at on fee_charges;
 create trigger fee_charges_updated_at
@@ -476,7 +632,7 @@ create trigger fee_charges_updated_at
 -- ---------------------------------------------------------------------------
 -- Notices. What the firm is obliged to tell a client, addressed to one
 -- client or, with client_id null, to every client. Visible once issued, and
--- fixed from then on.
+-- fixed from then on; issued_at is never earlier than when it was set.
 -- ---------------------------------------------------------------------------
 
 create table if not exists notices (
@@ -497,7 +653,7 @@ alter table notices enable row level security;
 
 drop trigger if exists notices_freeze_issued on notices;
 create trigger notices_freeze_issued
-  before update or delete on notices
+  before insert or update or delete on notices
   for each row execute function freeze_issued_notice();
 
 drop trigger if exists notices_updated_at on notices;
@@ -573,8 +729,7 @@ create trigger desk_notes_updated_at
 --
 -- Which checks must pass before an account is opened is the firm's
 -- procedure, under a framework not yet confirmed, so it is not encoded here.
--- Nor does the database refuse anyone by nationality or residence: the
--- programme is offered in any country.
+-- Nor does the database refuse anyone by nationality or residence.
 -- ---------------------------------------------------------------------------
 
 create table if not exists kyc_checks (
@@ -591,7 +746,7 @@ create table if not exists kyc_checks (
 );
 
 create index if not exists kyc_checks_client_idx on kyc_checks (client_id, kind);
-create index if not exists kyc_checks_evidence_idx on kyc_checks (evidence_document_id);
+create index if not exists kyc_checks_evidence_idx on kyc_checks (evidence_document_id, client_id);
 
 alter table kyc_checks enable row level security;
 
@@ -602,7 +757,13 @@ create trigger kyc_checks_updated_at
 
 -- ---------------------------------------------------------------------------
 -- Ops PIN hashes. Per-user PBKDF2 hash of the six-digit ops PIN. Verified
--- fresh on every visit to a PIN-guarded page.
+-- fresh on every visit to a PIN-guarded page, by server code with the
+-- service-role client.
+--
+-- No policy on this table or on mfa_backup_codes, so no browser session
+-- reads either. A six-digit PIN has a million values: anyone holding a
+-- stolen session who could read its hash and salt would recover the PIN
+-- offline, and the step-up it exists for would be worth nothing.
 -- ---------------------------------------------------------------------------
 
 create table if not exists ops_pin_hashes (
@@ -635,7 +796,8 @@ alter table mfa_backup_codes enable row level security;
 -- change to a client, account, authority or mandate, fee decision, notice,
 -- and 2FA change.
 --
--- Written from server code with the service-role client. Never mutated: the
+-- Written from server code with the service-role client. occurred_at is set
+-- by the database on insert, whatever the caller sends. Never mutated: the
 -- triggers below refuse UPDATE, DELETE and TRUNCATE from every role,
 -- including the service role. One consequence is that the ON DELETE SET NULL
 -- on actor_user_id can no longer fire, since it is an update, so an auth user
@@ -663,6 +825,11 @@ create index if not exists audit_events_target_idx on audit_events (target_kind,
 
 alter table audit_events enable row level security;
 
+drop trigger if exists audit_events_stamp on audit_events;
+create trigger audit_events_stamp
+  before insert on audit_events
+  for each row execute function stamp_audit_event();
+
 drop trigger if exists audit_events_append_only on audit_events;
 create trigger audit_events_append_only
   before update or delete on audit_events
@@ -681,9 +848,10 @@ create trigger audit_events_no_truncate
 -- Read policies. Every policy is FOR SELECT TO authenticated, so anon reads
 -- nothing at all. A client reads their own rows, found through
 -- clients.auth_user_id; portal credentials are issued only on account
--- opening, so having a clients row is what makes an authenticated user a
--- client. auth.uid() is wrapped in a sub-select so Postgres evaluates it once
--- per query rather than once per row.
+-- opening (clients_credentials_from_account_opening), so having a clients
+-- row is what makes an authenticated user a client. auth.uid() is wrapped in
+-- a sub-select so Postgres evaluates it once per query rather than once per
+-- row.
 -- ---------------------------------------------------------------------------
 
 drop policy if exists clients_self_read on clients;
@@ -780,20 +948,12 @@ create policy desk_notes_active_client_read on desk_notes
     )
   );
 
--- Ops PIN hashes and MFA backup codes: the authenticated user reads only
--- their own row (write is service-role only).
+-- Ops PIN hashes and MFA backup codes: no policy, so only the service role
+-- reads them. The drops remove the self-read policies an earlier draft of
+-- this file created, wherever it was applied.
 
 drop policy if exists ops_pin_hashes_self_read on ops_pin_hashes;
-create policy ops_pin_hashes_self_read on ops_pin_hashes
-  for select
-  to authenticated
-  using (user_id = (select auth.uid()));
-
 drop policy if exists mfa_backup_codes_self_read on mfa_backup_codes;
-create policy mfa_backup_codes_self_read on mfa_backup_codes
-  for select
-  to authenticated
-  using (user_id = (select auth.uid()));
 
 -- ---------------------------------------------------------------------------
 -- Write privileges. Revoked from anon and authenticated on every table, so a
