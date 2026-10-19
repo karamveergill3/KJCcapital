@@ -67,11 +67,11 @@ export default function RiskPage() {
         on which the firm is permitted to conduct it. Ask the firm directly what that basis is,
         and read the client agreement, before granting any trading authority.
       </p>
-      <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Not for United States persons</h3>
+      <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Where you live</h3>
       <p>
-        The programme is not offered to, and no authority will be accepted from, any person who
-        is a United States person within the meaning of Regulation S under the Securities Act
-        of 1933.
+        The protections available to you, and whether an arrangement of this kind may be entered
+        into from your country, are set by the law where you live, not by the firm. Satisfy
+        yourself on both before granting any trading authority.
       </p>
     </LegalPage>
   );

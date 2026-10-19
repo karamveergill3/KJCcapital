@@ -28,9 +28,8 @@ export default function TermsPage() {
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Eligibility</h3>
       <p>
         Access to the investor portal is available only to existing clients of the firm. The
-        firm does not accept United States persons within the meaning of Regulation S as
-        clients, and will not respond to enquiries that indicate US residence, US citizenship,
-        or a US taxable presence.
+        programme is available only to persons who have passed the firm&apos;s identity and
+        anti-money-laundering checks.
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Intellectual property</h3>
       <p>

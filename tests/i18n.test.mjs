@@ -80,3 +80,24 @@ test("visible copy says client, not investor", async () => {
   }
   assert.deepEqual(offenders, [], `say client, not investor:\n${offenders.join("\n")}`);
 });
+
+// Clients are accepted from any country. The US-persons exclusion used to sit
+// on six surfaces at once; if it ever comes back, it has to come back on all of
+// them, so a stray copy in one place fails here rather than contradicting the
+// rest of the site.
+test("no surface excludes clients by nationality or residence", async () => {
+  const appDir = resolve(here, "..", "src", "app");
+  const entries = await readdir(appDir, { recursive: true });
+  const files = [
+    resolve(here, "..", "src", "lib", "i18n", "dictionaries", "en.json"),
+    resolve(here, "..", "src", "lib", "pdfStyle.js"),
+    ...entries.filter((e) => e.endsWith("page.jsx")).map((e) => resolve(appDir, e))
+  ];
+  const offenders = [];
+  for (const file of files) {
+    const body = await readFile(file, "utf8");
+    const match = body.match(/united states persons?|\bu\.?s\.? persons?\b|regulation s\b/i);
+    if (match) offenders.push(`${file.split("/src/")[1]}: ${match[0]}`);
+  }
+  assert.deepEqual(offenders, [], `client exclusion still published:\n${offenders.join("\n")}`);
+});

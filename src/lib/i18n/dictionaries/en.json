@@ -125,7 +125,7 @@
     "outroTitle": "Written to a director.",
     "outroBody": "The programme is offered by introduction. If it appears to fit, write to us, and a director will reply personally. Replies are ordinarily within two business days.",
     "outroCta": "Request an introduction",
-    "outroSignoff": "The firm is not registered with the U.S. Securities and Exchange Commission and does not accept U.S. persons."
+    "outroSignoff": "Clients are taken on by introduction, subject to the firm's identity and anti-money-laundering checks."
   },
   "ticker": {
     "label": "Terms of the arrangement",
@@ -133,8 +133,7 @@
       { "term": "Client money we hold", "value": "None" },
       { "term": "Statements from", "value": "Your broker, not us" },
       { "term": "Revoking our authority", "value": "Yours, direct with the broker" },
-      { "term": "New clients", "value": "By introduction only" },
-      { "term": "United States persons", "value": "Not accepted" }
+      { "term": "New clients", "value": "By introduction only" }
     ]
   },
   "programme": {
@@ -152,7 +151,7 @@
       },
       {
         "label": "What it does not do",
-        "body": "The programme does not offer capital guarantees or targeted returns. The firm does not hold client money, does not take custody of client assets, and does not have authority to withdraw from a client's account. It does not take a position it could not exit in ordinary market conditions. It does not accept US persons as clients."
+        "body": "The programme does not offer capital guarantees or targeted returns. The firm does not hold client money, does not take custody of client assets, and does not have authority to withdraw from a client's account. It does not take a position it could not exit in ordinary market conditions."
       }
     ]
   },
@@ -230,6 +229,6 @@
     "regulatory": "KJC Capital manages clients' own broker accounts under a limited trading authority and does not hold client money. Terms are set out in the client agreement, provided on introduction."
   },
   "risk": {
-    "banner": "Capital is at risk. The programme is speculative and may result in the loss of everything committed to it. Past performance is not a guide to future returns. The programme is not available to US persons."
+    "banner": "Capital is at risk. The programme is speculative and may result in the loss of everything committed to it. Past performance is not a guide to future returns."
   }
 }

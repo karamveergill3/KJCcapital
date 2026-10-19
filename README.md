@@ -52,7 +52,12 @@ What the firm actually does, as stated by the owner:
   and under the client's own credentials.
 - **KJC is the intermediary**, not the broker and not the custodian.
 - **The firm does not hold client money.** Its authority is to trade the account.
-- **No US persons.**
+- **Clients from any country.** The site used to exclude US persons. The owner
+  removed that on 19 October 2026: the programme is offered to anyone who passes
+  the firm's identity and anti-money-laundering checks. Whether it may lawfully
+  be offered to a given person is set by the law where that person lives, not
+  by where the firm is, and the risk page says so. This was raised with the
+  owner when the exclusion came out.
 
 Consequences that keep catching people out:
 
@@ -65,6 +70,9 @@ Consequences that keep catching people out:
 Still unconfirmed, and deliberately absent from the site rather than guessed:
 
 - Which broker the accounts are held with.
+- Where the firm is established. The owner says it has no fixed base and that
+  the domain will change; when it does, update `NEXT_PUBLIC_SITE_URL`, the
+  `FALLBACK` in `src/lib/site.js` and the canonical-domain tests together.
 - Whether the trading authority is genuinely trade-only, or also permits
   withdrawal. The site currently states trade-only. **If that is wrong, the
   governance and disclosures pages are wrong and must be corrected first.**
