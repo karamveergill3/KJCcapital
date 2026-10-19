@@ -8,9 +8,9 @@ export async function GET() {
     "unknown";
   const shortSha = sha.slice(0, 12);
   const environment = process.env.VERCEL_ENV || process.env.NODE_ENV || "unknown";
-  const deployedAt = process.env.VERCEL_DEPLOYMENT_ID
-    ? new Date().toISOString()
-    : null;
+  // Stamped once by next.config.mjs when the build ran. Reading the clock here
+  // reported the time of each request instead.
+  const deployedAt = process.env.BUILD_TIME || null;
   return Response.json(
     {
       sha,

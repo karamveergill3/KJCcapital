@@ -1,20 +1,17 @@
 import { getDictionary } from "@/lib/i18n/getDictionary";
+import { pageMeta } from "@/lib/pageMeta";
 import PageHead from "@/components/PageHead";
 import EditorialSection from "@/components/EditorialSection";
 
 export async function generateMetadata({ params }) {
   const { lang } = await params;
   const dict = await getDictionary(lang);
-  return {
+  return pageMeta({
+    lang,
+    path: "/contact",
     title: dict.contact.leadTitle,
-    description: dict.contact.metaDescription,
-    alternates: { canonical: `/${lang}/contact` },
-    openGraph: {
-      title: dict.contact.leadTitle,
-      description: dict.contact.metaDescription,
-      url: `/${lang}/contact`
-    }
-  };
+    description: dict.contact.metaDescription
+  });
 }
 
 export default async function ContactPage({ params }) {

@@ -1,20 +1,17 @@
 import { getDictionary } from "@/lib/i18n/getDictionary";
+import { pageMeta } from "@/lib/pageMeta";
 import PageHead from "@/components/PageHead";
 import EditorialSection from "@/components/EditorialSection";
 
 export async function generateMetadata({ params }) {
   const { lang } = await params;
   const dict = await getDictionary(lang);
-  return {
+  return pageMeta({
+    lang,
+    path: "/programme",
     title: dict.programme.leadTitle,
-    description: dict.programme.metaDescription,
-    alternates: { canonical: `/${lang}/programme` },
-    openGraph: {
-      title: dict.programme.leadTitle,
-      description: dict.programme.metaDescription,
-      url: `/${lang}/programme`
-    }
-  };
+    description: dict.programme.metaDescription
+  });
 }
 
 export default async function ProgrammePage({ params }) {

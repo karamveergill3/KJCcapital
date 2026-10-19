@@ -1,13 +1,14 @@
 import LegalPage from "@/components/LegalPage";
+import { pageMeta } from "@/lib/pageMeta";
 
 export async function generateMetadata({ params }) {
   const { lang } = await params;
-  return {
+  return pageMeta({
+    lang,
+    path: "/legal/terms",
     title: "Terms of use",
-    description: "Terms of use for the KJC Capital website. Nothing on this site is an offer to the public or the terms on which the firm manages an account.",
-    alternates: { canonical: `/${lang}/legal/terms` },
-    openGraph: { title: "Terms of use", url: `/${lang}/legal/terms` }
-  };
+    description: "Terms of use for the KJC Capital website. Nothing on this site is an offer to the public or the terms on which the firm manages an account."
+  });
 }
 
 export default function TermsPage() {

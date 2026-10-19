@@ -69,8 +69,15 @@ test("the tape states nothing the firm cannot stand behind", async () => {
 
   assert.ok(tape.length >= 6, "the tape should be long enough to read as a tape");
   for (const item of tape) {
-    // A figure on the tape would be a performance claim, and none is verified.
-    assert.doesNotMatch(item.value, /\d/, `tape carries a figure: ${item.term} / ${item.value}`);
-    assert.doesNotMatch(item.value, /\bfund\b|\bNAV\b|\bunits?\b/i, `tape uses pooled-fund language: ${item.value}`);
+    // The term is printed beside the value, so the two are checked as the row
+    // a reader sees. A figure on the tape would be a performance claim, and
+    // none is verified.
+    const printed = `${item.term} ${item.value}`;
+    assert.doesNotMatch(printed, /\d/, `tape carries a figure: ${printed}`);
+    assert.doesNotMatch(
+      printed,
+      /\b(fund|NAV|units?|subscriptions?|redemptions?)\b/i,
+      `tape uses pooled-fund language: ${printed}`
+    );
   }
 });

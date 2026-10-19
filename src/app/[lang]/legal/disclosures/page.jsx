@@ -1,13 +1,14 @@
 import LegalPage from "@/components/LegalPage";
+import { pageMeta } from "@/lib/pageMeta";
 
 export async function generateMetadata({ params }) {
   const { lang } = await params;
-  return {
+  return pageMeta({
+    lang,
+    path: "/legal/disclosures",
     title: "Disclosures",
-    description: "Regulatory disclosures for KJC Capital and its managed account programme.",
-    alternates: { canonical: `/${lang}/legal/disclosures` },
-    openGraph: { title: "Disclosures", url: `/${lang}/legal/disclosures` }
-  };
+    description: "Regulatory disclosures for KJC Capital and its managed account programme."
+  });
 }
 
 export default function DisclosuresPage() {

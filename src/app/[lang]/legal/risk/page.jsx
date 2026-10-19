@@ -1,14 +1,15 @@
 import LegalPage from "@/components/LegalPage";
+import { pageMeta } from "@/lib/pageMeta";
 
 export async function generateMetadata({ params }) {
   const { lang } = await params;
-  return {
+  return pageMeta({
+    lang,
+    path: "/legal/risk",
     title: "Risk warning",
     description:
-      "Capital is at risk. Risk warning for the KJC Capital managed account programme, including the risks specific to each register.",
-    alternates: { canonical: `/${lang}/legal/risk` },
-    openGraph: { title: "Risk warning", url: `/${lang}/legal/risk` }
-  };
+      "Capital is at risk. Risk warning for the KJC Capital managed account programme, including the risks specific to each register."
+  });
 }
 
 export default function RiskPage() {

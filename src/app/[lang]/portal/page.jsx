@@ -1,6 +1,7 @@
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import { longDate, money, shortDay, shortMonth, signedPercent } from "@/lib/kjc";
 import { fetchSiteFeed, keystoneConfig, snapshotAccount } from "@/lib/keystone";
+import { pageMeta } from "@/lib/pageMeta";
 import { account as example, activity, deskNote, documents, exampleAccount, fees, notices, registers, rules } from "@/lib/portalExample";
 import PageHead from "@/components/PageHead";
 import EditorialSection from "@/components/EditorialSection";
@@ -16,17 +17,16 @@ export async function generateMetadata({ params }) {
   const { lang } = await params;
   const dict = await getDictionary(lang);
   return {
-    title: dict.portal.leadTitle,
-    description: dict.portal.metaDescription,
-    alternates: { canonical: `/${lang}/portal` },
-    // robots.txt already disallows /*/portal. Saying it again in the page's own
-    // head means a crawler that ignores one still sees the other.
-    robots: { index: false, follow: false },
-    openGraph: {
+    ...pageMeta({
+      lang,
+      path: "/portal",
       title: dict.portal.leadTitle,
-      description: dict.portal.metaDescription,
-      url: `/${lang}/portal`
-    }
+      description: dict.portal.metaDescription
+    }),
+    // This alone keeps the portal out of the index. robots.txt must not block
+    // the page as well: a crawler that obeys a disallow never fetches the page,
+    // so it never reads the noindex and can still list the URL from links.
+    robots: { index: false, follow: false }
   };
 }
 
