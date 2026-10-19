@@ -32,7 +32,7 @@ export const account = {
 export function exampleAccount() {
   const latest = account.snapshots[account.snapshots.length - 1];
   return {
-    live: false,
+    mode: "example",
     currency: account.currency,
     asAt: account.asAt,
     snapshot: latest,

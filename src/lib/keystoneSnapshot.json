@@ -1,0 +1,431 @@
+{
+ "as_at": "2026-10-19T18:29:52.506+00:00",
+ "daily": [
+  {
+   "day": "2026-06-28",
+   "closed": -10.2,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-06-29",
+   "closed": -38.25,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-06-30",
+   "closed": 2150.03,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-01",
+   "closed": 2128.91,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-02",
+   "closed": 4456.15,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-03",
+   "closed": 4454.8,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-06",
+   "closed": 7981.5,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-08",
+   "closed": 7970.28,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-09",
+   "closed": 9456.24,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-10",
+   "closed": 10398.94,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-12",
+   "closed": 10387.72,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-13",
+   "closed": 13711.24,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-14",
+   "closed": 17580.43,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-15",
+   "closed": 20498.36,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-16",
+   "closed": 22262.83,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-17",
+   "closed": 22241.98,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-20",
+   "closed": 23983.15,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-21",
+   "closed": 23977.87,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-22",
+   "closed": 25427.56,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-23",
+   "closed": 25400.47,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-27",
+   "closed": 25395.16,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-29",
+   "closed": 26277.01,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-30",
+   "closed": 37393.88,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-07-31",
+   "closed": 52461.95,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-08-02",
+   "closed": 52965.89,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-08-03",
+   "closed": 54629.73,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-08-04",
+   "closed": 54626.97,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-08-05",
+   "closed": 56394.99,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-08-06",
+   "closed": 57896.38,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-08-07",
+   "closed": 59595.6,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-08-10",
+   "closed": 59563.8,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-08-11",
+   "closed": 59551.8,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-08-30",
+   "closed": 70961.24,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-08-31",
+   "closed": 72395.04,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-01",
+   "closed": 74042.86,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-02",
+   "closed": 78562.86,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-03",
+   "closed": 83529.22,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-04",
+   "closed": 90034.06,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-07",
+   "closed": 95862.67,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-08",
+   "closed": 103475.4,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-09",
+   "closed": 105563.98,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-10",
+   "closed": 107578.13,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-11",
+   "closed": 107528.33,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-13",
+   "closed": 107523.02,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-14",
+   "closed": 109875,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-15",
+   "closed": 116152.63,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-16",
+   "closed": 118024.28,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-17",
+   "closed": 118447.02,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-18",
+   "closed": 125207,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-21",
+   "closed": 125643.09,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-22",
+   "closed": 125614.62,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-23",
+   "closed": 126688.87,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-24",
+   "closed": 128247.24,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-25",
+   "closed": 129910.29,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-28",
+   "closed": 132925.56,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-29",
+   "closed": 134905.01,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-09-30",
+   "closed": 136602.41,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-10-01",
+   "closed": 144767.49,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-10-02",
+   "closed": 146132.21,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-10-05",
+   "closed": 151403.83,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-10-06",
+   "closed": 151362.37,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-10-07",
+   "closed": 155107.1,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-10-08",
+   "closed": 156287.25,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-10-09",
+   "closed": 156740.68,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-10-12",
+   "closed": 159122.9,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-10-13",
+   "closed": 159560.45,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-10-14",
+   "closed": 163009.75,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-10-15",
+   "closed": 164884.59,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-10-16",
+   "closed": 168508.15,
+   "equity": null,
+   "capital": 500010.2
+  },
+  {
+   "day": "2026-10-19",
+   "closed": 168508.15,
+   "equity": 582858.69,
+   "capital": 500010.2
+  }
+ ],
+ "credit": 0,
+ "equity": 582858.69,
+ "balance": 668518.35,
+ "currency": "USD",
+ "deposits": 1000000,
+ "withdrawals": 499989.8
+}

@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { ILLUSTRATIVE, account, exampleAccount, registers } from "../src/lib/portalExample.js";
 import { kjcQuote } from "../src/lib/kjc.js";
+import { snapshotAccount } from "../src/lib/keystone.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "..");
@@ -14,8 +15,9 @@ const root = resolve(here, "..");
 test("the example account is labelled as one wherever it is shown", async () => {
   assert.equal(ILLUSTRATIVE, true);
   const page = await readFile(resolve(root, "src", "app", "[lang]", "portal", "page.jsx"), "utf8");
-  assert.match(page, /\?\s*portal\.live\s*:\s*portal\.example/, "portal page no longer picks the example notice when there is no live feed");
-  assert.match(page, /\{notice\.body\}/, "portal page no longer renders the notice");
+  assert.match(page, /example:\s*portal\.example/, "portal page no longer picks the example notice for example data");
+  assert.match(page, /snapshot:\s*portal\.snapshot/, "portal page no longer labels a snapshot as one");
+  assert.match(page, /\{noticeBody\}/, "portal page no longer renders the notice");
   const dict = JSON.parse(await readFile(resolve(root, "src", "lib", "i18n", "dictionaries", "en.json"), "utf8"));
   assert.match(dict.portal.example.body, /illustrative/i);
   assert.match(dict.portal.example.body, /not the programme's track record/i);
@@ -48,8 +50,21 @@ test("register weights stay inside their example limits and within the whole acc
 
 test("the example is marked as not live, so the page labels it as an example", () => {
   const data = exampleAccount();
-  assert.equal(data.live, false);
+  assert.equal(data.mode, "example");
   assert.equal(data.history.length, account.snapshots.length);
   assert.equal(data.history.at(-1).kjc, 5);
   assert.equal(data.history.at(-1).closed, 10);
+});
+
+// The snapshot is the real 500k account read from Keystone, and the page must
+// call it a snapshot with its time, never live.
+test("the committed snapshot is the real account, flagged as a snapshot", async () => {
+  const snap = snapshotAccount();
+  assert.equal(snap.mode, "snapshot");
+  assert.match(snap.asAt, /^\d{4}-\d{2}-\d{2}T/);
+  const q = kjcQuote(snap.snapshot);
+  assert.ok(q.percent > 0 && q.floating < 0, "expected closed profit with open drawdown");
+  const dict = JSON.parse(await readFile(resolve(root, "src", "lib", "i18n", "dictionaries", "en.json"), "utf8"));
+  assert.match(dict.portal.snapshot.body, /\{time\}/);
+  assert.match(dict.portal.snapshot.body, /not live/);
 });

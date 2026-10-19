@@ -155,13 +155,29 @@ the page reveals the strategy. The page rebuilds at most once a minute.
 
 It needs two server-side environment variables in Vercel, `KEYSTONE_URL` and
 `KEYSTONE_PUBLISHABLE_KEY` (Keystone's publishable key, which is public by
-design), and the SQL above applied to Keystone. If either is missing, or the
-feed fails or returns anything unexpected, the page falls back to the
-**example account** in `src/lib/portalExample.js` under a notice that every
-figure is illustrative; `tests/portal.test.mjs` keeps that notice wired. Live
-mode says the figures are live instead, and the sections still made up
-(registers, activity, fees, documents, notices, desk note) carry an Example
-tag. Because the page is public, whatever account the feed names is public.
+design; both are set), and the SQL above applied to Keystone. The page has
+three modes, chosen in order, and says which one it is in:
+
+- **live**: the feed answered. The $KJC board polls `/api/kjc` once a minute
+  and flashes whatever moved, so a visitor sees it change without reloading.
+- **snapshot**: no live feed, so the page shows `src/lib/keystoneSnapshot.json`,
+  the same feed read once from Keystone and committed, labelled with the time
+  it was taken and "not live". Refresh it by re-running the feed query against
+  Keystone and replacing the file.
+- **example**: only if the snapshot is missing too; the invented account in
+  `src/lib/portalExample.js`, under a notice that every figure is illustrative.
+
+`tests/portal.test.mjs` keeps each notice wired to its mode. The sections still
+made up (registers, activity, fees, documents, notices, desk note) carry an
+Example tag in every mode. Because the page is public, whatever account the
+feed names is public.
+
+The **$KJC board** (`src/components/portal/KjcBoard.jsx`) is the one dark band
+on the site: a fixed `$KJC` badge with a status light, a monospaced tape where
+gains read green with an up arrow and losses red with a down arrow, the figure
+itself large, a sparkline of $KJC against closed return on one scale, and the
+six numbers behind it. The figures come from `src/lib/kjcBoard.js`; closed
+return plus open drawdown always equals $KJC.
 
 **$KJC** (`src/lib/kjc.js`) is the client's return measured on equity:
 

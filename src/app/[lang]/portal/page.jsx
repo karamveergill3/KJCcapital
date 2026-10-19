@@ -1,11 +1,11 @@
 import { getDictionary } from "@/lib/i18n/getDictionary";
-import { dateTime, kjcQuote, longDate, money, shortDay, shortMonth, signedPercent } from "@/lib/kjc";
-import { fetchSiteFeed, keystoneConfig } from "@/lib/keystone";
+import { dateTime, longDate, money, shortDay, shortMonth, signedPercent } from "@/lib/kjc";
+import { fetchSiteFeed, keystoneConfig, snapshotAccount } from "@/lib/keystone";
+import { boardFigures } from "@/lib/kjcBoard";
 import { activity, deskNote, documents, exampleAccount, fees, notices, registers, rules } from "@/lib/portalExample";
 import PageHead from "@/components/PageHead";
 import EditorialSection from "@/components/EditorialSection";
-import Ticker from "@/components/Ticker";
-import KjcQuote from "@/components/portal/KjcQuote";
+import KjcBoard from "@/components/portal/KjcBoard";
 import KjcChart from "@/components/portal/KjcChart";
 import RegisterMeters from "@/components/portal/RegisterMeters";
 
@@ -36,28 +36,20 @@ export default async function PortalPage({ params }) {
   const dict = await getDictionary(lang);
   const { portal } = dict;
 
-  // Live from Keystone when the feed answers; otherwise the labelled example.
-  const data = (await fetchSiteFeed(keystoneConfig())) ?? exampleAccount();
-  const { currency, live } = data;
-  const quote = kjcQuote(data.snapshot);
-  const notice = live ? portal.live : portal.example;
-  const asAt = live ? (data.asAt ? dateTime(data.asAt) : "") : longDate(data.asAt);
+  // Live from Keystone when the feed answers. Otherwise the committed snapshot
+  // of the real account, labelled with its time, and only if that is missing
+  // too, the labelled example.
+  const data = (await fetchSiteFeed(keystoneConfig())) ?? snapshotAccount() ?? exampleAccount();
+  const { currency, mode } = data;
+  const notice = { live: portal.live, snapshot: portal.snapshot, example: portal.example }[mode];
+  const noticeBody = notice.body.replace("{time}", data.asAt ? dateTime(data.asAt) : "");
+  const daily = mode !== "example";
   const points = data.history.map((h) => ({
-    label: live ? shortDay(h.at) : shortMonth(h.at),
+    label: daily ? shortDay(h.at) : shortMonth(h.at),
     closed: h.closed,
     kjc: h.kjc
   }));
   const firstEquity = data.history.find((h) => h.kjc !== null);
-
-  const tape = [
-    { term: portal.quote.symbol, value: signedPercent(quote.percent) },
-    { term: portal.quote.net, value: money(quote.net, currency, { signed: true }) },
-    { term: portal.quote.closed, value: money(quote.closed, currency, { signed: true }) },
-    { term: portal.quote.floating, value: money(quote.floating, currency, { signed: true }) },
-    { term: portal.quote.equity, value: money(data.snapshot.equity, currency) },
-    { term: portal.quote.balance, value: money(data.snapshot.balance, currency) },
-    { term: portal.quote.capital, value: money(quote.capital, currency) }
-  ];
 
   return (
     <>
@@ -66,32 +58,27 @@ export default async function PortalPage({ params }) {
       <div className="shell pb-10">
         <aside className="border border-[var(--color-gold)] bg-[var(--color-paper-white)] px-5 py-4 max-w-3xl">
           <div className="smallcaps smallcaps-gold">{notice.label}</div>
-          <p className="text-sm text-[var(--color-ink-soft)] mt-2 leading-relaxed">{notice.body}</p>
+          <p className="text-sm text-[var(--color-ink-soft)] mt-2 leading-relaxed">{noticeBody}</p>
         </aside>
       </div>
 
-      <div className="border-y border-[var(--color-rule)] bg-[var(--color-paper-warm)]/50">
-        <div className="shell py-2">
-          <Ticker rows={tape} label={portal.tapeLabel} />
-        </div>
-      </div>
-
-      <section className="shell py-12 md:py-16">
-        <KjcQuote
-          quote={quote}
-          currency={currency}
-          copy={portal.quote}
-          asAt={asAt}
-          source={live ? portal.quote.sourceLive : portal.quote.sourceExample}
-        />
-      </section>
+      <KjcBoard
+        mode={mode}
+        initial={{
+          figures: boardFigures(data.snapshot),
+          currency,
+          asAt: mode === "example" ? longDate(data.asAt) : data.asAt
+        }}
+        history={{ closed: data.history.map((h) => h.closed), kjc: data.history.map((h) => h.kjc) }}
+        copy={{ ...portal.quote, tapeLabel: portal.tapeLabel }}
+      />
 
       <section className="shell py-12 md:py-16 border-t border-[var(--color-rule)]">
         <div className="smallcaps">{portal.performance.label}</div>
         <h2 className="serif text-2xl md:text-3xl mt-3 mb-4 leading-tight text-[var(--color-ink)]">
           {portal.performance.title}
         </h2>
-        {live && firstEquity ? (
+        {daily && firstEquity ? (
           <p className="text-sm text-[var(--color-ink-soft)] mb-8 max-w-2xl leading-relaxed">
             {portal.performance.equitySince} {longDate(firstEquity.at)}.
           </p>
