@@ -39,7 +39,7 @@ export default function SiteHeader({ lang, nav, ticker }) {
         <div className="shell py-2 flex items-center gap-3 sm:gap-6">
           <LocalTime />
           <div className="flex-1 min-w-0 sm:border-l sm:border-[var(--color-rule)] sm:pl-6">
-            <Ticker rows={ticker.rows} extra={ticker.extra} label={ticker.label} />
+            <Ticker rows={ticker.rows} extra={ticker.extra} label={ticker.label} pause={ticker.pause} />
           </div>
         </div>
       </div>
