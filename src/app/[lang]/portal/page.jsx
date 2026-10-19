@@ -1,8 +1,7 @@
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import { dateTime, longDate, money, shortDay, shortMonth, signedPercent } from "@/lib/kjc";
 import { fetchSiteFeed, keystoneConfig, snapshotAccount } from "@/lib/keystone";
-import { boardFigures } from "@/lib/kjcBoard";
-import { activity, deskNote, documents, exampleAccount, fees, notices, registers, rules } from "@/lib/portalExample";
+import { account as example, activity, deskNote, documents, exampleAccount, fees, notices, registers, rules } from "@/lib/portalExample";
 import PageHead from "@/components/PageHead";
 import EditorialSection from "@/components/EditorialSection";
 import KjcBoard from "@/components/portal/KjcBoard";
@@ -40,16 +39,11 @@ export default async function PortalPage({ params }) {
   // of the real account, labelled with its time, and only if that is missing
   // too, the labelled example.
   const data = (await fetchSiteFeed(keystoneConfig())) ?? snapshotAccount() ?? exampleAccount();
-  const { currency, mode } = data;
+  const { mode } = data;
   const notice = { live: portal.live, snapshot: portal.snapshot, example: portal.example }[mode];
   const noticeBody = notice.body.replace("{time}", data.asAt ? dateTime(data.asAt) : "");
   const daily = mode !== "example";
-  const points = data.history.map((h) => ({
-    label: daily ? shortDay(h.at) : shortMonth(h.at),
-    closed: h.closed,
-    kjc: h.kjc
-  }));
-  const firstEquity = data.history.find((h) => h.kjc !== null);
+  const points = data.history.map((h) => ({ label: daily ? shortDay(h.at) : shortMonth(h.at), kjc: h.kjc }));
 
   return (
     <>
@@ -64,56 +58,42 @@ export default async function PortalPage({ params }) {
 
       <KjcBoard
         mode={mode}
-        initial={{
-          figures: boardFigures(data.snapshot),
-          currency,
-          asAt: mode === "example" ? longDate(data.asAt) : data.asAt
-        }}
-        history={{ closed: data.history.map((h) => h.closed), kjc: data.history.map((h) => h.kjc) }}
+        initial={{ percent: data.percent, asAt: data.asAt }}
         copy={{ ...portal.quote, tapeLabel: portal.tapeLabel }}
       />
 
-      <section className="shell py-12 md:py-16 border-t border-[var(--color-rule)]">
-        <div className="smallcaps">{portal.performance.label}</div>
-        <h2 className="serif text-2xl md:text-3xl mt-3 mb-4 leading-tight text-[var(--color-ink)]">
-          {portal.performance.title}
-        </h2>
-        {daily && firstEquity ? (
-          <p className="text-sm text-[var(--color-ink-soft)] mb-8 max-w-2xl leading-relaxed">
-            {portal.performance.equitySince} {longDate(firstEquity.at)}.
-          </p>
-        ) : (
-          <div className="mb-8" />
-        )}
-        <KjcChart
-          points={points}
-          label={portal.performance.title}
-          names={{ kjc: portal.performance.kjc, closed: portal.performance.closed }}
-        />
-        <details className="mt-6">
-          <summary className="smallcaps cursor-pointer min-h-11 flex items-center">{portal.performance.table}</summary>
-          <div className="overflow-x-auto max-h-96 overflow-y-auto mt-4">
-            <table className="editorial max-w-md">
-              <thead>
-                <tr>
-                  <th scope="col">{portal.performance.date}</th>
-                  <th scope="col" className="text-right">{portal.performance.kjc}</th>
-                  <th scope="col" className="text-right">{portal.performance.closed}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.history.map((h) => (
-                  <tr key={h.at}>
-                    <td>{longDate(h.at.slice(0, 10))}</td>
-                    <td className="tabular text-right">{h.kjc === null ? "" : signedPercent(h.kjc)}</td>
-                    <td className="tabular text-right">{signedPercent(h.closed)}</td>
+      {/* A history needs two days to draw. Until Keystone has sampled equity
+          on more than one day, the board's figure is the whole story. */}
+      {points.length > 1 ? (
+        <section className="shell py-12 md:py-16 border-t border-[var(--color-rule)]">
+          <div className="smallcaps">{portal.performance.label}</div>
+          <h2 className="serif text-2xl md:text-3xl mt-3 mb-8 leading-tight text-[var(--color-ink)]">
+            {portal.performance.title}
+          </h2>
+          <KjcChart points={points} label={portal.performance.title} />
+          <details className="mt-6">
+            <summary className="smallcaps cursor-pointer min-h-11 flex items-center">{portal.performance.table}</summary>
+            <div className="overflow-x-auto max-h-96 overflow-y-auto mt-4">
+              <table className="editorial max-w-sm">
+                <thead>
+                  <tr>
+                    <th scope="col">{portal.performance.date}</th>
+                    <th scope="col" className="text-right">{portal.performance.kjc}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </details>
-      </section>
+                </thead>
+                <tbody>
+                  {data.history.map((h) => (
+                    <tr key={h.at}>
+                      <td>{longDate(h.at.slice(0, 10))}</td>
+                      <td className="tabular text-right">{signedPercent(h.kjc)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </details>
+        </section>
+      ) : null}
 
       <EditorialSection label={portal.mandate.label} title={portal.mandate.title}>
         <dl className="grid gap-x-10 gap-y-6 sm:grid-cols-2 not-prose">
@@ -170,7 +150,7 @@ export default async function PortalPage({ params }) {
                 <tr key={fee.statementLine}>
                   <td>{fee.period}</td>
                   <td>{fee.description}</td>
-                  <td className="tabular text-right">{money(fee.amount, currency)}</td>
+                  <td className="tabular text-right">{money(fee.amount, example.currency)}</td>
                   <td className="font-mono text-sm">{fee.statementLine}</td>
                   <td>{fee.status}</td>
                 </tr>

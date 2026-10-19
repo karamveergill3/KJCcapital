@@ -5,9 +5,13 @@
 -- that is already there.
 --
 -- site_feeds is an allow list: the website can read an account only if it is
--- named here. site_feed(slug) returns that account's aggregates and nothing
--- else: no account number, server, broker, label, symbol, position or deal.
--- It is the only thing the public key can reach; every table stays locked.
+-- named here. site_feed(slug) returns one thing for that account, the
+-- percentage gain the portal shows as $KJC, now and at the end of each day
+-- Keystone sampled equity. No balance, deposit, profit, account number,
+-- server, broker, label, symbol, position or deal leaves Keystone. It is the
+-- only thing the public key can reach; every table stays locked.
+--
+-- $KJC = (equity - broker credit - net deposits) / net deposits, as a percent.
 --
 -- To point the website at a different account, change the row:
 --   update public.site_feeds set account_id = (select id from accounts where label = '...') where slug = 'kjc';
@@ -36,15 +40,13 @@ as $$
     join accounts acc on acc.id = f.account_id
     where f.slug = p_slug and acc.archived_at is null
   ),
-  cash as (
-    select coalesce(sum(d.net) filter (where d.net > 0), 0) as deposits,
-           coalesce(-sum(d.net) filter (where d.net < 0), 0) as withdrawals,
-           min(d.time) as opened_at
+  capital_now as (
+    select coalesce(sum(d.net), 0) as capital
     from deals d join a on a.id = d.account_id
     where d.kind = 'cash'
   ),
-  days as (
-    select ad.day, ad.trade_pnl, ad.cash_flow
+  cash_days as (
+    select ad.day, ad.cash_flow
     from account_daily ad join a on a.id = ad.account_id
   ),
   eq as (
@@ -54,29 +56,24 @@ as $$
     from equity_samples s join a on a.id = s.account_id
     order by (s.at at time zone 'Europe/London')::date, s.at desc
   ),
-  all_days as (select day from days union select day from eq),
   daily as (
-    select ad.day,
-      (select coalesce(sum(x.trade_pnl), 0) from days x where x.day <= ad.day) as closed,
-      (select coalesce(sum(x.cash_flow), 0) from days x where x.day <= ad.day) as capital,
-      e.equity
-    from all_days ad left join eq e on e.day = ad.day
+    select e.day, e.equity,
+      (select coalesce(sum(x.cash_flow), 0) from cash_days x where x.day <= e.day) as capital
+    from eq e
   )
-  select case when not exists (select 1 from a) then null else jsonb_build_object(
-    'currency', (select currency from a),
-    'as_at', (select last_sync_at from a),
-    'balance', (select balance from a),
-    'equity', (select equity from a),
-    'credit', (select coalesce(credit, 0) from a),
-    'deposits', (select deposits from cash),
-    'withdrawals', (select withdrawals from cash),
-    'opened_at', (select opened_at from cash),
-    'tracking_since', (select tracking_since from a),
-    'daily', coalesce(
-      (select jsonb_agg(jsonb_build_object('day', d.day, 'closed', d.closed, 'capital', d.capital, 'equity', d.equity) order by d.day) from daily d),
-      '[]'::jsonb
+  select case
+    when not exists (select 1 from a) or (select capital from capital_now) <= 0 then null
+    else jsonb_build_object(
+      'as_at', (select last_sync_at from a),
+      'kjc', round(((select equity - coalesce(credit, 0) from a) - (select capital from capital_now))
+                   / (select capital from capital_now) * 100, 4),
+      'daily', coalesce(
+        (select jsonb_agg(jsonb_build_object('day', d.day, 'kjc', round((d.equity - d.capital) / d.capital * 100, 4)) order by d.day)
+         from daily d where d.capital > 0),
+        '[]'::jsonb
+      )
     )
-  ) end;
+  end;
 $$;
 
 revoke all on function public.site_feed(text) from public, anon, authenticated;

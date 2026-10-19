@@ -174,10 +174,11 @@ commit 4af2311 if wanted back). The page is public.
 **Live figures come from Keystone Monitor**, the owner's MT5 tracker (a separate
 Supabase project; not ForexDNA). `src/lib/keystone.js` calls one read-only
 function there, `site_feed('kjc')`, defined in `supabase/keystone/site_feed.sql`.
-It returns aggregates for the single account named in Keystone's `site_feeds`
-allow list (the 500k V100 account, chosen by the owner's worked example) and
-never an account number, server, broker, symbol or position, so nothing on
-the page reveals the strategy. The page rebuilds at most once a minute.
+It returns the percentage gain, now and at the end of each day equity was
+sampled, for the single account named in Keystone's `site_feeds` allow list
+(the 500k V100 account, chosen by the owner's worked example). Nothing else
+leaves Keystone: no money figure, account number, server, broker, symbol or
+position. The page rebuilds at most once a minute.
 
 It needs two server-side environment variables in Vercel, `KEYSTONE_URL` and
 `KEYSTONE_PUBLISHABLE_KEY` (Keystone's publishable key, which is public by
@@ -199,11 +200,14 @@ Example tag in every mode. Because the page is public, whatever account the
 feed names is public.
 
 The **$KJC board** (`src/components/portal/KjcBoard.jsx`) is the one dark band
-on the site: a fixed `$KJC` badge with a status light, a monospaced tape where
-gains read green with an up arrow and losses red with a down arrow, the figure
-itself large, a sparkline of $KJC against closed return on one scale, and the
-six numbers behind it. The figures come from `src/lib/kjcBoard.js`; closed
-return plus open drawdown always equals $KJC.
+on the site: a fixed `$KJC` badge with a status light, a monospaced tape that
+repeats the figure, green with an up arrow or red with a down arrow, and the
+figure itself, large. **It shows the percentage gain and nothing else**: the
+owner's call. No balance, deposit, profit or drawdown figure is on the board,
+in `/api/kjc`, in the props the page hands the browser, in the committed
+snapshot, or in what Keystone's function returns; `tests/kjcBoard.test.mjs`
+and `tests/keystone.test.mjs` hold that line. The history chart below the
+board appears once there are two days of $KJC to draw.
 
 **$KJC** (`src/lib/kjc.js`) is the client's return measured on equity:
 
@@ -214,11 +218,8 @@ banked 50,000 on 500,000 but carries 25,000 of open drawdown sees +5.00%, not
 the +10.00% the balance would show. The inputs are the fields an MT5 account
 reports (balance, equity, and deposits less withdrawals from its balance
 operations), so a live feed can replace the example without the page changing.
-The page shows it as a quote, on a tape under the header, and broken down into
-closed and open profit. The chart draws two lines on one axis: closed profit,
-which Keystone can rebuild from the deal history back to the day the account
-opened, and $KJC, which needs equity and so only starts when Keystone began
-sampling it. The gap between them is the open drawdown.
+The page shows the figure alone. $KJC history needs equity, so the chart only
+has points from the day Keystone began sampling it.
 
 The rest of the page is the mandate's rules (trade-only authority, withdrawals
 and revocation with the broker, example risk limits), each register's weight

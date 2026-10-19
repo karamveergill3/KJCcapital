@@ -52,8 +52,8 @@ test("the example is marked as not live, so the page labels it as an example", (
   const data = exampleAccount();
   assert.equal(data.mode, "example");
   assert.equal(data.history.length, account.snapshots.length);
+  assert.equal(data.percent, 5);
   assert.equal(data.history.at(-1).kjc, 5);
-  assert.equal(data.history.at(-1).closed, 10);
 });
 
 // The snapshot is the real 500k account read from Keystone, and the page must
@@ -62,8 +62,8 @@ test("the committed snapshot is the real account, flagged as a snapshot", async 
   const snap = snapshotAccount();
   assert.equal(snap.mode, "snapshot");
   assert.match(snap.asAt, /^\d{4}-\d{2}-\d{2}T/);
-  const q = kjcQuote(snap.snapshot);
-  assert.ok(q.percent > 0 && q.floating < 0, "expected closed profit with open drawdown");
+  assert.ok(Number.isFinite(snap.percent) && snap.percent > 0, "expected the 500k account's gain");
+  assert.equal(snap.history.at(-1).kjc, snap.percent);
   const dict = JSON.parse(await readFile(resolve(root, "src", "lib", "i18n", "dictionaries", "en.json"), "utf8"));
   assert.match(dict.portal.snapshot.body, /\{time\}/);
   assert.match(dict.portal.snapshot.body, /not live/);

@@ -1,3 +1,5 @@
+import { kjcQuote } from "@/lib/kjc";
+
 // The account the portal shows until a live feed is connected. Every figure
 // here is invented to show the layout, and the page says so above the fold.
 // The last snapshot is the owner's own worked example: 50,000 closed profit on
@@ -28,19 +30,15 @@ export const account = {
 };
 
 // The example in the shape feedToAccount gives the live feed, so the page has
-// one path for both.
+// one path for all three modes: a percentage and its history.
 export function exampleAccount() {
+  const kjc = (s) => kjcQuote(s).percent;
   const latest = account.snapshots[account.snapshots.length - 1];
   return {
     mode: "example",
-    currency: account.currency,
     asAt: account.asAt,
-    snapshot: latest,
-    history: account.snapshots.map((s) => ({
-      at: s.at,
-      closed: ((s.balance - s.deposits) / s.deposits) * 100,
-      kjc: ((s.equity - s.deposits) / s.deposits) * 100
-    }))
+    percent: kjc(latest),
+    history: account.snapshots.map((s) => ({ at: s.at, kjc: kjc(s) }))
   };
 }
 
