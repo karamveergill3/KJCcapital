@@ -222,21 +222,13 @@ create table if not exists clients (
   -- ISO 3166-1 alpha-2. May be unknown at enquiry; required from then on.
   country_of_residence text check (country_of_residence ~ '^[A-Z]{2}$'),
   status client_status not null default 'enquiry',
-  -- No default: nobody is entered without the question having been asked.
-  -- The check that settles it is recorded as a us_person row in kyc_checks.
+  -- Recorded, not refused: clients are accepted from any country, but a US
+  -- person carries tax-reporting obligations the firm has to know about. No
+  -- default, so nobody is entered without the question having been asked. The
+  -- check that settles it is recorded as a us_person row in kyc_checks.
   us_person boolean not null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  -- The firm does not accept US persons. A US person can be on record only as
-  -- an enquiry, a decline, or a relationship that has ended; never while an
-  -- agreement is in issue or an account is being opened, traded or paused.
-  constraint clients_no_us_persons check (
-    not us_person or status in ('enquiry', 'declined', 'ended')
-  ),
-  -- A resident of the United States is a US person on any reading.
-  constraint clients_us_resident_is_us_person check (
-    country_of_residence is distinct from 'US' or us_person
-  ),
   constraint clients_residence_known check (
     country_of_residence is not null or status in ('enquiry', 'declined')
   )
@@ -581,7 +573,8 @@ create trigger desk_notes_updated_at
 --
 -- Which checks must pass before an account is opened is the firm's
 -- procedure, under a framework not yet confirmed, so it is not encoded here.
--- The one rule the database enforces is clients_no_us_persons.
+-- Nor does the database refuse anyone by nationality or residence: the
+-- programme is offered in any country.
 -- ---------------------------------------------------------------------------
 
 create table if not exists kyc_checks (

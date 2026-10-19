@@ -112,8 +112,8 @@ can see, and a second dashboard would break that the first time it disagreed.
 
 - `clients` — one row per enquiry or client, through the steps the contact
   and portal pages describe: enquiry, agreement issued, account opening,
-  active, paused, ended, declined. A check refuses a US person at any stage
-  from agreement issued to paused.
+  active, paused, ended, declined. US-person status is recorded for tax
+  reporting but refuses nobody: clients are accepted from any country.
 - `broker_accounts` — the client's own account: broker name as free text,
   the last four characters of the account number, base currency, and when the
   authority was granted or revoked. No credential of any kind and no full

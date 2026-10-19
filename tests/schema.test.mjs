@@ -513,19 +513,18 @@ test("every function pins search_path", () => {
   }
 });
 
-test("a US person can never be taken on", () => {
+// The programme is offered in any country. US-person status is still recorded,
+// because it carries tax-reporting obligations, but nothing refuses a client
+// on it or on where they live.
+test("no client is refused by nationality or residence", () => {
   const clients = tables.get("clients");
-  assert.match(clients.columns.get("us_person"), /^boolean not null$/i, "us_person must be boolean not null, with no default");
-  const labels = enums.get("client_status").labels;
-  const check = checksOn("clients", "us_person").find((c) => /status/i.test(c));
-  assert.ok(check, "no check ties us_person to status");
-  const m = /^\(?\s*not\s+us_person\s+or\s+status\s+in\s*\(([^)]*)\)\s*\)?$/i.exec(check.trim());
-  assert.ok(m, `the US-person check is not of the form "not us_person or status in (...)": ${check}`);
-  const allowed = [...m[1].matchAll(/'([^']*)'/g)].map((x) => x[1]);
-  for (const label of allowed) assert.ok(labels.includes(label), `${label} is not a client_status`);
-  for (const forbidden of ["agreement_issued", "account_opening", "active", "paused"]) {
-    assert.ok(labels.includes(forbidden), `client_status lost ${forbidden}`);
-    assert.ok(!allowed.includes(forbidden), `a US person may be ${forbidden}`);
+  assert.match(clients.columns.get("us_person"), /^boolean not null$/i, "us_person must be recorded, boolean not null, with no default");
+  for (const column of ["us_person", "country_of_residence"]) {
+    const refusing = checksOn("clients", column).filter((c) => /status/i.test(c) && !/is not null/i.test(c));
+    assert.deepEqual(refusing, [], `a check ties ${column} to who may be a client: ${refusing.join("; ")}`);
+  }
+  for (const c of checksOn("clients", "country_of_residence")) {
+    assert.doesNotMatch(c, /'US'|<>|!=|is distinct from '/i, `residence is filtered: ${c}`);
   }
 });
 
