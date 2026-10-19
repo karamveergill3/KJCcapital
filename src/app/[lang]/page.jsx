@@ -10,7 +10,8 @@ export async function generateMetadata({ params }) {
   const { lang } = await params;
   const dict = await getDictionary(lang);
   return {
-    title: `${dict.meta.firmName} — ${dict.meta.tagline}`,
+    // Absolute, or the root template appends the firm name a second time.
+    title: { absolute: `${dict.meta.firmName} — ${dict.meta.tagline}` },
     description: dict.meta.story,
     alternates: { canonical: `/${lang}` },
     openGraph: {

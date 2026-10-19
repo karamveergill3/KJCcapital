@@ -145,4 +145,4 @@ export function body(doc, text) {
 }
 
 export const DISCLOSURE_LINE =
-  "KJC Capital manages clients' own broker accounts and does not hold client money. Capital is at risk. Past performance is not a guide to future returns. Not available to United States persons.";
+  "KJC Capital manages clients' own broker accounts and does not hold client money. Capital is at risk. Past performance is not a guide to future returns.";
