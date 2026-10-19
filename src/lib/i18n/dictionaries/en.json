@@ -199,52 +199,68 @@
   },
   "portal": {
     "leadTitle": "Investor portal",
-    "metaDescription": "Access to the KJC Capital investor portal is issued to clients directly. There is no public sign-up.",
-    "leadIntro": "Access is issued to clients directly. There is no public sign-up, and nothing behind it that a client cannot already see in their own account.",
-    "sections": [
-      {
-        "label": "What it holds",
-        "body": "The record of the relationship. The authority you granted and its exact limits, a log of every material thing the firm did under it, your documents, what you have been charged and the line on your broker statement that matches it, the notices the firm is obliged to give you, and a periodic note from the desk on how the book was being carried."
-      },
-      {
-        "label": "What it does not hold",
-        "body": "Your balance, your positions and your trades are not here. They sit with your broker, live, under your own login, and that record is the authoritative one. The firm keeps no second set of numbers, and there is no version of your account that only we can see."
-      },
-      {
-        "label": "Access",
-        "body": "Credentials are issued on account opening, to the client and to nobody else. There is no way to register here. A client who has lost access, or who needs something before the portal opens, should write to a director."
-      }
-    ],
-    "signIn": {
-      "label": "Sign in",
-      "email": "Email address",
-      "password": "Password",
-      "submit": "Sign in",
-      "pending": "Signing in",
-      "forgotten": "Forgotten your password?",
-      "forgottenLink": "Write to a director.",
-      "errors": {
-        "missing": "Enter your email address and your password.",
-        "mismatch": "That email address and password do not match an account.",
-        "throttled": "Too many attempts. Wait a few minutes, then try again.",
-        "unavailable": "Sign-in is unavailable at the moment. Try again shortly.",
-        "notOpen": "The portal is not open yet. Clients will be written to directly when it is."
-      }
+    "metaDescription": "What a KJC Capital client sees: their own return as $KJC, the rules their account is run under, and everything the firm has done inside it.",
+    "leadIntro": "Your own return, quoted as $KJC from your broker's figures, the rules your account is run under, and everything the firm has done inside it.",
+    "example": {
+      "label": "Example account",
+      "body": "This is a preview of what a client sees. Every figure on it is illustrative: it is not the programme's track record, and no real client's account is shown."
     },
-    "account": {
-      "title": "Your portal",
-      "signedInAs": "Signed in as",
-      "signOut": "Sign out",
-      "sections": [
-        {
-          "label": "In preparation",
-          "body": "Your mandate and its limits, the log of what the firm has done under it, your documents, your fees with the matching broker statement line, and the notices the firm gives you will appear here as they are issued."
-        },
-        {
-          "label": "Your account",
-          "body": "Your balance, your positions and your trades are not here. They sit with your broker, live, under your own login, and that record is the authoritative one."
-        }
-      ]
+    "tapeLabel": "Your account",
+    "quote": {
+      "symbol": "$KJC",
+      "label": "Your return",
+      "on": "on",
+      "deposited": "deposited",
+      "closed": "Closed profit",
+      "floating": "Open positions",
+      "net": "Net gain",
+      "equity": "Account value",
+      "balance": "Balance",
+      "capital": "Deposited",
+      "drawdown": "Largest fall from a high",
+      "asAt": "As at",
+      "source": "from your broker statement",
+      "explain": "$KJC counts open positions as well as closed ones. Profit already taken is offset by any loss still open, so the figure is what your account is worth now against what you put in."
+    },
+    "performance": {
+      "label": "Performance",
+      "title": "$KJC, month by month",
+      "table": "Show the figures as a table",
+      "month": "Month end",
+      "value": "$KJC"
+    },
+    "mandate": {
+      "label": "Your mandate",
+      "title": "The rules your account is run under",
+      "registers": "Where the account is invested",
+      "cap": "cap",
+      "floor": "at least",
+      "example": "Example figures. Your mandate sets your own.",
+      "exampleTag": "Example"
+    },
+    "activity": {
+      "label": "Activity",
+      "title": "What the firm has done in your account"
+    },
+    "fees": {
+      "label": "Fees",
+      "title": "What you have been charged",
+      "period": "Period",
+      "description": "Charge",
+      "amount": "Amount",
+      "statementLine": "Broker statement line",
+      "status": "Status"
+    },
+    "documents": {
+      "label": "Documents"
+    },
+    "notices": {
+      "label": "Notices",
+      "acknowledged": "Acknowledged",
+      "outstanding": "Awaiting your acknowledgement"
+    },
+    "deskNote": {
+      "label": "Desk note"
     }
   },
   "footer": {

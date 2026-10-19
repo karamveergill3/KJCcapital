@@ -1,0 +1,46 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
+import { ILLUSTRATIVE, account, registers } from "../src/lib/portalExample.js";
+import { kjcQuote } from "../src/lib/kjc.js";
+
+const here = dirname(fileURLToPath(import.meta.url));
+const root = resolve(here, "..");
+
+// Invented figures on a public page are only honest if the page says so. While
+// the portal runs on the example account, the notice has to be on it.
+test("the example account is labelled as one wherever it is shown", async () => {
+  assert.equal(ILLUSTRATIVE, true);
+  const page = await readFile(resolve(root, "src", "app", "[lang]", "portal", "page.jsx"), "utf8");
+  assert.match(page, /portal\.example\.body/, "portal page no longer renders the example notice");
+  const dict = JSON.parse(await readFile(resolve(root, "src", "lib", "i18n", "dictionaries", "en.json"), "utf8"));
+  assert.match(dict.portal.example.body, /illustrative/i);
+  assert.match(dict.portal.example.body, /not the programme's track record/i);
+});
+
+test("the example ends on the owner's worked case: +5.00% after open drawdown", () => {
+  const latest = account.snapshots.at(-1);
+  const q = kjcQuote(latest);
+  assert.equal(q.closed, 50000);
+  assert.equal(q.floating, -25000);
+  assert.equal(q.percent, 5);
+});
+
+test("snapshots run oldest first, one per month end, with equity never invented from nothing", () => {
+  const days = account.snapshots.map((s) => s.at);
+  assert.deepEqual([...days].sort(), days);
+  for (const s of account.snapshots) {
+    assert.ok(s.deposits > 0 && s.balance > 0 && s.equity > 0);
+  }
+});
+
+test("register weights stay inside their example limits and within the whole account", () => {
+  const total = registers.reduce((sum, r) => sum + r.weight, 0);
+  assert.ok(total <= 100, `registers add up to ${total}%`);
+  for (const r of registers) {
+    if (r.limit.max != null) assert.ok(r.weight <= r.limit.max, `${r.name} is over its cap`);
+    if (r.limit.min != null) assert.ok(r.weight >= r.limit.min, `${r.name} is under its floor`);
+  }
+});
