@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { ILLUSTRATIVE, account, activity, deskNote, exampleAccount, registers } from "../src/lib/portalExample.js";
 import { kjcQuote } from "../src/lib/kjc.js";
-import { snapshotAccount } from "../src/lib/keystone.js";
+import { feedToAccount, snapshotAccount } from "../src/lib/keystone.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "..");
@@ -24,6 +24,7 @@ test("the board always says whether its figure is live, a snapshot or the exampl
   const dict = JSON.parse(await read("src", "lib", "i18n", "dictionaries", "en.json"));
   assert.equal(dict.portal.quote.statusSnapshot, "Snapshot");
   assert.equal(dict.portal.quote.statusExample, "Example account");
+  assert.equal(dict.portal.quote.rangeLabel, "Chart range");
 });
 
 // The owner asked for the percentage gain and nothing besides. The board, the
@@ -38,12 +39,39 @@ test("no money figure reaches the board, the route or the page props", async () 
     assert.doesNotMatch(src, /\bmoney\(|balance|equity|deposit|floating|closed/i, `${name} handles a money figure`);
   }
   const boardProps = page.slice(page.indexOf("<KjcBoard"), page.indexOf("/>", page.indexOf("<KjcBoard")));
+  const propNames = [...boardProps.matchAll(/\s([a-zA-Z]+)=\{/g)].map((m) => m[1]);
+  assert.deepEqual(propNames.sort(), ["copy", "initial", "mode", "ranges"], "the board is handed something besides its figure and ranges");
   assert.match(boardProps, /initial=\{\{ percent: data\.percent, asAt: data\.asAt \}\}/);
-  assert.match(boardProps, /trend=\{trend\}/);
-  assert.match(page, /const trend = \(.*\)\.map\(\(\{ at, kjc \}\) => \(\{ at, kjc \}\)\);/, "the trend handed to the board is not cut down to times and percentages");
+  assert.match(boardProps, /ranges=\{ranges\}/);
+  // The ranges are cut from the series and nothing else. The page is read as
+  // text so this holds whatever lib/trend does inside buildRanges.
+  assert.match(page, /import \{ buildRanges \} from "@\/lib\/trend";/);
+  assert.match(page, /const ranges = buildRanges\(data\.series\);/, "the ranges are not built from the series alone");
+
+  // The month table is percentages too.
+  const months = page.slice(page.indexOf("months.length > 1"), page.indexOf("</section>", page.indexOf("months.length > 1")));
+  assert.match(months, /signedPercent\(m\.kjc\)/);
+  assert.doesNotMatch(months, /\bmoney\(|balance|equity|deposit|floating|closed/i, "the month table handles a money figure");
+
   const snapshot = JSON.parse(await read("src", "lib", "keystoneSnapshot.json"));
-  assert.deepEqual(Object.keys(snapshot).sort(), ["as_at", "daily", "intraday", "kjc"]);
-  for (const p of snapshot.intraday) assert.deepEqual(Object.keys(p).sort(), ["at", "kjc"]);
+  assert.deepEqual(Object.keys(snapshot).sort(), ["as_at", "kjc", "series"]);
+  for (const p of snapshot.series) assert.deepEqual(Object.keys(p).sort(), ["at", "kjc"]);
+});
+
+// Whichever mode the page is in, the series it builds the board's ranges and
+// the month table from is times and percentages, even if a feed sent more.
+test("the series is times and percentages in every mode", () => {
+  const live = feedToAccount({
+    as_at: "2026-10-19T19:19:53.992+00:00",
+    kjc: 16.6309,
+    balance: 668730.2,
+    series: [{ at: "2026-10-19T19:17:53.777+00:00", kjc: 16.5715, equity: 583154.5, deposits: 500000 }]
+  });
+  assert.deepEqual(Object.keys(live).sort(), ["asAt", "mode", "percent", "series"]);
+  for (const data of [live, snapshotAccount(), exampleAccount()]) {
+    assert.ok(data.series.length > 0, `the ${data.mode} series is empty`);
+    for (const p of data.series) assert.deepEqual(Object.keys(p).sort(), ["at", "kjc"], `the ${data.mode} series carries more than at and kjc`);
+  }
 });
 
 // What a client reads about their account never shows a trade: no order,
@@ -90,12 +118,14 @@ test("snapshots run oldest first, one per month end, with equity never invented 
   }
 });
 
-test("the example is marked as the example, as a percentage and its history", () => {
+test("the example is marked as the example, as a percentage and its series", () => {
   const data = exampleAccount();
   assert.equal(data.mode, "example");
   assert.equal(data.percent, 5);
-  assert.equal(data.history.length, account.snapshots.length);
-  assert.equal(data.history.at(-1).kjc, 5);
+  assert.equal(data.asAt, account.asAt);
+  assert.equal(data.series.length, account.snapshots.length);
+  assert.deepEqual(data.series.map((p) => p.at), account.snapshots.map((s) => s.at));
+  assert.equal(data.series.at(-1).kjc, 5);
 });
 
 // The snapshot is the real 500k account read from Keystone, and the board must
@@ -105,5 +135,5 @@ test("the committed snapshot is the real account, flagged as a snapshot", () => 
   assert.equal(snap.mode, "snapshot");
   assert.match(snap.asAt, /^\d{4}-\d{2}-\d{2}T/);
   assert.ok(Number.isFinite(snap.percent) && snap.percent > 0, "expected the 500k account's gain");
-  assert.equal(snap.history.at(-1).kjc, snap.percent);
+  assert.equal(snap.series.at(-1).kjc, snap.percent);
 });

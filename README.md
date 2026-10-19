@@ -171,30 +171,48 @@ name two of them. Remove them rather than build on them.
 the owner set it aside, and a sign-in built for Supabase was removed (it is in
 commit 4af2311 if wanted back). The page is public.
 
-**Live figures come from Keystone Monitor**, the owner's MT5 tracker (a separate
-Supabase project). `src/lib/keystone.js` calls one read-only
-function there, `site_feed('kjc')`, defined in `supabase/keystone/site_feed.sql`.
-It returns the percentage gain now, at the end of each day equity was
-sampled, and at each equity sample in the 24 hours up to the latest one,
-for the single account named in Keystone's `site_feeds` allow list
-(the 500k V100 account, chosen by the owner's worked example). Nothing else
-leaves Keystone: no money figure, account number, server, broker, symbol or
-position. The page rebuilds at most once a minute.
+**Live figures come from Keystone Monitor**, the owner's MT5 tracker, through
+its public feed, `/api/feed/kjc` on Keystone's own site.
+`src/lib/keystone.js` reads it with a plain GET, cached for a minute: no key,
+no Supabase client, and no grant on Keystone's database, which stays closed
+to the public. The feed answers only for an account on Keystone's allow list
+(the 500k V100 account, chosen by the owner's worked example), and it carries
+the percentage gain and nothing else: $KJC now, the time it was taken, and
+$KJC over the account's whole life (since 28 June 2026), oldest first. No
+money figure, account number, server, broker, symbol or position leaves
+Keystone. The page rebuilds at most once a minute.
 
-It needs two server-side environment variables in Vercel, `KEYSTONE_URL` and
-`KEYSTONE_PUBLISHABLE_KEY` (Keystone's publishable key, which is public by
-design; both are set), and the SQL above applied to Keystone. The page has
-three modes, chosen in order, and the board's status light says which:
+The address defaults to `https://keystone-monitor.vercel.app/api/feed/kjc`.
+Set `KEYSTONE_FEED_URL` (server-side, optional) to read another; it must be
+https, and anything else switches the live feed off rather than reading it
+in the clear.
 
-- **live**: the feed answered. The $KJC board polls `/api/kjc` once a minute,
-  flashes whatever moved and adds the reading to the end of the trend, so a
-  visitor sees it change without reloading.
-- **snapshot**: no live feed, so the page shows `src/lib/keystoneSnapshot.json`,
-  the same feed read once from Keystone and committed; the status reads
-  "Snapshot" with the time it was taken. Refresh it by re-running the feed
-  query against Keystone and replacing the file.
+**Where the history comes from.** Keystone began sampling the account's
+equity on 19 October 2026, and every point from then on is measured. Before
+that, Keystone rebuilds the history from the account's trades: the balance
+is exact from the deals, and each open position is marked at the European
+Central Bank's daily euro reference rates, one point per ECB business day at
+the 14:15 Frankfurt fix. That part is an estimate (mid rates with no spread,
+a standard lot of 100,000), and the terms page says so in a sentence. It
+needed no change to the MT5 expert advisor; Keystone works from what it
+already records. Keystone keeps every reading from the last two days and
+thins older ones (hourly to a month back, every four hours to a year, daily
+before that), each stretch keeping its last reading, like a closing price.
+
+The page has three modes, chosen in order, and the board's status light
+says which:
+
+- **live**: the feed answered. The $KJC board polls `/api/kjc` once a minute
+  and flashes whatever moved, so a visitor sees it change without
+  reloading.
+- **snapshot**: the feed did not answer, so the page shows
+  `src/lib/keystoneSnapshot.json`, the feed's own shape (`as_at`, `kjc` and
+  a `series` of `at` and `kjc`) read once from Keystone and committed; the
+  status reads "Snapshot" with the time it was taken. Refresh it by saving
+  the feed's response over the file.
 - **example**: only if the snapshot is missing too; the invented account in
-  `src/lib/portalExample.js`, with the status reading "Example account".
+  `src/lib/portalExample.js`, one point per month end, with the status
+  reading "Example account".
 
 The owner removed the notice box that used to sit above the board, so the
 status light is the only label; `tests/portal.test.mjs` fails if the board
@@ -211,19 +229,26 @@ live trend in their place. **It shows the percentage gain and nothing
 else**: the
 owner's call. No balance, deposit, profit or drawdown figure is on the board,
 in `/api/kjc`, in the props the page hands the browser, in the committed
-snapshot, or in what Keystone's function returns; `tests/portal.test.mjs`
-and `tests/keystone.test.mjs` hold that line. The history chart below the
-board appears once there are two days of $KJC to draw.
+snapshot, or in what Keystone's feed returns; `tests/portal.test.mjs`
+and `tests/keystone.test.mjs` hold that line.
 
-The **trend** (`src/components/portal/KjcTrend.jsx`, maths in
-`src/lib/trend.js`) draws the day's equity samples, about one every 16
-minutes, as straight segments from reading to reading, so it zig-zags like a
-price chart rather than smoothing the moves away; `tests/trend.test.mjs`
-fails if the path ever gains a curve. It ends on the headline figure, its
-axes are percentages and UTC times, and hovering reads off any point. When
-live it grows by one reading a minute and keeps the last 24 hours. Without
-intraday samples it falls back to the daily (or, for the example, monthly)
-history.
+The **chart** on the board (`src/components/portal/KjcBoard.jsx` and
+`KjcTrend.jsx`, maths in `src/lib/trend.js`) has range tabs as a stock app
+does: 1D, 1W, 1M, 3M, YTD and All. The page builds them with
+`buildRanges(data.series)`, each range measured back from the latest point
+(YTD from 1 January UTC) and thinned to at most 240 points, and hands the
+board nothing else. A tab with fewer than two points, or whose range reaches
+back past the account's first point (it would only repeat All), is greyed
+out. The line is straight segments from reading to reading, so it
+zig-zags like a price chart rather than smoothing the moves away;
+`tests/trend.test.mjs` fails if the path ever gains a curve. It ends on the
+headline figure, and hovering reads off any point.
+
+Below the board, **Month by month** is a table of $KJC at each UTC month's
+last reading, the current month marked "to date". It appears once the
+series reaches into a second calendar month, and it is percentages only, like
+everything else on the page that comes from the account. The Recharts chart
+that used to sit there is gone, and so is the dependency.
 
 **$KJC** (`src/lib/kjc.js`) is the client's return measured on equity:
 
@@ -234,8 +259,9 @@ banked 50,000 on 500,000 but carries 25,000 of open drawdown sees +5.00%, not
 the +10.00% the balance would show. The inputs are the fields an MT5 account
 reports (balance, equity, and deposits less withdrawals from its balance
 operations), so a live feed can replace the example without the page changing.
-The page shows the figure alone. $KJC history needs equity, so the chart only
-has points from the day Keystone began sampling it.
+Keystone does the sum for the live account, taking any broker credit off
+equity first, and at every point in the history it divides by the net
+deposits made by then. The page shows the figure alone.
 
 The rest of the page is the mandate's two rules (trade-only authority, and the
 account in the client's name), each register's weight against its limit

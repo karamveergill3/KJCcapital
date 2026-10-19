@@ -30,7 +30,8 @@ export const account = {
 };
 
 // The example in the shape feedToAccount gives the live feed, so the page has
-// one path for all three modes: a percentage and its history.
+// one path for all three modes: a percentage and its series, one point per
+// month end.
 export function exampleAccount() {
   const kjc = (s) => kjcQuote(s).percent;
   const latest = account.snapshots[account.snapshots.length - 1];
@@ -38,7 +39,7 @@ export function exampleAccount() {
     mode: "example",
     asAt: account.asAt,
     percent: kjc(latest),
-    history: account.snapshots.map((s) => ({ at: s.at, kjc: kjc(s) }))
+    series: account.snapshots.map((s) => ({ at: s.at, kjc: kjc(s) }))
   };
 }
 

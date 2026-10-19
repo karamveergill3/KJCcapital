@@ -1,104 +1,173 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { access } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
-import { feedToAccount, fetchSiteFeed, keystoneConfig } from "../src/lib/keystone.js";
+import snapshot from "../src/lib/keystoneSnapshot.json" with { type: "json" };
+import { feedToAccount, fetchSiteFeed, keystoneFeedUrl, monthEnds, snapshotAccount } from "../src/lib/keystone.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
-// The shape site_feed returns: the percentage gain now, at the end of each
-// day Keystone sampled equity, and at each sample over the last day. Nothing
-// else.
+// The shape Keystone's public feed returns: the percentage gain now, the time
+// it was taken, and the percentage over the account's life. Nothing else.
 const FEED = {
   as_at: "2026-10-19T18:49:52.618+00:00",
   kjc: 16.5852,
-  daily: [
-    { day: "2026-10-18", kjc: 16.1 },
-    { day: "2026-10-19", kjc: 16.4966 }
-  ],
-  intraday: [
+  series: [
     { at: "2026-10-19T18:45:54.963+00:00", kjc: 16.4966 },
+    { at: "2026-06-29T12:15:00+00:00", kjc: 0.12 },
     { at: "2026-10-19T18:29:52.506+00:00", kjc: 16.5694 }
   ]
 };
 
-test("the feed becomes one percentage and its history", () => {
-  const account = feedToAccount(FEED);
-  assert.equal(account.mode, "live");
-  assert.equal(account.percent, 16.5852);
-  assert.equal(account.asAt, FEED.as_at);
-  assert.deepEqual(account.history.map((h) => h.at), ["2026-10-18", "2026-10-19"]);
+test("the feed is Keystone's public route unless KEYSTONE_FEED_URL says otherwise", () => {
+  assert.equal(keystoneFeedUrl({}), "https://keystone-monitor.vercel.app/api/feed/kjc");
+  assert.equal(keystoneFeedUrl({ KEYSTONE_FEED_URL: "" }), "https://keystone-monitor.vercel.app/api/feed/kjc");
+  assert.equal(keystoneFeedUrl({ KEYSTONE_FEED_URL: "https://example.test/api/feed/other" }), "https://example.test/api/feed/other");
 });
 
-test("today's point matches the headline, not a sample a minute old", () => {
-  const { history, percent } = feedToAccount(FEED);
-  assert.equal(history.at(-1).kjc, percent);
-  assert.equal(history[0].kjc, 16.1);
+test("an override is only read over https", () => {
+  assert.equal(keystoneFeedUrl({ KEYSTONE_FEED_URL: "http://example.test/api/feed/kjc" }), null);
+  assert.equal(keystoneFeedUrl({ KEYSTONE_FEED_URL: "not a url" }), null);
+  assert.equal(keystoneFeedUrl({ KEYSTONE_FEED_URL: "ftp://example.test/feed" }), null);
 });
 
-test("the day's readings come oldest first and end on the headline", () => {
-  const { intraday, percent, asAt } = feedToAccount(FEED);
-  assert.deepEqual(intraday.map((p) => p.kjc), [16.5694, 16.4966, percent]);
-  assert.equal(intraday.at(-1).at, asAt);
-
-  // A sample taken at the same moment as the headline is not drawn twice.
-  const caughtUp = feedToAccount({ ...FEED, intraday: [{ at: FEED.as_at, kjc: 16.58 }] });
-  assert.equal(caughtUp.intraday.length, 1);
-
-  assert.deepEqual(feedToAccount({ ...FEED, intraday: "nope" }).intraday, [{ at: FEED.as_at, kjc: FEED.kjc }]);
-  assert.deepEqual(
-    feedToAccount({ ...FEED, intraday: [{ at: "2026-10-19", kjc: 1 }, { at: "2026-10-19T10:00:00Z", kjc: null }] }).intraday,
-    [{ at: FEED.as_at, kjc: FEED.kjc }]
-  );
-});
-
-test("a missing or malformed feed gives null, never a half-drawn page", () => {
-  assert.equal(feedToAccount(null), null);
-  assert.equal(feedToAccount([]), null);
-  assert.equal(feedToAccount({ ...FEED, kjc: "not a number" }), null);
-  assert.equal(feedToAccount({ ...FEED, kjc: null }), null);
-  assert.deepEqual(feedToAccount({ ...FEED, daily: "nope" }).history, []);
-  assert.deepEqual(feedToAccount({ ...FEED, daily: [{ day: "x", kjc: 1 }, { day: "2026-10-19", kjc: "y" }] }).history, []);
-});
-
-// The owner wants the percentage shown and nothing else, so the function in
-// Keystone must not hand out money figures to the public key either.
-test("the Keystone function returns percentages only", async () => {
-  const sql = await readFile(resolve(here, "..", "supabase", "keystone", "site_feed.sql"), "utf8");
-  const body = sql.slice(sql.indexOf("as $$"), sql.lastIndexOf("$$;"));
-  const output = body.slice(body.indexOf("jsonb_build_object"));
-  const keys = [...output.matchAll(/'([a-z_]+)',/g)].map((m) => m[1]);
-  assert.deepEqual([...new Set(keys)].sort(), ["as_at", "at", "daily", "day", "intraday", "kjc"]);
-  assert.match(sql, /security definer/);
-  assert.match(sql, /set search_path = public, pg_temp/);
-  assert.match(sql, /grant execute on function public\.site_feed\(text\) to anon;/);
-});
-
-test("the feed is only read over https with both values set", () => {
-  assert.equal(keystoneConfig({}), null);
-  assert.equal(keystoneConfig({ KEYSTONE_URL: "https://x.supabase.co" }), null);
-  assert.equal(keystoneConfig({ KEYSTONE_URL: "http://x.supabase.co", KEYSTONE_PUBLISHABLE_KEY: "k" }), null);
-  assert.deepEqual(keystoneConfig({ KEYSTONE_URL: "https://x.supabase.co/", KEYSTONE_PUBLISHABLE_KEY: "k" }), {
-    url: "https://x.supabase.co",
-    key: "k",
-    slug: "kjc"
-  });
-});
-
-test("fetching calls site_feed and swallows every failure", async () => {
-  const config = { url: "https://x.supabase.co", key: "k", slug: "kjc" };
+test("fetching is a plain GET, cached for a minute, with no key", async () => {
   let seen;
-  const ok = await fetchSiteFeed(config, async (url, init) => {
+  const account = await fetchSiteFeed("https://example.test/api/feed/kjc", async (url, init) => {
     seen = { url, init };
     return { ok: true, json: async () => FEED };
   });
-  assert.equal(seen.url, "https://x.supabase.co/rest/v1/rpc/site_feed");
-  assert.equal(JSON.parse(seen.init.body).p_slug, "kjc");
-  assert.equal(ok.mode, "live");
+  assert.equal(seen.url, "https://example.test/api/feed/kjc");
+  assert.deepEqual(seen.init, { headers: { accept: "application/json" }, next: { revalidate: 60 } });
+  assert.equal(account.mode, "live");
+  assert.equal(account.percent, FEED.kjc);
+});
 
+test("every failure gives null, never a half-drawn page", async () => {
+  const url = "https://example.test/api/feed/kjc";
   assert.equal(await fetchSiteFeed(null), null);
-  assert.equal(await fetchSiteFeed(config, async () => ({ ok: false, json: async () => ({}) })), null);
-  assert.equal(await fetchSiteFeed(config, async () => { throw new Error("offline"); }), null);
-  assert.equal(await fetchSiteFeed(config, async () => ({ ok: true, json: async () => null })), null);
+  assert.equal(await fetchSiteFeed(url, async () => ({ ok: false, json: async () => FEED })), null);
+  assert.equal(await fetchSiteFeed(url, async () => { throw new Error("offline"); }), null);
+  assert.equal(await fetchSiteFeed(url, async () => ({ ok: true, json: async () => { throw new SyntaxError("not json"); } })), null);
+  assert.equal(await fetchSiteFeed(url, async () => ({ ok: true, json: async () => null })), null);
+  assert.equal(await fetchSiteFeed(url, async () => ({ ok: true, json: async () => ({ error: "no such feed" }) })), null);
+});
+
+test("the feed becomes one percentage, its time and its series", () => {
+  const account = feedToAccount(FEED);
+  assert.deepEqual(Object.keys(account).sort(), ["asAt", "mode", "percent", "series"]);
+  assert.equal(account.mode, "live");
+  assert.equal(account.percent, 16.5852);
+  assert.equal(account.asAt, FEED.as_at);
+});
+
+test("the series comes oldest first and ends on the headline", () => {
+  const { series, percent, asAt } = feedToAccount(FEED);
+  assert.deepEqual(series.map((p) => p.kjc), [0.12, 16.5694, 16.4966, percent]);
+  assert.deepEqual(series.at(-1), { at: asAt, kjc: percent });
+
+  // A point taken at the same moment as the headline is not drawn twice.
+  const caughtUp = feedToAccount({ ...FEED, series: [{ at: FEED.as_at, kjc: 16.58 }] });
+  assert.deepEqual(caughtUp.series, [{ at: FEED.as_at, kjc: 16.58 }]);
+
+  // Nor is a headline older than the last point added after it.
+  const ahead = feedToAccount({ ...FEED, series: [{ at: "2026-10-19T19:00:00Z", kjc: 16.6 }] });
+  assert.deepEqual(ahead.series, [{ at: "2026-10-19T19:00:00Z", kjc: 16.6 }]);
+});
+
+test("each instant appears once, the later entry winning", () => {
+  const { series } = feedToAccount({
+    ...FEED,
+    series: [
+      { at: "2026-10-19T10:00:00Z", kjc: 1 },
+      { at: "2026-10-19T10:00:00.000+00:00", kjc: 2 },
+      { at: "2026-10-19T12:00:00+02:00", kjc: 3 }
+    ]
+  });
+  assert.deepEqual(series.slice(0, -1), [{ at: "2026-10-19T12:00:00+02:00", kjc: 3 }]);
+});
+
+test("points are cut to their time and percentage, and bad ones dropped", () => {
+  const { series } = feedToAccount({
+    ...FEED,
+    series: [
+      { at: "2026-10-19T10:00:00Z", kjc: 1, equity: 583154.5, balance: 668730.2 },
+      { at: "2026-10-19T11:00:00Z", kjc: "2.5" },
+      { at: "2026-10-19", kjc: 1 },
+      { at: "2026-10-19T10:30:00Z", kjc: null },
+      { at: "2026-10-19T10:45:00Z", kjc: "x" },
+      { at: "yesterday", kjc: 1 },
+      null,
+      "2026-10-19T10:00:00Z"
+    ]
+  });
+  assert.deepEqual(series.slice(0, -1), [
+    { at: "2026-10-19T10:00:00Z", kjc: 1 },
+    { at: "2026-10-19T11:00:00Z", kjc: 2.5 }
+  ]);
+  for (const p of series) assert.deepEqual(Object.keys(p).sort(), ["at", "kjc"]);
+});
+
+test("a missing series still gives the headline as a single point", () => {
+  for (const series of [undefined, "nope", {}, []]) {
+    assert.deepEqual(feedToAccount({ ...FEED, series }).series, [{ at: FEED.as_at, kjc: FEED.kjc }]);
+  }
+});
+
+test("a feed without a valid headline gives null", () => {
+  assert.equal(feedToAccount(null), null);
+  assert.equal(feedToAccount([]), null);
+  assert.equal(feedToAccount("16.5"), null);
+  assert.equal(feedToAccount({ ...FEED, kjc: "not a number" }), null);
+  assert.equal(feedToAccount({ ...FEED, kjc: null }), null);
+  assert.equal(feedToAccount({ ...FEED, as_at: null }), null);
+  assert.equal(feedToAccount({ ...FEED, as_at: "2026-10-19" }), null);
+  assert.equal(feedToAccount({ ...FEED, as_at: "2026-13-45T99:00:00Z" }), null);
+});
+
+test("the committed snapshot has the feed's shape and nothing else", () => {
+  assert.deepEqual(Object.keys(snapshot).sort(), ["as_at", "kjc", "series"]);
+  assert.ok(snapshot.series.length > 10, "the snapshot should carry the measured readings");
+  for (const p of snapshot.series) assert.deepEqual(Object.keys(p).sort(), ["at", "kjc"]);
+  const times = snapshot.series.map((p) => Date.parse(p.at));
+  assert.deepEqual([...times].sort((a, b) => a - b), times, "the snapshot's series is not oldest first");
+});
+
+test("the snapshot is read as a snapshot, never as live", () => {
+  const snap = snapshotAccount();
+  assert.equal(snap.mode, "snapshot");
+  assert.equal(snap.asAt, snapshot.as_at);
+  assert.equal(snap.percent, snapshot.kjc);
+  assert.deepEqual(snap.series.at(-1), { at: snapshot.as_at, kjc: snapshot.kjc });
+});
+
+test("the month table takes each UTC month's last reading and marks the current one", () => {
+  const series = [
+    { at: "2026-06-29T14:15:00+02:00", kjc: 0.5 },
+    { at: "2026-06-30T12:15:00Z", kjc: 1.25 },
+    // Still 31 July in UTC, though it is already 1 August in Frankfurt.
+    { at: "2026-08-01T01:30:00+02:00", kjc: 3 },
+    { at: "2026-08-31T12:15:00Z", kjc: -2 },
+    { at: "2026-10-19T19:19:53.992+00:00", kjc: 16.63 }
+  ];
+  assert.deepEqual(monthEnds(series, new Date("2026-10-20T08:00:00Z")), [
+    { month: "2026-06", kjc: 1.25, toDate: false },
+    { month: "2026-07", kjc: 3, toDate: false },
+    { month: "2026-08", kjc: -2, toDate: false },
+    { month: "2026-10", kjc: 16.63, toDate: true }
+  ]);
+  assert.equal(monthEnds(series, new Date("2026-11-02T00:00:00Z")).at(-1).toDate, false);
+
+  // The example's month ends are bare days.
+  assert.deepEqual(monthEnds([{ at: "2025-09-30", kjc: 0 }, { at: "2025-10-31", kjc: 0.8 }], new Date("2026-10-19T00:00:00Z")), [
+    { month: "2025-09", kjc: 0, toDate: false },
+    { month: "2025-10", kjc: 0.8, toDate: false }
+  ]);
+  assert.deepEqual(monthEnds(undefined), []);
+});
+
+// Keystone owns the feed now; the website keeps no SQL of its own for it.
+test("the old database function is gone from the website", async () => {
+  await assert.rejects(access(resolve(here, "..", "supabase", "keystone", "site_feed.sql")));
 });

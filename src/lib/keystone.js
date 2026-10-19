@@ -1,41 +1,40 @@
 import snapshotFeed from "@/lib/keystoneSnapshot.json" with { type: "json" };
 
 // Live figures come from Keystone Monitor, the owner's MT5 tracker, through
-// one read-only function there: site_feed(slug). The owner wants the portal to
-// show the percentage gain and nothing else, so that is all the function
-// returns: $KJC now, $KJC at the end of each day Keystone sampled equity, and
-// $KJC at each sample over the last day, for the trend on the board. No
-// balance, deposit, profit or account detail leaves Keystone at all.
+// its public feed: one GET that answers for the one account Keystone's allow
+// list names. The owner wants the portal to show the percentage gain and
+// nothing else, so that is all the feed carries: $KJC now, with the time it
+// was taken, and $KJC over the account's whole life, oldest first. No
+// balance, deposit, profit or account detail leaves Keystone at all, and the
+// site needs no key and no database grant to read it.
 //
-// Anything wrong with the feed (not configured, unreachable, an unexpected
-// shape) gives null, and the portal falls back rather than showing a broken
-// page or a stale number as if it were live.
+// Before Keystone began sampling equity, Keystone rebuilds the history from
+// the account's trades at the European Central Bank's daily reference rates,
+// an estimate; from the first sample on, the points are measured.
+//
+// Anything wrong with the feed (unreachable, an unexpected shape) gives null,
+// and the portal falls back rather than showing a broken page or a stale
+// number as if it were live.
 
+const DEFAULT_FEED_URL = "https://keystone-monitor.vercel.app/api/feed/kjc";
 const REVALIDATE_SECONDS = 60;
 
-export function keystoneConfig(env = process.env) {
-  const url = env.KEYSTONE_URL;
-  const key = env.KEYSTONE_PUBLISHABLE_KEY;
-  if (!url || !key) return null;
+/** The feed's address: KEYSTONE_FEED_URL when set (https only), else Keystone's own. */
+export function keystoneFeedUrl(env = process.env) {
+  const url = env.KEYSTONE_FEED_URL;
+  if (!url) return DEFAULT_FEED_URL;
   try {
-    if (new URL(url).protocol !== "https:") return null;
+    return new URL(url).protocol === "https:" ? url : null;
   } catch {
     return null;
   }
-  return { url: url.replace(/\/+$/, ""), key, slug: env.KEYSTONE_FEED || "kjc" };
 }
 
-export async function fetchSiteFeed(config, fetchImpl = fetch) {
-  if (!config) return null;
+export async function fetchSiteFeed(url, fetchImpl = fetch) {
+  if (!url) return null;
   try {
-    const response = await fetchImpl(`${config.url}/rest/v1/rpc/site_feed`, {
-      method: "POST",
-      headers: {
-        apikey: config.key,
-        authorization: `Bearer ${config.key}`,
-        "content-type": "application/json"
-      },
-      body: JSON.stringify({ p_slug: config.slug }),
+    const response = await fetchImpl(url, {
+      headers: { accept: "application/json" },
       next: { revalidate: REVALIDATE_SECONDS }
     });
     if (!response.ok) return null;
@@ -48,7 +47,7 @@ export async function fetchSiteFeed(config, fetchImpl = fetch) {
 /**
  * The same feed, read once from Keystone and committed with the time it was
  * taken. The portal shows it, labelled as a snapshot with that time, while the
- * live feed is not switched on. It is never presented as live.
+ * live feed is not answering. It is never presented as live.
  */
 export function snapshotAccount() {
   const account = feedToAccount(snapshotFeed);
@@ -57,33 +56,53 @@ export function snapshotAccount() {
 
 const number = (value) => (value === null || value === undefined || value === "" ? NaN : Number(value));
 
-/** Turns the feed into what the portal draws: one percentage, its history, and the day's readings. */
+// A point is a full ISO time, not a bare day, so two points never share one.
+const timeOf = (at) => (/^\d{4}-\d{2}-\d{2}T/.test(at) ? Date.parse(at) : NaN);
+
+/** Turns the feed into what the portal draws: one percentage, when it was taken, and its history. */
 export function feedToAccount(feed) {
   if (!feed || typeof feed !== "object" || Array.isArray(feed)) return null;
   const percent = number(feed.kjc);
-  if (!Number.isFinite(percent)) return null;
+  const asAt = typeof feed.as_at === "string" ? feed.as_at : "";
+  if (!Number.isFinite(percent) || !Number.isFinite(timeOf(asAt))) return null;
 
-  const history = (Array.isArray(feed.daily) ? feed.daily : [])
-    .map((d) => ({ at: String(d?.day ?? ""), kjc: number(d?.kjc) }))
-    .filter((h) => /^\d{4}-\d{2}-\d{2}/.test(h.at) && Number.isFinite(h.kjc));
-
-  // The day's last sample can be a minute behind the account itself, so
-  // today's point is the headline figure, and the two never differ.
-  const asAt = feed.as_at ? String(feed.as_at) : null;
-  const today = history[history.length - 1];
-  if (today && asAt && today.at === asAt.slice(0, 10)) today.kjc = percent;
-
-  const intraday = (Array.isArray(feed.intraday) ? feed.intraday : [])
-    .map((p) => ({ at: String(p?.at ?? ""), kjc: number(p?.kjc) }))
-    .filter((p) => /^\d{4}-\d{2}-\d{2}T/.test(p.at) && Number.isFinite(Date.parse(p.at)) && Number.isFinite(p.kjc))
-    .sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
+  // Oldest first, one point per instant (the later one in the feed wins), and
+  // each point cut down to its time and its percentage.
+  const byTime = new Map();
+  for (const p of Array.isArray(feed.series) ? feed.series : []) {
+    const at = String(p?.at ?? "");
+    const kjc = number(p?.kjc);
+    const t = timeOf(at);
+    if (Number.isFinite(t) && Number.isFinite(kjc)) byTime.set(t, { at, kjc });
+  }
+  const series = [...byTime.entries()].sort((a, b) => a[0] - b[0]).map(([, p]) => p);
 
   // Equity is sampled every quarter of an hour or so and the account itself
-  // more often, so the trend ends on the headline figure rather than short of it.
-  const lastReading = intraday[intraday.length - 1];
-  if (asAt && Number.isFinite(Date.parse(asAt)) && (!lastReading || Date.parse(asAt) > Date.parse(lastReading.at))) {
-    intraday.push({ at: asAt, kjc: percent });
+  // more often, so the line ends on the headline figure rather than short of it.
+  if (!series.length || timeOf(asAt) > timeOf(series[series.length - 1].at)) {
+    series.push({ at: asAt, kjc: percent });
   }
 
-  return { mode: "live", asAt, percent, history, intraday };
+  return { mode: "live", asAt, percent, series };
+}
+
+/**
+ * One row per UTC month the series touches, oldest first: the month
+ * ("2026-10") and the last $KJC in it. The month that `now` falls in is not
+ * over yet, so it is marked as to date.
+ */
+export function monthEnds(series, now = new Date()) {
+  const current = now.toISOString().slice(0, 7);
+  const byMonth = new Map();
+  for (const p of Array.isArray(series) ? series : []) {
+    // A time is read in UTC whatever offset it was written with; a bare day
+    // (the example's month ends) is its own month.
+    const at = String(p?.at ?? "");
+    const t = timeOf(at);
+    const month = Number.isFinite(t) ? new Date(t).toISOString().slice(0, 7) : at.slice(0, 7);
+    if (/^\d{4}-\d{2}$/.test(month) && Number.isFinite(p?.kjc)) byMonth.set(month, p.kjc);
+  }
+  return [...byMonth.entries()]
+    .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
+    .map(([month, kjc]) => ({ month, kjc, toDate: month === current }));
 }
