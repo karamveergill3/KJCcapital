@@ -172,10 +172,11 @@ the owner set it aside, and a sign-in built for Supabase was removed (it is in
 commit 4af2311 if wanted back). The page is public.
 
 **Live figures come from Keystone Monitor**, the owner's MT5 tracker (a separate
-Supabase project; not ForexDNA). `src/lib/keystone.js` calls one read-only
+Supabase project). `src/lib/keystone.js` calls one read-only
 function there, `site_feed('kjc')`, defined in `supabase/keystone/site_feed.sql`.
-It returns the percentage gain, now and at the end of each day equity was
-sampled, for the single account named in Keystone's `site_feeds` allow list
+It returns the percentage gain now, at the end of each day equity was
+sampled, and at each equity sample in the 24 hours up to the latest one,
+for the single account named in Keystone's `site_feeds` allow list
 (the 500k V100 account, chosen by the owner's worked example). Nothing else
 leaves Keystone: no money figure, account number, server, broker, symbol or
 position. The page rebuilds at most once a minute.
@@ -185,8 +186,9 @@ It needs two server-side environment variables in Vercel, `KEYSTONE_URL` and
 design; both are set), and the SQL above applied to Keystone. The page has
 three modes, chosen in order, and the board's status light says which:
 
-- **live**: the feed answered. The $KJC board polls `/api/kjc` once a minute
-  and flashes whatever moved, so a visitor sees it change without reloading.
+- **live**: the feed answered. The $KJC board polls `/api/kjc` once a minute,
+  flashes whatever moved and adds the reading to the end of the trend, so a
+  visitor sees it change without reloading.
 - **snapshot**: no live feed, so the page shows `src/lib/keystoneSnapshot.json`,
   the same feed read once from Keystone and committed; the status reads
   "Snapshot" with the time it was taken. Refresh it by re-running the feed
@@ -202,15 +204,26 @@ Example tag in every mode. Because the page is public, whatever account the
 feed names is public.
 
 The **$KJC board** (`src/components/portal/KjcBoard.jsx`) is the one dark band
-on the site: `$KJC`, the status light, and the figure itself, large, green
-with an up arrow or red with a down arrow. The owner had the moving tape and
-the "Your return" label taken off. **It shows the percentage gain and nothing
+on the site: `$KJC`, the status light, the figure itself, large, green
+with an up arrow or red with a down arrow, and its trend underneath. The owner
+had the moving tape and the "Your return" label taken off, then asked for a
+live trend in their place. **It shows the percentage gain and nothing
 else**: the
 owner's call. No balance, deposit, profit or drawdown figure is on the board,
 in `/api/kjc`, in the props the page hands the browser, in the committed
 snapshot, or in what Keystone's function returns; `tests/portal.test.mjs`
 and `tests/keystone.test.mjs` hold that line. The history chart below the
 board appears once there are two days of $KJC to draw.
+
+The **trend** (`src/components/portal/KjcTrend.jsx`, maths in
+`src/lib/trend.js`) draws the day's equity samples, about one every 16
+minutes, as straight segments from reading to reading, so it zig-zags like a
+price chart rather than smoothing the moves away; `tests/trend.test.mjs`
+fails if the path ever gains a curve. It ends on the headline figure, its
+axes are percentages and UTC times, and hovering reads off any point. When
+live it grows by one reading a minute and keeps the last 24 hours. Without
+intraday samples it falls back to the daily (or, for the example, monthly)
+history.
 
 **$KJC** (`src/lib/kjc.js`) is the client's return measured on equity:
 

@@ -42,6 +42,9 @@ export default async function PortalPage({ params }) {
   const { mode } = data;
   const daily = mode !== "example";
   const points = data.history.map((h) => ({ label: daily ? shortDay(h.at) : shortMonth(h.at), kjc: h.kjc }));
+  // The board's trend is the day's readings when Keystone has them, and the
+  // daily or monthly history when it does not. Times and percentages only.
+  const trend = (data.intraday?.length > 1 ? data.intraday : data.history).map(({ at, kjc }) => ({ at, kjc }));
 
   return (
     <>
@@ -50,6 +53,7 @@ export default async function PortalPage({ params }) {
       <KjcBoard
         mode={mode}
         initial={{ percent: data.percent, asAt: data.asAt }}
+        trend={trend}
         copy={portal.quote}
       />
 
