@@ -3,8 +3,9 @@ import snapshotFeed from "@/lib/keystoneSnapshot.json" with { type: "json" };
 // Live figures come from Keystone Monitor, the owner's MT5 tracker, through
 // one read-only function there: site_feed(slug). The owner wants the portal to
 // show the percentage gain and nothing else, so that is all the function
-// returns: $KJC now, and $KJC at the end of each day Keystone sampled equity.
-// No balance, deposit, profit or account detail leaves Keystone at all.
+// returns: $KJC now, $KJC at the end of each day Keystone sampled equity, and
+// $KJC at each sample over the last day, for the trend on the board. No
+// balance, deposit, profit or account detail leaves Keystone at all.
 //
 // Anything wrong with the feed (not configured, unreachable, an unexpected
 // shape) gives null, and the portal falls back rather than showing a broken
@@ -56,7 +57,7 @@ export function snapshotAccount() {
 
 const number = (value) => (value === null || value === undefined || value === "" ? NaN : Number(value));
 
-/** Turns the feed into what the portal draws: one percentage, and its history. */
+/** Turns the feed into what the portal draws: one percentage, its history, and the day's readings. */
 export function feedToAccount(feed) {
   if (!feed || typeof feed !== "object" || Array.isArray(feed)) return null;
   const percent = number(feed.kjc);
@@ -72,5 +73,17 @@ export function feedToAccount(feed) {
   const today = history[history.length - 1];
   if (today && asAt && today.at === asAt.slice(0, 10)) today.kjc = percent;
 
-  return { mode: "live", asAt, percent, history };
+  const intraday = (Array.isArray(feed.intraday) ? feed.intraday : [])
+    .map((p) => ({ at: String(p?.at ?? ""), kjc: number(p?.kjc) }))
+    .filter((p) => /^\d{4}-\d{2}-\d{2}T/.test(p.at) && Number.isFinite(Date.parse(p.at)) && Number.isFinite(p.kjc))
+    .sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
+
+  // Equity is sampled every quarter of an hour or so and the account itself
+  // more often, so the trend ends on the headline figure rather than short of it.
+  const lastReading = intraday[intraday.length - 1];
+  if (asAt && Number.isFinite(Date.parse(asAt)) && (!lastReading || Date.parse(asAt) > Date.parse(lastReading.at))) {
+    intraday.push({ at: asAt, kjc: percent });
+  }
+
+  return { mode: "live", asAt, percent, history, intraday };
 }

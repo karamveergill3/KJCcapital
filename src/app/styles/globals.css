@@ -465,12 +465,6 @@
     border-block: 1px solid var(--color-gold-deep);
   }
 
-  .kjc-board .tape-toggle {
-    --toggle-ink: var(--kjc-muted);
-    --toggle-ring: var(--color-gold-deep);
-    --toggle-hover: var(--kjc-gold);
-  }
-
   .kjc-board .tone-up { color: var(--kjc-gain); }
   .kjc-board .tone-down { color: var(--kjc-loss); }
   .kjc-board .tone-flat { color: var(--kjc-text); }
@@ -533,6 +527,8 @@
 
   .kjc-hero {
     display: inline-block;
+    /* A grid item stretches to the row; the flash should fit the figure. */
+    justify-self: start;
     margin: 1rem 0 0;
     font-family: var(--font-sans);
     font-weight: 600;
@@ -546,6 +542,131 @@
     font-size: 0.42em;
     vertical-align: 0.42em;
     margin-right: 0.18em;
+  }
+
+  /* The trend under the figure: the plot, a gutter of percentages on its
+     right as on a price chart, and the times along the bottom. */
+  .kjc-trend {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 0.85rem;
+    margin: 0;
+  }
+
+  .kjc-trend-plot {
+    position: relative;
+    height: clamp(9.5rem, 26vw, 17rem);
+    color: var(--kjc-gold);
+    cursor: crosshair;
+    /* A sideways drag reads the line; an up or down one still scrolls. */
+    touch-action: pan-y;
+  }
+
+  .kjc-trend-plot svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .kjc-trend-gridline {
+    stroke: var(--kjc-rule);
+    stroke-width: 1;
+  }
+
+  .kjc-trend-line {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  .kjc-trend-dot,
+  .kjc-trend-mark {
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    margin: -4.5px 0 0 -4.5px;
+    border-radius: 50%;
+    background: var(--kjc-gold);
+    box-shadow: 0 0 0 3px var(--kjc-bg);
+    pointer-events: none;
+  }
+
+  .kjc-trend-mark {
+    background: var(--kjc-text);
+  }
+
+  .kjc-trend-cross {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    margin-left: -0.5px;
+    background: var(--kjc-muted);
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  .kjc-trend-readout {
+    position: absolute;
+    top: 0;
+    transform: translate(-50%, calc(-100% - 0.5rem));
+    display: inline-flex;
+    gap: 0.6rem;
+    padding: 0.3rem 0.55rem;
+    border: 1px solid var(--kjc-rule);
+    border-radius: 4px;
+    background: #1c1b18;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--kjc-text);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .kjc-trend-readout.at-start { transform: translate(0, calc(-100% - 0.5rem)); }
+  .kjc-trend-readout.at-end { transform: translate(-100%, calc(-100% - 0.5rem)); }
+
+  .kjc-trend-readout-at {
+    color: var(--kjc-muted);
+  }
+
+  .kjc-trend-y {
+    position: relative;
+    min-width: 3.4rem;
+  }
+
+  .kjc-trend-y span,
+  .kjc-trend-x span {
+    position: absolute;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+    color: var(--kjc-muted);
+    white-space: nowrap;
+  }
+
+  .kjc-trend-y span {
+    left: 0;
+    transform: translateY(-50%);
+  }
+
+  .kjc-trend-x {
+    position: relative;
+    height: 1rem;
+    margin-top: 0.7rem;
+  }
+
+  .kjc-trend-x span { transform: translateX(-50%); }
+  .kjc-trend-x span.at-start { transform: none; }
+  .kjc-trend-x span.at-end { transform: translateX(-100%); }
+
+  /* On a phone five times run together; every other one is enough. */
+  @media (max-width: 30rem) {
+    .kjc-trend-x span:nth-child(even) { display: none; }
   }
 
   .marker {
@@ -616,6 +737,10 @@
       animation: livePulse 1600ms ease-in-out infinite;
     }
 
+    .kjc-trend-dot.is-live {
+      animation: trendPulse 1800ms ease-out infinite;
+    }
+
     .flash-up {
       animation: flashUp 1400ms ease-out;
     }
@@ -673,6 +798,11 @@
 @keyframes livePulse {
   0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(143, 207, 155, 0.5); }
   50% { opacity: 0.55; box-shadow: 0 0 0 5px rgba(143, 207, 155, 0); }
+}
+
+@keyframes trendPulse {
+  0% { box-shadow: 0 0 0 3px #121210, 0 0 0 3px rgba(203, 167, 98, 0.6); }
+  100% { box-shadow: 0 0 0 3px #121210, 0 0 0 13px rgba(203, 167, 98, 0); }
 }
 
 @keyframes flashUp {

@@ -30,15 +30,20 @@ test("the board always says whether its figure is live, a snapshot or the exampl
 // polling route and the data the page hands the browser carry no money.
 test("no money figure reaches the board, the route or the page props", async () => {
   const board = await read("src", "components", "portal", "KjcBoard.jsx");
+  const trend = await read("src", "components", "portal", "KjcTrend.jsx");
+  const trendLib = await read("src", "lib", "trend.js");
   const route = await read("src", "app", "api", "kjc", "route.js");
   const page = await read("src", "app", "[lang]", "portal", "page.jsx");
-  for (const [name, src] of [["KjcBoard", board], ["api/kjc", route]]) {
+  for (const [name, src] of [["KjcBoard", board], ["KjcTrend", trend], ["lib/trend", trendLib], ["api/kjc", route]]) {
     assert.doesNotMatch(src, /\bmoney\(|balance|equity|deposit|floating|closed/i, `${name} handles a money figure`);
   }
   const boardProps = page.slice(page.indexOf("<KjcBoard"), page.indexOf("/>", page.indexOf("<KjcBoard")));
   assert.match(boardProps, /initial=\{\{ percent: data\.percent, asAt: data\.asAt \}\}/);
+  assert.match(boardProps, /trend=\{trend\}/);
+  assert.match(page, /const trend = \(.*\)\.map\(\(\{ at, kjc \}\) => \(\{ at, kjc \}\)\);/, "the trend handed to the board is not cut down to times and percentages");
   const snapshot = JSON.parse(await read("src", "lib", "keystoneSnapshot.json"));
-  assert.deepEqual(Object.keys(snapshot).sort(), ["as_at", "daily", "kjc"]);
+  assert.deepEqual(Object.keys(snapshot).sort(), ["as_at", "daily", "intraday", "kjc"]);
+  for (const p of snapshot.intraday) assert.deepEqual(Object.keys(p).sort(), ["at", "kjc"]);
 });
 
 // What a client reads about their account never shows a trade: no order,

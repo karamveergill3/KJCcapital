@@ -208,7 +208,8 @@
       "boardLabel": "$KJC quote",
       "statusLive": "Live",
       "statusSnapshot": "Snapshot",
-      "statusExample": "Example account"
+      "statusExample": "Example account",
+      "trendSummary": "$KJC from {from} to {to}: low {low}, high {high}, latest {latest}"
     },
     "performance": {
       "label": "Performance",

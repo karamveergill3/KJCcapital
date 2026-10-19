@@ -1,15 +1,17 @@
 -- Keystone Monitor: a read-only feed for the KJC Capital website.
 --
--- Run once in the Keystone Monitor project's SQL editor (not the KJC schema,
--- and not ForexDNA). It adds one table and one function and changes nothing
--- that is already there.
+-- Run once in the Keystone Monitor project's SQL editor (not the KJC schema).
+-- It adds one table and one function and changes nothing that is already
+-- there.
 --
 -- site_feeds is an allow list: the website can read an account only if it is
 -- named here. site_feed(slug) returns one thing for that account, the
--- percentage gain the portal shows as $KJC, now and at the end of each day
--- Keystone sampled equity. No balance, deposit, profit, account number,
--- server, broker, label, symbol, position or deal leaves Keystone. It is the
--- only thing the public key can reach; every table stays locked.
+-- percentage gain the portal shows as $KJC: now, at the end of each day
+-- Keystone sampled equity, and at each equity sample in the 24 hours up to the
+-- latest one, which the board draws as its trend. No balance, deposit,
+-- profit, account number, server, broker, label, symbol, position or deal
+-- leaves Keystone. It is the only thing the public key can reach; every table
+-- stays locked.
 --
 -- $KJC = (equity - broker credit - net deposits) / net deposits, as a percent.
 --
@@ -60,6 +62,16 @@ as $$
     select e.day, e.equity,
       (select coalesce(sum(x.cash_flow), 0) from cash_days x where x.day <= e.day) as capital
     from eq e
+  ),
+  -- Each sample against the deposits made by then, so a later deposit does
+  -- not rewrite the earlier readings. Counted back from the latest sample, so
+  -- over a weekend the trend is the last day's trading, not an empty chart.
+  recent as (
+    select s.at, s.equity - coalesce(s.credit, 0) as equity,
+      (select coalesce(sum(d.net), 0) from deals d
+        where d.account_id = s.account_id and d.kind = 'cash' and d.time <= s.at) as capital
+    from equity_samples s join a on a.id = s.account_id
+    where s.at > (select max(s2.at) from equity_samples s2 join a on a.id = s2.account_id) - interval '24 hours'
   )
   select case
     when not exists (select 1 from a) or (select capital from capital_now) <= 0 then null
@@ -70,6 +82,11 @@ as $$
       'daily', coalesce(
         (select jsonb_agg(jsonb_build_object('day', d.day, 'kjc', round((d.equity - d.capital) / d.capital * 100, 4)) order by d.day)
          from daily d where d.capital > 0),
+        '[]'::jsonb
+      ),
+      'intraday', coalesce(
+        (select jsonb_agg(jsonb_build_object('at', r.at, 'kjc', round((r.equity - r.capital) / r.capital * 100, 4)) order by r.at)
+         from recent r where r.capital > 0),
         '[]'::jsonb
       )
     )

@@ -7,14 +7,19 @@ import { feedToAccount, fetchSiteFeed, keystoneConfig } from "../src/lib/keyston
 
 const here = dirname(fileURLToPath(import.meta.url));
 
-// The shape site_feed returns: the percentage gain now, and at the end of each
-// day Keystone sampled equity. Nothing else.
+// The shape site_feed returns: the percentage gain now, at the end of each
+// day Keystone sampled equity, and at each sample over the last day. Nothing
+// else.
 const FEED = {
   as_at: "2026-10-19T18:49:52.618+00:00",
   kjc: 16.5852,
   daily: [
     { day: "2026-10-18", kjc: 16.1 },
     { day: "2026-10-19", kjc: 16.4966 }
+  ],
+  intraday: [
+    { at: "2026-10-19T18:45:54.963+00:00", kjc: 16.4966 },
+    { at: "2026-10-19T18:29:52.506+00:00", kjc: 16.5694 }
   ]
 };
 
@@ -30,6 +35,22 @@ test("today's point matches the headline, not a sample a minute old", () => {
   const { history, percent } = feedToAccount(FEED);
   assert.equal(history.at(-1).kjc, percent);
   assert.equal(history[0].kjc, 16.1);
+});
+
+test("the day's readings come oldest first and end on the headline", () => {
+  const { intraday, percent, asAt } = feedToAccount(FEED);
+  assert.deepEqual(intraday.map((p) => p.kjc), [16.5694, 16.4966, percent]);
+  assert.equal(intraday.at(-1).at, asAt);
+
+  // A sample taken at the same moment as the headline is not drawn twice.
+  const caughtUp = feedToAccount({ ...FEED, intraday: [{ at: FEED.as_at, kjc: 16.58 }] });
+  assert.equal(caughtUp.intraday.length, 1);
+
+  assert.deepEqual(feedToAccount({ ...FEED, intraday: "nope" }).intraday, [{ at: FEED.as_at, kjc: FEED.kjc }]);
+  assert.deepEqual(
+    feedToAccount({ ...FEED, intraday: [{ at: "2026-10-19", kjc: 1 }, { at: "2026-10-19T10:00:00Z", kjc: null }] }).intraday,
+    [{ at: FEED.as_at, kjc: FEED.kjc }]
+  );
 });
 
 test("a missing or malformed feed gives null, never a half-drawn page", () => {
@@ -48,7 +69,7 @@ test("the Keystone function returns percentages only", async () => {
   const body = sql.slice(sql.indexOf("as $$"), sql.lastIndexOf("$$;"));
   const output = body.slice(body.indexOf("jsonb_build_object"));
   const keys = [...output.matchAll(/'([a-z_]+)',/g)].map((m) => m[1]);
-  assert.deepEqual([...new Set(keys)].sort(), ["as_at", "daily", "day", "kjc"]);
+  assert.deepEqual([...new Set(keys)].sort(), ["as_at", "at", "daily", "day", "intraday", "kjc"]);
   assert.match(sql, /security definer/);
   assert.match(sql, /set search_path = public, pg_temp/);
   assert.match(sql, /grant execute on function public\.site_feed\(text\) to anon;/);
