@@ -209,14 +209,16 @@
       "statusLive": "Live",
       "statusSnapshot": "Snapshot",
       "statusExample": "Example account",
-      "trendSummary": "$KJC from {from} to {to}: low {low}, high {high}, latest {latest}"
+      "trendSummary": "$KJC from {from} to {to}: low {low}, high {high}, latest {latest}",
+      "rangeLabel": "Chart range"
     },
     "performance": {
       "label": "Performance",
-      "title": "$KJC over time",
+      "title": "Month by month",
+      "note": "$KJC at the last reading of each month.",
+      "month": "Month",
       "kjc": "$KJC",
-      "date": "Date",
-      "table": "Show the figures as a table"
+      "toDate": "to date"
     },
     "mandate": {
       "label": "Your mandate",

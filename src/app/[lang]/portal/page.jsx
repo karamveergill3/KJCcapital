@@ -1,16 +1,22 @@
 import { getDictionary } from "@/lib/i18n/getDictionary";
-import { longDate, money, shortDay, shortMonth, signedPercent } from "@/lib/kjc";
-import { fetchSiteFeed, keystoneConfig, snapshotAccount } from "@/lib/keystone";
+import { longDate, money, signedPercent } from "@/lib/kjc";
+import { fetchSiteFeed, keystoneFeedUrl, monthEnds, snapshotAccount } from "@/lib/keystone";
 import { pageMeta } from "@/lib/pageMeta";
 import { account as example, activity, deskNote, documents, exampleAccount, fees, notices, registers, rules } from "@/lib/portalExample";
+import { buildRanges } from "@/lib/trend";
 import PageHead from "@/components/PageHead";
 import EditorialSection from "@/components/EditorialSection";
 import KjcBoard from "@/components/portal/KjcBoard";
-import KjcChart from "@/components/portal/KjcChart";
 import RegisterMeters from "@/components/portal/RegisterMeters";
 
+// "2026-10" as "October 2026", read in UTC like every date on the page.
+const monthName = (month) =>
+  new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric", timeZone: "UTC" })
+    .format(new Date(`${month}-01T00:00:00Z`));
+
 // Keystone syncs the account about once a minute, so the page is rebuilt at
-// most that often. Without a feed it is the example and never changes.
+// most that often. Without a feed it is the snapshot or the example, and
+// neither changes.
 export const revalidate = 60;
 
 export async function generateMetadata({ params }) {
@@ -38,13 +44,16 @@ export default async function PortalPage({ params }) {
   // Live from Keystone when the feed answers. Otherwise the committed snapshot
   // of the real account, labelled with its time, and only if that is missing
   // too, the labelled example.
-  const data = (await fetchSiteFeed(keystoneConfig())) ?? snapshotAccount() ?? exampleAccount();
+  const data = (await fetchSiteFeed(keystoneFeedUrl())) ?? snapshotAccount() ?? exampleAccount();
   const { mode } = data;
-  const daily = mode !== "example";
-  const points = data.history.map((h) => ({ label: daily ? shortDay(h.at) : shortMonth(h.at), kjc: h.kjc }));
-  // The board's trend is the day's readings when Keystone has them, and the
-  // daily or monthly history when it does not. Times and percentages only.
-  const trend = (data.intraday?.length > 1 ? data.intraday : data.history).map(({ at, kjc }) => ({ at, kjc }));
+  // The board's chart, one stretch of the series per range tab. The series is
+  // times and percentages only, so every range is too.
+  const ranges = buildRanges(data.series);
+  // The month the data was taken in reads "to date", even when the feed has
+  // stopped syncing or the snapshot is weeks old, so a mid-month reading is
+  // never shown as a month end. The example's points are month ends already,
+  // so it goes by today's date.
+  const months = monthEnds(data.series, mode === "example" ? undefined : new Date(data.asAt));
 
   return (
     <>
@@ -53,40 +62,40 @@ export default async function PortalPage({ params }) {
       <KjcBoard
         mode={mode}
         initial={{ percent: data.percent, asAt: data.asAt }}
-        trend={trend}
+        ranges={ranges}
         copy={portal.quote}
       />
 
-      {/* A history needs two days to draw. Until Keystone has sampled equity
-          on more than one day, the board's figure is the whole story. */}
-      {points.length > 1 ? (
+      {/* One month in a table says no more than the board, so the table
+          waits until the series reaches into a second calendar month. */}
+      {months.length > 1 ? (
         <section className="shell py-12 md:py-16 border-t border-[var(--color-rule)]">
           <div className="smallcaps">{portal.performance.label}</div>
-          <h2 className="serif text-2xl md:text-3xl mt-3 mb-8 leading-tight text-[var(--color-ink)]">
+          <h2 className="serif text-2xl md:text-3xl mt-3 mb-3 leading-tight text-[var(--color-ink)]">
             {portal.performance.title}
           </h2>
-          <KjcChart points={points} label={portal.performance.title} />
-          <details className="mt-6">
-            <summary className="smallcaps cursor-pointer min-h-11 flex items-center">{portal.performance.table}</summary>
-            <div className="overflow-x-auto max-h-96 overflow-y-auto mt-4">
-              <table className="editorial max-w-sm">
-                <thead>
-                  <tr>
-                    <th scope="col">{portal.performance.date}</th>
-                    <th scope="col" className="text-right">{portal.performance.kjc}</th>
+          <p className="text-sm text-[var(--color-ink-soft)] mb-8">{portal.performance.note}</p>
+          <div className="overflow-x-auto">
+            <table className="editorial max-w-sm">
+              <thead>
+                <tr>
+                  <th scope="col">{portal.performance.month}</th>
+                  <th scope="col" className="text-right">{portal.performance.kjc}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {months.map((m) => (
+                  <tr key={m.month}>
+                    <td>
+                      {monthName(m.month)}
+                      {m.toDate ? <span className="smallcaps ml-2">{portal.performance.toDate}</span> : null}
+                    </td>
+                    <td className="tabular text-right">{signedPercent(m.kjc)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {data.history.map((h) => (
-                    <tr key={h.at}>
-                      <td>{longDate(h.at.slice(0, 10))}</td>
-                      <td className="tabular text-right">{signedPercent(h.kjc)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </details>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       ) : null}
 

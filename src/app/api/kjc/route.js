@@ -1,4 +1,4 @@
-import { fetchSiteFeed, keystoneConfig } from "@/lib/keystone";
+import { fetchSiteFeed, keystoneFeedUrl } from "@/lib/keystone";
 
 // The $KJC board polls this once a minute so a visitor sitting on the portal
 // sees the figure move without reloading. It returns the percentage gain and
@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const account = await fetchSiteFeed(keystoneConfig());
+  const account = await fetchSiteFeed(keystoneFeedUrl());
   if (account?.mode !== "live") {
     return Response.json({ live: false }, { status: 503, headers: { "Cache-Control": "no-store" } });
   }

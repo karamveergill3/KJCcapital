@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { direction, signedPercent } from "@/lib/kjc";
-import { appendPoint, trendSeries, trendWindow } from "@/lib/trend";
+import { appendToRanges, defaultRange } from "@/lib/trend";
 import KjcTrend from "@/components/portal/KjcTrend";
 
 const POLL_MS = 60000;
@@ -16,16 +16,17 @@ function timeOnly(iso) {
 
 // The board shows one figure, the percentage gain, quoted as $KJC, with a
 // status light saying whether it is live, a snapshot or the example, and the
-// trend of that figure underneath. When the feed is live it asks for the
-// figure once a minute, flashes it when it moves and adds it to the end of the
-// trend; a snapshot or the example never polls.
-export default function KjcBoard({ mode, initial, trend, copy }) {
+// trend of that figure underneath in ranges, a day to the whole life of the
+// account, picked from a row of tabs as on a stock app. When the feed is live
+// it asks for the figure once a minute, flashes it when it moves and adds it
+// to the end of every range, each of which keeps only its own window; a
+// snapshot or the example never polls.
+export default function KjcBoard({ mode, initial, ranges, copy }) {
   const [state, setState] = useState(initial);
-  const [series, setSeries] = useState(() => trendSeries(trend));
+  const [lines, setLines] = useState(() => (Array.isArray(ranges) ? ranges : []));
+  const [selected, setSelected] = useState(() => defaultRange(lines));
   const [flash, setFlash] = useState(null);
   const previous = useRef(initial.percent);
-  // However long the page stays open, the trend keeps the span it opened with.
-  const keep = useRef(trendWindow(series));
 
   useEffect(() => {
     if (mode !== "live") return undefined;
@@ -40,7 +41,7 @@ export default function KjcBoard({ mode, initial, trend, copy }) {
         const moved = Math.round((next.percent - previous.current) * 100);
         previous.current = next.percent;
         setState({ percent: next.percent, asAt: next.asAt });
-        setSeries((current) => appendPoint(current, { at: next.asAt, kjc: next.percent }, keep.current));
+        setLines((current) => appendToRanges(current, { at: next.asAt, kjc: next.percent }));
         if (moved) {
           setFlash(moved > 0 ? "up" : "down");
           clearTimeout(clear);
@@ -66,6 +67,7 @@ export default function KjcBoard({ mode, initial, trend, copy }) {
       : mode === "snapshot"
         ? `${copy.statusSnapshot} ${timeOnly(asAt)} UTC`
         : copy.statusExample;
+  const shown = lines.find((r) => r.key === selected && r.enabled) ?? lines.find((r) => r.key === defaultRange(lines));
 
   return (
     <section className="kjc-board" aria-label={copy.boardLabel}>
@@ -81,7 +83,25 @@ export default function KjcBoard({ mode, initial, trend, copy }) {
           <span aria-hidden className="kjc-hero-arrow">{ARROW[dir]}</span>
           {signedPercent(percent)}
         </p>
-        {series.length > 1 ? <KjcTrend series={series} live={mode === "live"} summary={copy.trendSummary} /> : null}
+        {shown?.enabled ? (
+          <div className="kjc-chart">
+            <div className="kjc-ranges" role="group" aria-label={copy.rangeLabel}>
+              {lines.map((range) => (
+                <button
+                  key={range.key}
+                  type="button"
+                  className="kjc-range"
+                  aria-pressed={range.key === shown.key}
+                  disabled={!range.enabled}
+                  onClick={() => setSelected(range.key)}
+                >
+                  {range.key}
+                </button>
+              ))}
+            </div>
+            <KjcTrend key={shown.key} points={shown.points} live={mode === "live"} summary={copy.trendSummary} />
+          </div>
+        ) : null}
       </div>
     </section>
   );

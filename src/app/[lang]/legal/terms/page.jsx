@@ -30,7 +30,10 @@ export default function TermsPage() {
       <p>
         The $KJC figure on the investor portal is a percentage return on the capital committed,
         with any open drawdown counted against it. It is not a forecast, and past performance
-        is not a guide to future returns. Anything on the portal marked as an example is
+        is not a guide to future returns. Earlier points on the $KJC chart are estimates,
+        rebuilt from the account&apos;s trades with open positions valued at the European
+        Central Bank&apos;s daily reference rates; later points are measured. Anything on the
+        portal marked as an example is
         illustrative. The programme is available only to persons who have passed the
         firm&apos;s identity and anti-money-laundering checks.
       </p>
