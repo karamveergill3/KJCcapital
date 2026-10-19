@@ -100,15 +100,17 @@ The header tape is built in `src/lib/ticker.js` from `home.ledger` plus
 contradicts. `tests/ticker.test.mjs` rejects any digit or pooled-fund word on
 it: the tape carries terms, never figures.
 
-When it is built, the portal is the record of the **relationship**, not the
-record of the money: the mandate and its limits, a log of what the firm did
-under it, documents, fees with the matching broker statement reference,
-notices, and a desk note. Balances, positions and trades stay with the broker.
-The programme page promises there is no version of the numbers only the firm
-can see, and a second dashboard would break that the first time it disagreed.
+The portal shows a client their own return, quoted as **$KJC**, alongside the
+record of the relationship: the mandate and its limits, a log of what the firm
+did under it, documents, fees with the matching broker statement reference,
+notices, and a desk note. The owner decided on the figures in October 2026. They
+are the broker's figures, not a valuation of the firm's, so the governance page's
+promise that the broker values the account still holds.
 
-`supabase/schema.sql` is modelled on exactly that. Nothing reads its tables
-yet: the portal has a sign-in and a signed-in landing page, but no data pages.
+`supabase/schema.sql` models the relationship and deliberately stores no
+figures; a test rejects balance, equity and valuation columns. A live $KJC
+either reads the broker on each request, or needs a snapshots table, which
+means relaxing that guard on purpose. Nothing reads the schema's tables yet:
 
 - `clients` — one row per enquiry or client, through the steps the contact
   and portal pages describe: enquiry, agreement issued, account opening,
@@ -137,32 +139,32 @@ yet: the portal has a sign-in and a signed-in landing page, but no data pages.
 table, column or action for units, NAV, subscriptions, redemptions, a balance
 or a valuation, and their tests fail if one appears.
 
-## Portal sign-in
+## Portal
 
-`/[lang]/portal` is the sign-in page and `/[lang]/portal/account` is where a
-signed-in client lands. Both render per request and are noindexed as well as
-disallowed in robots.txt.
+`/[lang]/portal` opens straight onto the client dashboard. There is no login:
+the owner set it aside, and a sign-in built for Supabase was removed (it is in
+commit 4af2311 if wanted back). So the page shows an **example account**, from
+`src/lib/portalExample.js`, under a notice that says every figure is
+illustrative. `tests/portal.test.mjs` fails if that notice is taken off while
+the example data is in use. **A real client's figures must not go on this page
+until it sits behind a login**, because it is public.
 
-- **Off until Supabase is connected.** With `NEXT_PUBLIC_SUPABASE_URL` and
-  `NEXT_PUBLIC_SUPABASE_ANON_KEY` unset, the form renders and answers that the
-  portal is not open yet, and the account page sends visitors back. Both values
-  are inlined at build time, so a redeploy is needed after setting them.
-- **No sign-up.** Credentials are created by the firm (Supabase dashboard, or
-  the admin API with the service-role key) when an account is opened. The
-  Supabase project must have public sign-ups disabled.
-- **Email and password**, through a server action. A wrong password and an
-  unknown address get the same message. A signed-in client always lands on the
-  account page; nothing takes a redirect target from the request.
-- **Sessions** are checked with `getUser()` (Supabase vouches for the token),
-  refreshed in `src/middleware.js` for portal routes only, and kept in a
-  Secure, HttpOnly, SameSite=Lax cookie. Nothing in the browser reads it.
-- Not yet: a second factor (the schema's `mfa_backup_codes` is ready for it),
-  password reset by email (a client writes to a director instead), and the
-  data pages.
+**$KJC** (`src/lib/kjc.js`) is the client's return measured on equity:
 
-The flow was tested end to end against a local stand-in for Supabase Auth:
-wrong password, unknown address, sign-in, reload, sign-out, and a tampered
-cookie, which is refused.
+    $KJC = (equity - net deposits) / net deposits
+
+Closed profit counts and so does any loss still open, so a client who has
+banked 50,000 on 500,000 but carries 25,000 of open drawdown sees +5.00%, not
+the +10.00% the balance would show. The inputs are the fields an MT5 account
+reports (balance, equity, and deposits less withdrawals from its balance
+operations), so a live feed can replace the example without the page changing.
+The page shows it as a quote, on a tape under the header, as a month-by-month
+chart with a table view, and broken down into closed and open profit.
+
+The rest of the page is the mandate's rules (trade-only authority, withdrawals
+and revocation with the broker, example risk limits), each register's weight
+against its limit, the activity log, fees, documents, notices and a desk note.
+Rules marked Example carry numbers a real mandate would set per client.
 
 ## Conventions
 

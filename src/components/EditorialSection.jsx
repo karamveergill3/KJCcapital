@@ -10,7 +10,10 @@ export default function EditorialSection({ label, title, children }) {
             </h2>
           ) : null}
         </div>
-        <div className="prose-editorial">{children}</div>
+        {/* min-w-0: a grid column grows to fit its widest child unless told it
+            may shrink, so a wide table would push the page off the screen
+            instead of scrolling inside its own box. */}
+        <div className="prose-editorial min-w-0">{children}</div>
       </div>
     </section>
   );

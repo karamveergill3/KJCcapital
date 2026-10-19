@@ -27,8 +27,9 @@ export default function TermsPage() {
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Eligibility</h3>
       <p>
-        Access to the investor portal is available only to existing clients of the firm. The
-        programme is available only to persons who have passed the firm&apos;s identity and
+        The investor portal on this site shows an example account, and every figure on it is
+        illustrative. A client&apos;s own figures are shown only to that client. The programme
+        is available only to persons who have passed the firm&apos;s identity and
         anti-money-laundering checks.
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Intellectual property</h3>
