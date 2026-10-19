@@ -4,7 +4,8 @@ import snapshotFeed from "@/lib/keystoneSnapshot.json" with { type: "json" };
 // its public feed: one GET that answers for the one account Keystone's allow
 // list names. The owner wants the portal to show the percentage gain and
 // nothing else, so that is all the feed carries: $KJC now, with the time it
-// was taken, and $KJC over the account's whole life, oldest first. No
+// was taken, and $KJC over the account's whole life, oldest first (Keystone
+// calls the figure "pct", since its code never names this site). No
 // balance, deposit, profit or account detail leaves Keystone at all, and the
 // site needs no key and no database grant to read it.
 //
@@ -68,7 +69,7 @@ const timeOf = (at) => (/^\d{4}-\d{2}-\d{2}T/.test(at) ? Date.parse(at) : NaN);
 /** Turns the feed into what the portal draws: one percentage, when it was taken, and its history. */
 export function feedToAccount(feed) {
   if (!feed || typeof feed !== "object" || Array.isArray(feed)) return null;
-  const percent = number(feed.kjc);
+  const percent = number(feed.pct);
   const asAt = typeof feed.as_at === "string" ? feed.as_at : "";
   if (!Number.isFinite(percent) || !Number.isFinite(timeOf(asAt))) return null;
 
@@ -77,7 +78,7 @@ export function feedToAccount(feed) {
   const byTime = new Map();
   for (const p of Array.isArray(feed.series) ? feed.series : []) {
     const at = String(p?.at ?? "");
-    const kjc = number(p?.kjc);
+    const kjc = number(p?.pct);
     const t = timeOf(at);
     if (Number.isFinite(t) && Number.isFinite(kjc)) byTime.set(t, { at, kjc });
   }

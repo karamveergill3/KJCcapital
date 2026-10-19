@@ -573,7 +573,8 @@
     cursor: pointer;
   }
 
-  .kjc-range:hover:not(:disabled) { color: var(--kjc-text); }
+  /* Not on the selected tab: its light pill keeps dark text under the pointer. */
+  .kjc-range:hover:not(:disabled):not([aria-pressed="true"]) { color: var(--kjc-text); }
 
   .kjc-range[aria-pressed="true"] {
     background: #e9e5da;

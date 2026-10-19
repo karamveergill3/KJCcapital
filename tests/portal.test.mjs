@@ -61,8 +61,8 @@ test("no money figure reaches the board, the route or the page props", async () 
   assert.doesNotMatch(months, /\bmoney\(|balance|equity|deposit|floating|closed/i, "the month table handles a money figure");
 
   const snapshot = JSON.parse(await read("src", "lib", "keystoneSnapshot.json"));
-  assert.deepEqual(Object.keys(snapshot).sort(), ["as_at", "kjc", "series"]);
-  for (const p of snapshot.series) assert.deepEqual(Object.keys(p).sort(), ["at", "kjc"]);
+  assert.deepEqual(Object.keys(snapshot).sort(), ["as_at", "pct", "series"]);
+  for (const p of snapshot.series) assert.deepEqual(Object.keys(p).sort(), ["at", "pct"]);
 });
 
 // Whichever mode the page is in, the series it builds the board's ranges and
@@ -70,9 +70,9 @@ test("no money figure reaches the board, the route or the page props", async () 
 test("the series is times and percentages in every mode", () => {
   const live = feedToAccount({
     as_at: "2026-10-19T19:19:53.992+00:00",
-    kjc: 16.6309,
+    pct: 16.6309,
     balance: 668730.2,
-    series: [{ at: "2026-10-19T19:17:53.777+00:00", kjc: 16.5715, equity: 583154.5, deposits: 500000 }]
+    series: [{ at: "2026-10-19T19:17:53.777+00:00", pct: 16.5715, equity: 583154.5, deposits: 500000 }]
   });
   assert.deepEqual(Object.keys(live).sort(), ["asAt", "mode", "percent", "series"]);
   for (const data of [live, snapshotAccount(), exampleAccount()]) {
