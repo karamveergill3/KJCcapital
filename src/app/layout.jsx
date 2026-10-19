@@ -38,7 +38,7 @@ export const metadata = {
 
 const ORGANISATION_LD = {
   "@context": "https://schema.org",
-  "@type": "FinancialService",
+  "@type": "Organization",
   name: "KJC Capital",
   url: SITE_URL,
   slogan: "Gold-led capital, managed with discipline.",

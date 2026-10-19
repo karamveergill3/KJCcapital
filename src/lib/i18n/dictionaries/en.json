@@ -158,7 +158,7 @@
   "governance": {
     "leadTitle": "Governance",
     "metaDescription": "Where client money sits, the limits on KJC Capital's authority, how the firm is paid, and the record it keeps.",
-    "leadIntro": "The firm operates within a framework that is intentionally boring. What matters at this size is not the number of controls but that the ones in place are followed, every time.",
+    "leadIntro": "The firm operates within a framework that is intentionally boring. What matters is not the number of controls but that the ones in place are followed, every time.",
     "sections": [
       {
         "label": "Where the money sits",
@@ -170,7 +170,7 @@
       },
       {
         "label": "Valuation",
-        "body": "The firm does not value your account. Your broker does, on its own statements, from its own records, and those statements are the authoritative account of what you hold and what it is worth. There is no valuation of ours for a broker's figure to disagree with, which removes the question that occupies most of the diligence done on a small manager."
+        "body": "The firm does not value your account. Your broker does, on its own statements, from its own records, and those statements are the authoritative account of what you hold and what it is worth. There is no valuation of ours for a broker's figure to disagree with, which removes the question that occupies most of the diligence done on a manager."
       },
       {
         "label": "Fees",
