@@ -430,31 +430,6 @@
   .kjc-board .tone-down { color: var(--kjc-loss); }
   .kjc-board .tone-flat { color: var(--kjc-text); }
 
-  .kjc-strip {
-    display: flex;
-    align-items: stretch;
-    border-bottom: 1px solid var(--kjc-rule);
-    min-width: 0;
-  }
-
-  .kjc-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.9rem;
-    flex-shrink: 0;
-    padding: 0.7rem 1rem;
-    background: #1b1a17;
-    border-right: 1px solid var(--color-gold-deep);
-  }
-
-  .kjc-symbol {
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    color: var(--kjc-gold);
-  }
-
   .kjc-status {
     display: inline-flex;
     align-items: center;
@@ -478,65 +453,6 @@
   .kjc-status-live { color: var(--kjc-gain); }
   .kjc-status-snapshot .kjc-dot { background: var(--kjc-gold); }
 
-  .kjc-tape {
-    position: relative;
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    mask-image: linear-gradient(to right, transparent 0, #000 1.5rem, #000 calc(100% - 1.5rem), transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 1.5rem, #000 calc(100% - 1.5rem), transparent 100%);
-  }
-
-  .kjc-tape-track {
-    display: flex;
-    width: max-content;
-    will-change: transform;
-  }
-
-  .kjc-tape-run {
-    display: flex;
-    align-items: baseline;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .kjc-tape-item {
-    display: flex;
-    align-items: baseline;
-    gap: 0.6rem;
-    white-space: nowrap;
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .kjc-tape-item::after {
-    content: "";
-    align-self: center;
-    width: 1px;
-    height: 0.9rem;
-    background: var(--kjc-rule);
-    margin-inline: 1.4rem;
-  }
-
-  .kjc-tape-term {
-    font-size: 0.68rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--kjc-muted);
-  }
-
-  .kjc-tape-item:first-child .kjc-tape-term { color: var(--kjc-gold); }
-
-  .kjc-tape-value {
-    font-size: 0.9rem;
-    font-weight: 500;
-    border-radius: 2px;
-    padding: 0 0.15rem;
-  }
-
   .kjc-body {
     display: grid;
     gap: 2.5rem;
@@ -551,8 +467,9 @@
 
   .kjc-label {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.9rem;
+    gap: 0.6rem 1.1rem;
     font-family: var(--font-sans);
     font-size: 0.66rem;
     font-weight: 500;
@@ -647,14 +564,6 @@
       animation-play-state: paused;
     }
 
-    .kjc-tape-track {
-      animation: tickerScroll var(--kjc-duration, 40s) linear infinite;
-    }
-
-    .kjc-tape:hover .kjc-tape-track {
-      animation-play-state: paused;
-    }
-
     .kjc-status-live .kjc-dot {
       animation: livePulse 1600ms ease-in-out infinite;
     }
@@ -679,15 +588,6 @@
     }
 
     .ticker-run[aria-hidden="true"] {
-      display: none;
-    }
-
-    .kjc-tape {
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-
-    .kjc-tape-run[aria-hidden="true"] {
       display: none;
     }
   }

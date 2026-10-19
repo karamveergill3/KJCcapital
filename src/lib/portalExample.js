@@ -42,17 +42,17 @@ export function exampleAccount() {
   };
 }
 
-// Weight is the share of the account's exposure in each register. A limit is a
-// floor for the anchor and a cap for the rest; the numbers are examples of
-// what a mandate sets, not the firm's terms.
+// Weight is the share of the account's exposure in each register: forex at
+// the core, stocks alongside it. A limit is a floor for the core and a cap
+// for the rest. The numbers are examples of what a mandate sets, not the
+// firm's terms.
 export const registers = [
-  { name: "Precious metals", note: "The anchor", weight: 58, limit: { min: 40 } },
-  { name: "Algorithmic strategies", note: "Proprietary", weight: 24, limit: { max: 30 } },
-  { name: "Digital assets", note: "Bounded", weight: 9, limit: { max: 10 } },
-  { name: "Select alternatives", note: "By exception", weight: 4, limit: { max: 10 } }
+  { name: "Forex", note: "The core", weight: 68, limit: { min: 50 } },
+  { name: "Stocks", note: "Equities and indices", weight: 27, limit: { max: 40 } }
 ];
 
-// Rules marked example carry a number a real mandate would set per client.
+// What the authority is, and whose the account is. The rest of the terms live
+// in the client agreement.
 export const rules = [
   {
     term: "Trading authority",
@@ -63,55 +63,37 @@ export const rules = [
     term: "Account holder",
     value: "You",
     detail: "Opened with your broker, in your name, under your own credentials."
-  },
-  {
-    term: "Withdrawals",
-    value: "Yours to instruct",
-    detail: "Direct with your broker. The firm is not a step and cannot delay one."
-  },
-  {
-    term: "Revoking the authority",
-    value: "At any time",
-    detail: "Direct with your broker, without the firm's agreement."
-  },
-  {
-    term: "Risk per position",
-    value: "1.00% of equity",
-    detail: "The most any one position may put at risk.",
-    example: true
-  },
-  {
-    term: "Fees",
-    value: "Per your agreement",
-    detail: "Invoiced against your broker statement, never taken from the account by the firm."
   }
 ];
 
+// The account's administrative record. It never shows a trade: no order,
+// position, entry, exit or profit taken appears here, and tests/portal.test.mjs
+// fails if one does.
 export const activity = [
   {
-    at: "2026-09-24",
-    kind: "Risk event",
-    summary: "Gold fell on a stronger dollar. The metals position was held inside its limits and no stop was reached."
+    at: "2026-10-01",
+    kind: "Statement",
+    summary: "September statement received from your broker and checked against the account."
   },
   {
-    at: "2026-09-15",
-    kind: "Instruction",
-    summary: "Added to the gold position on the pullback, within the metals range."
+    at: "2026-09-30",
+    kind: "Limit check",
+    summary: "Month-end check of the mandate limits. Every register inside its range."
   },
   {
     at: "2026-09-02",
-    kind: "Limit check",
-    summary: "Quarterly check of the mandate limits. Every register inside its range."
+    kind: "Review",
+    summary: "Annual mandate review completed. No change to your limits."
   },
   {
-    at: "2026-08-29",
-    kind: "Instruction",
-    summary: "Took profit on the systematic register's trend positions."
+    at: "2026-07-03",
+    kind: "Fees",
+    summary: "Second-quarter fee invoiced against your broker statement."
   },
   {
-    at: "2026-08-12",
-    kind: "Instruction",
-    summary: "Reduced the digital-asset allocation to 9% ahead of a volatile week."
+    at: "2026-06-30",
+    kind: "Notice",
+    summary: "Notice issued: your annual mandate review falls in September."
   }
 ];
 
@@ -152,8 +134,10 @@ export const notices = [
   }
 ];
 
+// The desk note is about the news that moved the markets, not about what the
+// desk did in them.
 export const deskNote = {
   at: "2026-10-01",
   period: "September 2026",
-  body: "The book was carried long gold for most of the month, and the open loss at the end of September is that position marked down after the dollar rallied in the final week. It sits inside the mandate's limits. The systematic register finished slightly ahead, and the digital-asset allocation was kept small."
+  body: "A month led by the central banks. Rate decisions on both sides of the Atlantic set the tone for the dollar, and the major currency pairs moved on every shift in expectations for the pace of cuts. Inflation and jobs data drove the rest of the month, while equity markets followed company guidance as closely as policy. In the month ahead: the US jobs report, inflation figures in the major economies, and the start of the third-quarter earnings season."
 };
