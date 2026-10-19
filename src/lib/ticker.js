@@ -24,6 +24,16 @@ export function buildTape(rows = [], extra = []) {
   return tape;
 }
 
+// The track travels one run's width and then jumps back, so a run narrower
+// than the strip leaves a blank stretch before the loop. A short tape is
+// repeated until one run is long enough to cover a wide screen.
+export function fillTape(tape = [], { minCharacters = 260 } = {}) {
+  const characters = tape.reduce((total, item) => total + item.term.length + item.value.length + 3, 0);
+  if (!characters) return [];
+  const copies = Math.max(1, Math.ceil(minCharacters / characters));
+  return Array.from({ length: copies }, () => tape).flat();
+}
+
 // The track holds two identical runs and travels exactly one run's width, so a
 // long tape has to take proportionally longer or it reads as a blur. Pace is
 // set by character count rather than item count, which keeps the speed steady

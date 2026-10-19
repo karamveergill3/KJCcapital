@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
-import { buildTape, tapeDuration } from "../src/lib/ticker.js";
+import { buildTape, fillTape, tapeDuration } from "../src/lib/ticker.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -48,6 +48,18 @@ test("tapeDuration grows with the copy and never dips below the minimum", () => 
   );
   assert.equal(tapeDuration(short), 28);
   assert.ok(tapeDuration(long) > tapeDuration(short));
+});
+
+test("a short tape repeats until a run can cover a wide screen; a long one is left alone", () => {
+  const short = [{ term: "$KJC", value: "+5.00%" }];
+  const filled = fillTape(short);
+  assert.ok(filled.length > 1);
+  assert.ok(filled.every((item) => item === short[0]));
+  const chars = filled.reduce((n, i) => n + i.term.length + i.value.length + 3, 0);
+  assert.ok(chars >= 260);
+  const long = Array.from({ length: 20 }, (_, i) => ({ term: `Term number ${i}`, value: `Value ${i}` }));
+  assert.equal(fillTape(long).length, long.length);
+  assert.deepEqual(fillTape([]), []);
 });
 
 test("the tape states nothing the firm cannot stand behind", async () => {

@@ -205,6 +205,11 @@
       "label": "Example account",
       "body": "This is a preview of what a client sees. Every figure on it is illustrative: it is not the programme's track record, and no real client's account is shown."
     },
+    "live": {
+      "label": "Live account",
+      "body": "The figures at the top of this page are live, from one account, refreshed about once a minute from its trading terminal. Sections marked Example are illustrative until the portal has a sign-in."
+    },
+    "exampleTag": "Example",
     "tapeLabel": "Your account",
     "quote": {
       "symbol": "$KJC",
@@ -217,17 +222,19 @@
       "equity": "Account value",
       "balance": "Balance",
       "capital": "Deposited",
-      "drawdown": "Largest fall from a high",
       "asAt": "As at",
-      "source": "from your broker statement",
+      "sourceExample": "from your broker statement",
+      "sourceLive": "live from the account's trading terminal",
       "explain": "$KJC counts open positions as well as closed ones. Profit already taken is offset by any loss still open, so the figure is what your account is worth now against what you put in."
     },
     "performance": {
       "label": "Performance",
-      "title": "$KJC, month by month",
+      "title": "$KJC and closed profit",
+      "kjc": "$KJC",
+      "closed": "Closed profit",
+      "date": "Date",
       "table": "Show the figures as a table",
-      "month": "Month end",
-      "value": "$KJC"
+      "equitySince": "Closed profit runs from the day the account opened. $KJC needs the account's equity, which has been recorded since"
     },
     "mandate": {
       "label": "Your mandate",
@@ -235,8 +242,7 @@
       "registers": "Where the account is invested",
       "cap": "cap",
       "floor": "at least",
-      "example": "Example figures. Your mandate sets your own.",
-      "exampleTag": "Example"
+      "example": "Example figures. Your mandate sets your own."
     },
     "activity": {
       "label": "Activity",

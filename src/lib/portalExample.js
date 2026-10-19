@@ -27,6 +27,23 @@ export const account = {
   ]
 };
 
+// The example in the shape feedToAccount gives the live feed, so the page has
+// one path for both.
+export function exampleAccount() {
+  const latest = account.snapshots[account.snapshots.length - 1];
+  return {
+    live: false,
+    currency: account.currency,
+    asAt: account.asAt,
+    snapshot: latest,
+    history: account.snapshots.map((s) => ({
+      at: s.at,
+      closed: ((s.balance - s.deposits) / s.deposits) * 100,
+      kjc: ((s.equity - s.deposits) / s.deposits) * 100
+    }))
+  };
+}
+
 // Weight is the share of the account's exposure in each register. A limit is a
 // floor for the anchor and a cap for the rest; the numbers are examples of
 // what a mandate sets, not the firm's terms.
