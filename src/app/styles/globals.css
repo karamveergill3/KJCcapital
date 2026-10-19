@@ -29,12 +29,16 @@
 
 /* Each stack leads with the variable next/font sets on <html> (see the root
    layout) for the self-hosted face. "inline" makes the font-* utilities carry
-   the stack itself, so they never depend on where var() is resolved. */
+   the stack itself, so they never depend on where var() is resolved. The
+   serif italic is a face of its own, for .serif-italic and .folio-num. Mono
+   leads with the family name instead of its variable, which would put a
+   size-adjusted Arial ahead of the monospace fallbacks. */
 @theme inline {
   --font-display: var(--font-cormorant-garamond), "Cormorant Garamond", "Cormorant", Didot, "Bodoni MT", Garamond, serif;
   --font-serif: var(--font-source-serif-4), "Source Serif 4", "Source Serif Pro", Cambria, Georgia, serif;
+  --font-serif-italic: var(--font-source-serif-4-italic), "Source Serif 4", "Source Serif Pro", Cambria, Georgia, serif;
   --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }
 
 @layer base {
@@ -122,7 +126,7 @@
   }
 
   .serif-italic {
-    font-family: var(--font-serif);
+    font-family: var(--font-serif-italic);
     font-style: italic;
     font-weight: 400;
   }
@@ -226,7 +230,7 @@
   }
 
   .folio-num {
-    font-family: var(--font-serif);
+    font-family: var(--font-serif-italic);
     font-style: italic;
     font-weight: 400;
     color: var(--color-gold-deep);

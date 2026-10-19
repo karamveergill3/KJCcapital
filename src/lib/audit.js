@@ -2,10 +2,13 @@
 // the money. There is nothing here for a deposit, a withdrawal, a transfer, a
 // valuation or a trade fill, because the firm makes none of them; the broker
 // holds that record. A fee is charged and then paid against a broker statement
-// line, never taken by the firm.
+// line, never taken by the firm. The client.* lifecycle actions are named for
+// the client_status each one moves to, so a trail reads against the schema.
 export const AUDIT_ACTIONS = Object.freeze({
   CLIENT_ENQUIRY_RECORDED: "client.enquiry_recorded",
-  CLIENT_ADMITTED: "client.admitted",
+  CLIENT_AGREEMENT_ISSUED: "client.agreement_issued",
+  CLIENT_ACCOUNT_OPENING: "client.account_opening",
+  CLIENT_ACTIVATED: "client.activated",
   CLIENT_UPDATED: "client.updated",
   CLIENT_PAUSED: "client.paused",
   CLIENT_RESUMED: "client.resumed",

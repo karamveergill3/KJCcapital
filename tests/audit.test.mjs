@@ -1,13 +1,24 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 import { AUDIT_ACTIONS, serialiseForAudit } from "../src/lib/audit.js";
+
+const here = dirname(fileURLToPath(import.meta.url));
+const schema = await readFile(resolve(here, "..", "supabase", "schema.sql"), "utf8");
 
 test("AUDIT_ACTIONS enumerates the actions we log today", () => {
   const required = [
-    "CLIENT_ADMITTED",
+    "CLIENT_ENQUIRY_RECORDED",
+    "CLIENT_AGREEMENT_ISSUED",
+    "CLIENT_ACCOUNT_OPENING",
+    "CLIENT_ACTIVATED",
     "CLIENT_UPDATED",
     "CLIENT_PAUSED",
+    "CLIENT_RESUMED",
     "CLIENT_ENDED",
+    "CLIENT_DECLINED",
     "KYC_CHECK_RECORDED",
     "BROKER_ACCOUNT_LINKED",
     "AUTHORITY_GRANTED",
@@ -60,10 +71,32 @@ test("action strings are dotted lower-case, unique, and match their key", () => 
   }
 });
 
-// The firm manages each client's own account and pools nothing. An action
-// named for the fund it is not would be the first step to logging one.
+// Each step of the relationship the schema records has the action that marks
+// it, named for the status it moves to.
+test("every client_status has its lifecycle action", () => {
+  const m = /create type client_status as enum \(([^)]*)\)/i.exec(schema);
+  assert.ok(m, "client_status is missing from schema.sql");
+  const statuses = [...m[1].matchAll(/'([^']*)'/g)].map((x) => x[1]);
+  const lifecycle = {
+    enquiry: "CLIENT_ENQUIRY_RECORDED",
+    agreement_issued: "CLIENT_AGREEMENT_ISSUED",
+    account_opening: "CLIENT_ACCOUNT_OPENING",
+    active: "CLIENT_ACTIVATED",
+    paused: "CLIENT_PAUSED",
+    ended: "CLIENT_ENDED",
+    declined: "CLIENT_DECLINED"
+  };
+  assert.deepEqual(statuses.slice().sort(), Object.keys(lifecycle).sort(), "client_status and the lifecycle actions disagree");
+  for (const status of statuses) {
+    assert.ok(lifecycle[status] in AUDIT_ACTIONS, `no action marks a move to ${status}`);
+  }
+});
+
+// The firm manages each client's own account and pools nothing: no units or
+// shares, no fund. An action named for the fund it is not would be the first
+// step to logging one.
 test("no action belongs to the pooled-fund model", () => {
-  const banned = /investor|subscri|redempt|redeem|(^|[._])navs?([._]|$)|(^|[._])units?([._]|$)|high_?water|(^|[._])hwm([._]|$)|strike/i;
+  const banned = /investor|subscri|redempt|redeem|(^|[._])navs?([._]|$)|(^|[._])units?([._]|$)|high_?water|(^|[._])hwm([._]|$)|strike|(^|[._])fund([._]|$)|(^|[._])shares?([._]|$)|sharehold|(^|[._])pool(s|ed|ing)?([._]|$)/i;
   for (const [key, action] of Object.entries(AUDIT_ACTIONS)) {
     assert.doesNotMatch(key.toLowerCase(), banned, `pooled-fund action key: ${key}`);
     assert.doesNotMatch(action, banned, `pooled-fund action: ${action}`);
@@ -71,9 +104,9 @@ test("no action belongs to the pooled-fund model", () => {
 });
 
 // The firm holds no money and has no authority to move any. An action for
-// moving or valuing it would record something the firm cannot do.
+// receiving, moving or valuing it would record something the firm cannot do.
 test("no action records moving or valuing client money", () => {
-  const banned = /withdraw|deposit|transfer|payout|disburse|balance|valuation|equity|position|(^|[._])trade_fill|(^|[._])pnl([._]|$)|deduct/i;
+  const banned = /withdraw|deposit|transfer|payout|disburse|balance|valuation|equity|position|(^|[._])trade_fill|(^|[._])pnl([._]|$)|deduct|(^|[._])money([._]|$)|(^|[._])cash([._]|$)|funds?[._]received/i;
   for (const [key, action] of Object.entries(AUDIT_ACTIONS)) {
     assert.doesNotMatch(key.toLowerCase(), banned, `money-moving action key: ${key}`);
     assert.doesNotMatch(action, banned, `money-moving action: ${action}`);
