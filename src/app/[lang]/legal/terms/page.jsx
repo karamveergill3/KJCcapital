@@ -12,7 +12,7 @@ export async function generateMetadata({ params }) {
 
 export default function TermsPage() {
   return (
-    <LegalPage label="Legal" title="Terms of use" updated="17 September 2026">
+    <LegalPage label="Legal" title="Terms of use" updated="19 October 2026">
       <p>
         These terms govern the use of the KJC Capital website by any visitor. They are not the
         terms on which the firm manages an account; those are set out in the client agreement,
@@ -40,9 +40,9 @@ export default function TermsPage() {
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Governing law</h3>
       <p>
-        These terms are governed by the laws of the British Virgin Islands. Any dispute arising
-        from a visitor's use of the site is subject to the exclusive jurisdiction of the courts
-        of the British Virgin Islands.
+        These terms are governed by the laws of the jurisdiction in which KJC Capital is
+        established. Any dispute arising from a visitor's use of the site is subject to the
+        exclusive jurisdiction of the courts of that jurisdiction.
       </p>
     </LegalPage>
   );

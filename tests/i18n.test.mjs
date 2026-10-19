@@ -23,7 +23,7 @@ test("English dictionary is well-formed", async () => {
   const raw = await readFile(path, "utf8");
   const dict = JSON.parse(raw);
 
-  const requiredTop = ["meta", "nav", "home", "firm", "programme", "governance", "contact", "footer", "risk"];
+  const requiredTop = ["meta", "nav", "home", "programme", "governance", "contact", "footer", "risk"];
   for (const key of requiredTop) {
     assert.ok(key in dict, `dictionary missing key "${key}"`);
   }

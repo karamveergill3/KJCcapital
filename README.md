@@ -77,6 +77,14 @@ Still unconfirmed, and deliberately absent from the site rather than guessed:
 - On what basis the firm is permitted to manage client accounts, and how the
   programme may lawfully be promoted.
 
+**The site says what the firm does, never who it is or where it is from.** No
+location, jurisdiction, address, founding date, history or people, on any page,
+in the metadata, or in the structured data. The owner asked for this. It is why
+there is no Firm page (`/en/firm` redirects home), why the header clock reads
+UTC rather than city times, and why the terms and disclosures defer the entity
+and its governing law to the client agreement. `tests/site.test.mjs` rejects the
+place names, the old address and founding-date wording anywhere under `src/`.
+
 The header tape is built in `src/lib/ticker.js` from `home.ledger` plus
 `ticker.extra` in the dictionary, so it cannot advertise a term the home page
 contradicts. `tests/ticker.test.mjs` rejects any digit or pooled-fund word on

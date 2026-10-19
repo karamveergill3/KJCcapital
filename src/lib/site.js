@@ -10,7 +10,6 @@ export const SITE_HOST = new URL(SITE_URL).host;
 /** Routes that exist and should be advertised, relative to a locale root. */
 export const PUBLIC_PATHS = [
   "",
-  "/firm",
   "/programme",
   "/governance",
   "/contact",
@@ -28,7 +27,6 @@ export const PUBLIC_PATHS = [
  * of them actually has a page. /portal was linked from both and 404d from both.
  */
 export const NAV_ITEMS = [
-  { key: "firm", path: "/firm" },
   { key: "programme", path: "/programme" },
   { key: "governance", path: "/governance" },
   { key: "contact", path: "/contact" },

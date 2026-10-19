@@ -118,3 +118,49 @@ test("robots points at the sitemap on the same origin and keeps the portal out",
   const disallow = result.rules.flatMap((r) => r.disallow ?? []);
   assert.ok(disallow.some((d) => d.includes("portal")));
 });
+
+// The site says what the firm does, never who it is or where it is from: no
+// location, jurisdiction, address, founding date or history. Those sat in the
+// header clocks, the footer, the structured data and three legal pages, so this
+// reads every source file that can put text on a page, not just the dictionary.
+const IDENTITY = [
+  /british virgin/i,
+  /\bBVI\b/,
+  /tortola/i,
+  /road town/i,
+  /craigmuir/i,
+  /\bVG\d{4}\b/i,
+  /\blondon\b/i,
+  /z[uü]rich/i,
+  /PostalAddress|addressCountry|foundingDate|foundingLocation/,
+  /registered office/i,
+  /incorporated in/i,
+  /\bKJC Capital (Ltd|Limited)\b/,
+  /\bsince (19|20)\d\d\b/i,
+  /\b(founded|established|formalised) in (19|20)\d\d\b/i,
+  /\binception\b/i,
+  /\bdomicile\b/i,
+  /\bMMXX/
+];
+
+test("the site does not say who the firm is or where it is from", async () => {
+  const src = resolve(root, "src");
+  const entries = await readdir(src, { recursive: true });
+  const files = entries
+    .filter((e) => /\.(jsx?|json)$/.test(e))
+    .map((e) => resolve(src, e));
+  const offenders = [];
+  for (const file of files) {
+    const body = await readFile(file, "utf8");
+    for (const pattern of IDENTITY) {
+      const match = body.match(pattern);
+      if (match) offenders.push(`${file.split("/src/")[1]}: ${match[0]}`);
+    }
+  }
+  assert.deepEqual(offenders, [], `identifying detail on the site:\n${offenders.join("\n")}`);
+});
+
+test("the retired Firm page is gone from the nav and the sitemap", () => {
+  assert.ok(!NAV_ITEMS.some((item) => item.path === "/firm"));
+  assert.ok(!PUBLIC_PATHS.includes("/firm"));
+});

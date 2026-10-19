@@ -43,15 +43,7 @@ const ORGANISATION_LD = {
   url: SITE_URL,
   slogan: "Gold-led capital, managed with discipline.",
   email: `director@${SITE_HOST.replace(/^www\./, "")}`,
-  areaServed: "Global",
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "Craigmuir Chambers",
-    addressLocality: "Road Town",
-    addressRegion: "Tortola",
-    postalCode: "VG1110",
-    addressCountry: "VG"
-  }
+  areaServed: "Global"
 };
 
 export default function RootLayout({ children }) {

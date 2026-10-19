@@ -12,12 +12,11 @@ export async function generateMetadata({ params }) {
 
 export default function DisclosuresPage() {
   return (
-    <LegalPage label="Legal" title="Disclosures" updated="18 September 2026">
+    <LegalPage label="Legal" title="Disclosures" updated="19 October 2026">
       <h3 className="serif text-xl mt-2 mb-3 text-[var(--color-ink)]">The firm</h3>
       <p>
-        KJC Capital is the trading name of KJC Capital Ltd, a company incorporated in the
-        British Virgin Islands and having its registered office at Craigmuir Chambers, Road
-        Town, Tortola.
+        The legal entity that contracts with a client, and the details of where it is
+        established, are set out in the client agreement, which is provided on introduction.
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">What the firm does</h3>
       <p>
