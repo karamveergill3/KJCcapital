@@ -183,29 +183,32 @@ position. The page rebuilds at most once a minute.
 It needs two server-side environment variables in Vercel, `KEYSTONE_URL` and
 `KEYSTONE_PUBLISHABLE_KEY` (Keystone's publishable key, which is public by
 design; both are set), and the SQL above applied to Keystone. The page has
-three modes, chosen in order, and says which one it is in:
+three modes, chosen in order, and the board's status light says which:
 
 - **live**: the feed answered. The $KJC board polls `/api/kjc` once a minute
   and flashes whatever moved, so a visitor sees it change without reloading.
 - **snapshot**: no live feed, so the page shows `src/lib/keystoneSnapshot.json`,
-  the same feed read once from Keystone and committed, labelled with the time
-  it was taken and "not live". Refresh it by re-running the feed query against
-  Keystone and replacing the file.
+  the same feed read once from Keystone and committed; the status reads
+  "Snapshot" with the time it was taken. Refresh it by re-running the feed
+  query against Keystone and replacing the file.
 - **example**: only if the snapshot is missing too; the invented account in
-  `src/lib/portalExample.js`, under a notice that every figure is illustrative.
+  `src/lib/portalExample.js`, with the status reading "Example account".
 
-`tests/portal.test.mjs` keeps each notice wired to its mode. The sections still
+The owner removed the notice box that used to sit above the board, so the
+status light is the only label; `tests/portal.test.mjs` fails if the board
+stops rendering it in any mode. The sections still
 made up (registers, activity, fees, documents, notices, desk note) carry an
 Example tag in every mode. Because the page is public, whatever account the
 feed names is public.
 
 The **$KJC board** (`src/components/portal/KjcBoard.jsx`) is the one dark band
-on the site: a fixed `$KJC` badge with a status light, a monospaced tape that
-repeats the figure, green with an up arrow or red with a down arrow, and the
-figure itself, large. **It shows the percentage gain and nothing else**: the
+on the site: `$KJC`, the status light, and the figure itself, large, green
+with an up arrow or red with a down arrow. The owner had the moving tape and
+the "Your return" label taken off. **It shows the percentage gain and nothing
+else**: the
 owner's call. No balance, deposit, profit or drawdown figure is on the board,
 in `/api/kjc`, in the props the page hands the browser, in the committed
-snapshot, or in what Keystone's function returns; `tests/kjcBoard.test.mjs`
+snapshot, or in what Keystone's function returns; `tests/portal.test.mjs`
 and `tests/keystone.test.mjs` hold that line. The history chart below the
 board appears once there are two days of $KJC to draw.
 
@@ -221,10 +224,22 @@ operations), so a live feed can replace the example without the page changing.
 The page shows the figure alone. $KJC history needs equity, so the chart only
 has points from the day Keystone began sampling it.
 
-The rest of the page is the mandate's rules (trade-only authority, withdrawals
-and revocation with the broker, example risk limits), each register's weight
-against its limit, the activity log, fees, documents, notices and a desk note.
-Rules marked Example carry numbers a real mandate would set per client.
+The rest of the page is the mandate's two rules (trade-only authority, and the
+account in the client's name), each register's weight against its limit
+(forex at the core with stocks alongside, as the owner set it), the activity
+log, fees, documents, notices and a desk note. Two rules the owner set:
+
+- **Activity never shows a trade.** No order, position, entry, exit or profit
+  taken; it is the account's administration (statements, limit checks,
+  reviews, fees, notices). When it is built from the schema's
+  `mandate_activity`, instruction entries are left out of the client's view.
+- **The desk note is about the news**, not about what the desk did.
+
+`tests/portal.test.mjs` checks both against a list of trading words.
+
+The home and programme pages still describe a gold-led programme across four
+registers; the portal's example registers are forex and stocks. Align one to
+the other once the owner says which is right.
 
 ## Conventions
 

@@ -1,5 +1,5 @@
 import { getDictionary } from "@/lib/i18n/getDictionary";
-import { dateTime, longDate, money, shortDay, shortMonth, signedPercent } from "@/lib/kjc";
+import { longDate, money, shortDay, shortMonth, signedPercent } from "@/lib/kjc";
 import { fetchSiteFeed, keystoneConfig, snapshotAccount } from "@/lib/keystone";
 import { account as example, activity, deskNote, documents, exampleAccount, fees, notices, registers, rules } from "@/lib/portalExample";
 import PageHead from "@/components/PageHead";
@@ -40,8 +40,6 @@ export default async function PortalPage({ params }) {
   // too, the labelled example.
   const data = (await fetchSiteFeed(keystoneConfig())) ?? snapshotAccount() ?? exampleAccount();
   const { mode } = data;
-  const notice = { live: portal.live, snapshot: portal.snapshot, example: portal.example }[mode];
-  const noticeBody = notice.body.replace("{time}", data.asAt ? dateTime(data.asAt) : "");
   const daily = mode !== "example";
   const points = data.history.map((h) => ({ label: daily ? shortDay(h.at) : shortMonth(h.at), kjc: h.kjc }));
 
@@ -49,17 +47,10 @@ export default async function PortalPage({ params }) {
     <>
       <PageHead label="Portal" title={portal.leadTitle} lead={portal.leadIntro} />
 
-      <div className="shell pb-10">
-        <aside className="border border-[var(--color-gold)] bg-[var(--color-paper-white)] px-5 py-4 max-w-3xl">
-          <div className="smallcaps smallcaps-gold">{notice.label}</div>
-          <p className="text-sm text-[var(--color-ink-soft)] mt-2 leading-relaxed">{noticeBody}</p>
-        </aside>
-      </div>
-
       <KjcBoard
         mode={mode}
         initial={{ percent: data.percent, asAt: data.asAt }}
-        copy={{ ...portal.quote, tapeLabel: portal.tapeLabel }}
+        copy={portal.quote}
       />
 
       {/* A history needs two days to draw. Until Keystone has sampled equity

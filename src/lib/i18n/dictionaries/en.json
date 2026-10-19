@@ -199,25 +199,11 @@
   },
   "portal": {
     "leadTitle": "Investor portal",
-    "metaDescription": "What a KJC Capital client sees: their own return as $KJC, the rules their account is run under, and everything the firm has done inside it.",
-    "leadIntro": "Your own return, quoted as $KJC from your broker's figures, the rules your account is run under, and everything the firm has done inside it.",
-    "example": {
-      "label": "Example account",
-      "body": "This is a preview of what a client sees. Every figure on it is illustrative: it is not the programme's track record, and no real client's account is shown."
-    },
-    "live": {
-      "label": "Live account",
-      "body": "The figures at the top of this page are live, from one account, refreshed about once a minute from its trading terminal. Sections marked Example are illustrative until the portal has a sign-in."
-    },
-    "snapshot": {
-      "label": "Account snapshot",
-      "body": "The figures at the top are real, from one account's trading terminal, but they are a snapshot taken {time}, not live. They update every minute once the live feed is switched on. Sections marked Example are illustrative until the portal has a sign-in."
-    },
+    "metaDescription": "What a KJC Capital client sees: their own return as $KJC, the rules their account is run under, and the firm's notices and monthly note.",
+    "leadIntro": "Your own return, quoted as $KJC, the rules your account is run under, and the firm's notices and monthly note.",
     "exampleTag": "Example",
-    "tapeLabel": "Your account",
     "quote": {
       "symbol": "$KJC",
-      "label": "Your return",
       "boardLabel": "$KJC quote",
       "statusLive": "Live",
       "statusSnapshot": "Snapshot",
@@ -240,7 +226,7 @@
     },
     "activity": {
       "label": "Activity",
-      "title": "What the firm has done in your account"
+      "title": "On your account"
     },
     "fees": {
       "label": "Fees",
