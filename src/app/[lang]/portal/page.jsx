@@ -1,12 +1,17 @@
 import { getDictionary } from "@/lib/i18n/getDictionary";
-import { kjcHistory, kjcQuote, longDate, maxDrawdown, money, shortMonth, signedPercent } from "@/lib/kjc";
-import { account, activity, deskNote, documents, fees, notices, registers, rules } from "@/lib/portalExample";
+import { dateTime, kjcQuote, longDate, money, shortDay, shortMonth, signedPercent } from "@/lib/kjc";
+import { fetchSiteFeed, keystoneConfig } from "@/lib/keystone";
+import { activity, deskNote, documents, exampleAccount, fees, notices, registers, rules } from "@/lib/portalExample";
 import PageHead from "@/components/PageHead";
 import EditorialSection from "@/components/EditorialSection";
 import Ticker from "@/components/Ticker";
 import KjcQuote from "@/components/portal/KjcQuote";
 import KjcChart from "@/components/portal/KjcChart";
 import RegisterMeters from "@/components/portal/RegisterMeters";
+
+// Keystone syncs the account about once a minute, so the page is rebuilt at
+// most that often. Without a feed it is the example and never changes.
+export const revalidate = 60;
 
 export async function generateMetadata({ params }) {
   const { lang } = await params;
@@ -30,26 +35,28 @@ export default async function PortalPage({ params }) {
   const { lang } = await params;
   const dict = await getDictionary(lang);
   const { portal } = dict;
-  const { currency, snapshots } = account;
 
-  const latest = snapshots[snapshots.length - 1];
-  const quote = kjcQuote(latest);
-  const drawdown = maxDrawdown(snapshots);
-  const points = kjcHistory(snapshots).map((h) => ({ month: shortMonth(h.at), percent: h.percent }));
+  // Live from Keystone when the feed answers; otherwise the labelled example.
+  const data = (await fetchSiteFeed(keystoneConfig())) ?? exampleAccount();
+  const { currency, live } = data;
+  const quote = kjcQuote(data.snapshot);
+  const notice = live ? portal.live : portal.example;
+  const asAt = live ? (data.asAt ? dateTime(data.asAt) : "") : longDate(data.asAt);
+  const points = data.history.map((h) => ({
+    label: live ? shortDay(h.at) : shortMonth(h.at),
+    closed: h.closed,
+    kjc: h.kjc
+  }));
+  const firstEquity = data.history.find((h) => h.kjc !== null);
 
-  // Long enough to fill a wide screen: the tape loops by running twice, so a
-  // short one would leave a gap before it comes round again.
   const tape = [
     { term: portal.quote.symbol, value: signedPercent(quote.percent) },
     { term: portal.quote.net, value: money(quote.net, currency, { signed: true }) },
     { term: portal.quote.closed, value: money(quote.closed, currency, { signed: true }) },
     { term: portal.quote.floating, value: money(quote.floating, currency, { signed: true }) },
-    { term: portal.quote.equity, value: money(latest.equity, currency) },
-    { term: portal.quote.balance, value: money(latest.balance, currency) },
-    { term: portal.quote.capital, value: money(quote.capital, currency) },
-    { term: portal.quote.drawdown, value: signedPercent(drawdown) },
-    ...registers.map((r) => ({ term: r.name, value: `${r.weight}%` })),
-    { term: portal.quote.asAt, value: longDate(account.asAt) }
+    { term: portal.quote.equity, value: money(data.snapshot.equity, currency) },
+    { term: portal.quote.balance, value: money(data.snapshot.balance, currency) },
+    { term: portal.quote.capital, value: money(quote.capital, currency) }
   ];
 
   return (
@@ -58,8 +65,8 @@ export default async function PortalPage({ params }) {
 
       <div className="shell pb-10">
         <aside className="border border-[var(--color-gold)] bg-[var(--color-paper-white)] px-5 py-4 max-w-3xl">
-          <div className="smallcaps smallcaps-gold">{portal.example.label}</div>
-          <p className="text-sm text-[var(--color-ink-soft)] mt-2 leading-relaxed">{portal.example.body}</p>
+          <div className="smallcaps smallcaps-gold">{notice.label}</div>
+          <p className="text-sm text-[var(--color-ink-soft)] mt-2 leading-relaxed">{notice.body}</p>
         </aside>
       </div>
 
@@ -73,36 +80,51 @@ export default async function PortalPage({ params }) {
         <KjcQuote
           quote={quote}
           currency={currency}
-          drawdown={drawdown}
           copy={portal.quote}
-          asAt={longDate(account.asAt)}
+          asAt={asAt}
+          source={live ? portal.quote.sourceLive : portal.quote.sourceExample}
         />
       </section>
 
       <section className="shell py-12 md:py-16 border-t border-[var(--color-rule)]">
         <div className="smallcaps">{portal.performance.label}</div>
-        <h2 className="serif text-2xl md:text-3xl mt-3 mb-8 leading-tight text-[var(--color-ink)]">
+        <h2 className="serif text-2xl md:text-3xl mt-3 mb-4 leading-tight text-[var(--color-ink)]">
           {portal.performance.title}
         </h2>
-        <KjcChart points={points} label={portal.performance.title} />
+        {live && firstEquity ? (
+          <p className="text-sm text-[var(--color-ink-soft)] mb-8 max-w-2xl leading-relaxed">
+            {portal.performance.equitySince} {longDate(firstEquity.at)}.
+          </p>
+        ) : (
+          <div className="mb-8" />
+        )}
+        <KjcChart
+          points={points}
+          label={portal.performance.title}
+          names={{ kjc: portal.performance.kjc, closed: portal.performance.closed }}
+        />
         <details className="mt-6">
           <summary className="smallcaps cursor-pointer min-h-11 flex items-center">{portal.performance.table}</summary>
-          <table className="editorial mt-4 max-w-md">
-            <thead>
-              <tr>
-                <th scope="col">{portal.performance.month}</th>
-                <th scope="col" className="text-right">{portal.performance.value}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {points.map((p) => (
-                <tr key={p.month}>
-                  <td>{p.month}</td>
-                  <td className="tabular text-right">{signedPercent(p.percent)}</td>
+          <div className="overflow-x-auto max-h-96 overflow-y-auto mt-4">
+            <table className="editorial max-w-md">
+              <thead>
+                <tr>
+                  <th scope="col">{portal.performance.date}</th>
+                  <th scope="col" className="text-right">{portal.performance.kjc}</th>
+                  <th scope="col" className="text-right">{portal.performance.closed}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.history.map((h) => (
+                  <tr key={h.at}>
+                    <td>{longDate(h.at.slice(0, 10))}</td>
+                    <td className="tabular text-right">{h.kjc === null ? "" : signedPercent(h.kjc)}</td>
+                    <td className="tabular text-right">{signedPercent(h.closed)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </details>
       </section>
 
@@ -113,25 +135,27 @@ export default async function PortalPage({ params }) {
               <dt className="smallcaps">{rule.term}</dt>
               <dd className="m-0 mt-2">
                 <span className="font-sans font-semibold text-[var(--color-ink)]">{rule.value}</span>
-                {rule.example ? (
-                  <span className="smallcaps smallcaps-gold ml-2">{portal.mandate.exampleTag}</span>
-                ) : null}
-                <span className="block text-sm text-[var(--color-ink-soft)] mt-1 leading-relaxed">
-                  {rule.detail}
-                </span>
+                {rule.example ? <span className="smallcaps smallcaps-gold ml-2">{portal.exampleTag}</span> : null}
+                <span className="block text-sm text-[var(--color-ink-soft)] mt-1 leading-relaxed">{rule.detail}</span>
               </dd>
             </div>
           ))}
         </dl>
-        <h3 className="serif text-xl mt-12 mb-6 text-[var(--color-ink)]">{portal.mandate.registers}</h3>
+        <h3 className="serif text-xl mt-12 mb-6 text-[var(--color-ink)]">
+          {portal.mandate.registers}
+          <span className="smallcaps smallcaps-gold ml-3">{portal.exampleTag}</span>
+        </h3>
         <RegisterMeters registers={registers} copy={portal.mandate} />
         <p className="text-xs text-[var(--color-ink-mute)] mt-6">{portal.mandate.example}</p>
       </EditorialSection>
 
-      <EditorialSection label={portal.activity.label} title={portal.activity.title}>
+      <EditorialSection label={portal.activity.label} tag={portal.exampleTag} title={portal.activity.title}>
         <ol className="list-none pl-0">
           {activity.map((entry) => (
-            <li key={`${entry.at}-${entry.summary}`} className="border-t border-[var(--color-rule)] py-4 grid gap-1 sm:grid-cols-[9rem_1fr]">
+            <li
+              key={`${entry.at}-${entry.summary}`}
+              className="border-t border-[var(--color-rule)] py-4 grid gap-1 sm:grid-cols-[9rem_1fr]"
+            >
               <div>
                 <div className="font-sans text-sm text-[var(--color-ink)] tabular">{longDate(entry.at)}</div>
                 <div className="smallcaps mt-1">{entry.kind}</div>
@@ -142,7 +166,7 @@ export default async function PortalPage({ params }) {
         </ol>
       </EditorialSection>
 
-      <EditorialSection label={portal.fees.label} title={portal.fees.title}>
+      <EditorialSection label={portal.fees.label} tag={portal.exampleTag} title={portal.fees.title}>
         <div className="overflow-x-auto">
           <table className="editorial min-w-[34rem]">
             <thead>
@@ -169,10 +193,13 @@ export default async function PortalPage({ params }) {
         </div>
       </EditorialSection>
 
-      <EditorialSection label={portal.documents.label} title="">
+      <EditorialSection label={portal.documents.label} tag={portal.exampleTag} title="">
         <ul className="list-none pl-0">
           {documents.map((doc) => (
-            <li key={doc.title} className="border-t border-[var(--color-rule)] py-3 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+            <li
+              key={doc.title}
+              className="border-t border-[var(--color-rule)] py-3 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1"
+            >
               <span className="text-[var(--color-ink)]">{doc.title}</span>
               <span className="smallcaps">
                 {doc.kind} · {longDate(doc.at)}
@@ -182,20 +209,20 @@ export default async function PortalPage({ params }) {
         </ul>
       </EditorialSection>
 
-      <EditorialSection label={portal.notices.label} title="">
+      <EditorialSection label={portal.notices.label} tag={portal.exampleTag} title="">
         <ul className="list-none pl-0">
-          {notices.map((notice) => (
-            <li key={notice.title} className="border-t border-[var(--color-rule)] py-3">
-              <div className="text-[var(--color-ink)]">{notice.title}</div>
+          {notices.map((n) => (
+            <li key={n.title} className="border-t border-[var(--color-rule)] py-3">
+              <div className="text-[var(--color-ink)]">{n.title}</div>
               <div className="smallcaps mt-1">
-                {longDate(notice.at)} · {notice.acknowledged ? portal.notices.acknowledged : portal.notices.outstanding}
+                {longDate(n.at)} · {n.acknowledged ? portal.notices.acknowledged : portal.notices.outstanding}
               </div>
             </li>
           ))}
         </ul>
       </EditorialSection>
 
-      <EditorialSection label={portal.deskNote.label} title={deskNote.period}>
+      <EditorialSection label={portal.deskNote.label} tag={portal.exampleTag} title={deskNote.period}>
         <p>{deskNote.body}</p>
         <p className="smallcaps mt-4">{longDate(deskNote.at)}</p>
       </EditorialSection>

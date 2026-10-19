@@ -1,7 +1,7 @@
-import { buildTape, tapeDuration } from "@/lib/ticker";
+import { buildTape, fillTape, tapeDuration } from "@/lib/ticker";
 
 export default function Ticker({ rows, extra, label }) {
-  const tape = buildTape(rows, extra);
+  const tape = fillTape(buildTape(rows, extra));
   if (tape.length === 0) return null;
 
   return (
@@ -25,8 +25,8 @@ export default function Ticker({ rows, extra, label }) {
 function TapeRun({ tape, ...rest }) {
   return (
     <ul className="ticker-run" {...rest}>
-      {tape.map((item) => (
-        <li key={item.term} className="ticker-item">
+      {tape.map((item, i) => (
+        <li key={`${i}-${item.term}`} className="ticker-item">
           <span className="ticker-term">{item.term}</span>
           <span className="ticker-value">{item.value}</span>
         </li>

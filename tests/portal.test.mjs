@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
-import { ILLUSTRATIVE, account, registers } from "../src/lib/portalExample.js";
+import { ILLUSTRATIVE, account, exampleAccount, registers } from "../src/lib/portalExample.js";
 import { kjcQuote } from "../src/lib/kjc.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -14,7 +14,8 @@ const root = resolve(here, "..");
 test("the example account is labelled as one wherever it is shown", async () => {
   assert.equal(ILLUSTRATIVE, true);
   const page = await readFile(resolve(root, "src", "app", "[lang]", "portal", "page.jsx"), "utf8");
-  assert.match(page, /portal\.example\.body/, "portal page no longer renders the example notice");
+  assert.match(page, /\?\s*portal\.live\s*:\s*portal\.example/, "portal page no longer picks the example notice when there is no live feed");
+  assert.match(page, /\{notice\.body\}/, "portal page no longer renders the notice");
   const dict = JSON.parse(await readFile(resolve(root, "src", "lib", "i18n", "dictionaries", "en.json"), "utf8"));
   assert.match(dict.portal.example.body, /illustrative/i);
   assert.match(dict.portal.example.body, /not the programme's track record/i);
@@ -43,4 +44,12 @@ test("register weights stay inside their example limits and within the whole acc
     if (r.limit.max != null) assert.ok(r.weight <= r.limit.max, `${r.name} is over its cap`);
     if (r.limit.min != null) assert.ok(r.weight >= r.limit.min, `${r.name} is under its floor`);
   }
+});
+
+test("the example is marked as not live, so the page labels it as an example", () => {
+  const data = exampleAccount();
+  assert.equal(data.live, false);
+  assert.equal(data.history.length, account.snapshots.length);
+  assert.equal(data.history.at(-1).kjc, 5);
+  assert.equal(data.history.at(-1).closed, 10);
 });

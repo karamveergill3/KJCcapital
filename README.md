@@ -143,11 +143,25 @@ or a valuation, and their tests fail if one appears.
 
 `/[lang]/portal` opens straight onto the client dashboard. There is no login:
 the owner set it aside, and a sign-in built for Supabase was removed (it is in
-commit 4af2311 if wanted back). So the page shows an **example account**, from
-`src/lib/portalExample.js`, under a notice that says every figure is
-illustrative. `tests/portal.test.mjs` fails if that notice is taken off while
-the example data is in use. **A real client's figures must not go on this page
-until it sits behind a login**, because it is public.
+commit 4af2311 if wanted back). The page is public.
+
+**Live figures come from Keystone Monitor**, the owner's MT5 tracker (a separate
+Supabase project; not ForexDNA). `src/lib/keystone.js` calls one read-only
+function there, `site_feed('kjc')`, defined in `supabase/keystone/site_feed.sql`.
+It returns aggregates for the single account named in Keystone's `site_feeds`
+allow list (the 500k V100 account, chosen by the owner's worked example) and
+never an account number, server, broker, symbol or position, so nothing on
+the page reveals the strategy. The page rebuilds at most once a minute.
+
+It needs two server-side environment variables in Vercel, `KEYSTONE_URL` and
+`KEYSTONE_PUBLISHABLE_KEY` (Keystone's publishable key, which is public by
+design), and the SQL above applied to Keystone. If either is missing, or the
+feed fails or returns anything unexpected, the page falls back to the
+**example account** in `src/lib/portalExample.js` under a notice that every
+figure is illustrative; `tests/portal.test.mjs` keeps that notice wired. Live
+mode says the figures are live instead, and the sections still made up
+(registers, activity, fees, documents, notices, desk note) carry an Example
+tag. Because the page is public, whatever account the feed names is public.
 
 **$KJC** (`src/lib/kjc.js`) is the client's return measured on equity:
 
@@ -158,8 +172,11 @@ banked 50,000 on 500,000 but carries 25,000 of open drawdown sees +5.00%, not
 the +10.00% the balance would show. The inputs are the fields an MT5 account
 reports (balance, equity, and deposits less withdrawals from its balance
 operations), so a live feed can replace the example without the page changing.
-The page shows it as a quote, on a tape under the header, as a month-by-month
-chart with a table view, and broken down into closed and open profit.
+The page shows it as a quote, on a tape under the header, and broken down into
+closed and open profit. The chart draws two lines on one axis: closed profit,
+which Keystone can rebuild from the deal history back to the day the account
+opened, and $KJC, which needs equity and so only starts when Keystone began
+sampling it. The gap between them is the open drawdown.
 
 The rest of the page is the mandate's rules (trade-only authority, withdrawals
 and revocation with the broker, example risk limits), each register's weight

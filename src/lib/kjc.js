@@ -18,26 +18,6 @@ export function kjcQuote({ deposits, withdrawals = 0, balance, equity }) {
   return { capital, closed, floating, net, percent: (net / capital) * 100 };
 }
 
-/** $KJC at each snapshot, oldest first. */
-export function kjcHistory(snapshots) {
-  return snapshots.map((s) => ({ at: s.at, percent: kjcQuote(s).percent }));
-}
-
-/**
- * The largest fall in equity from a previous high, as a negative percentage of
- * that high. Measured on equity for the same reason as the quote: an open loss
- * is a loss.
- */
-export function maxDrawdown(snapshots) {
-  let peak = -Infinity;
-  let worst = 0;
-  for (const { equity } of snapshots) {
-    peak = Math.max(peak, equity);
-    worst = Math.min(worst, ((equity - peak) / peak) * 100);
-  }
-  return worst;
-}
-
 // U+2212, not a hyphen: a minus sign is the width of a plus, so signed
 // figures line up and never read as a dash.
 const MINUS = "−";
@@ -72,6 +52,18 @@ export function direction(percent, digits = 2) {
 export function longDate(iso) {
   return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })
     .format(new Date(`${iso}T00:00:00Z`));
+}
+
+export function shortDay(iso) {
+  return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })
+    .format(new Date(`${iso.slice(0, 10)}T00:00:00Z`));
+}
+
+export function dateTime(iso) {
+  const d = new Date(iso);
+  const day = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(d);
+  const time = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC" }).format(d);
+  return `${day}, ${time} UTC`;
 }
 
 export function shortMonth(iso) {

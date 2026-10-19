@@ -1,47 +1,68 @@
 "use client";
 
-import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { signedPercent } from "@/lib/kjc";
 
-// One series, so no legend: the section title names it. Thin line, a 10% wash
-// under it, hairline grid, one axis, and a crosshair that snaps to the month.
-const LINE = "#7a5a1c";
-const WASH = "#a37e2c";
+// Emphasis, not a palette: $KJC is the story, in the site's gold; closed profit
+// is context, in grey. One axis, both in percent of deposits. Thin lines,
+// hairline grid, a crosshair that snaps to the day and reads out both lines.
+const KJC = "#7a5a1c";
+const CLOSED = "#a19d92";
 const GRID = "#ebe4d1";
 const AXIS = "#6b6a63";
 const ZERO = "#b8b09a";
 const SURFACE = "#fdfbf5";
 
-function QuoteTooltip({ active, payload }) {
+function Readout({ active, payload, label, names }) {
   if (!active || !payload?.length) return null;
   const point = payload[0].payload;
+  const rows = [
+    ["kjc", KJC, names.kjc],
+    ["closed", CLOSED, names.closed]
+  ].filter(([key]) => point[key] !== null && point[key] !== undefined);
   return (
     <div className="border border-[var(--color-rule)] bg-[var(--color-paper-white)] px-3 py-2 shadow-sm">
-      <div className="flex items-center gap-2">
-        <span aria-hidden className="inline-block h-[2px] w-3" style={{ background: LINE }} />
-        <span className="font-sans text-sm font-semibold text-[var(--color-ink)]">
-          {signedPercent(point.percent)}
-        </span>
-      </div>
-      <div className="font-sans text-xs text-[var(--color-ink-mute)] mt-0.5">{point.month}</div>
+      {rows.map(([key, color, name]) => (
+        <div key={key} className="flex items-center gap-2">
+          <span aria-hidden className="inline-block h-[2px] w-3" style={{ background: color }} />
+          <span className="font-sans text-sm font-semibold text-[var(--color-ink)]">{signedPercent(point[key])}</span>
+          <span className="font-sans text-xs text-[var(--color-ink-mute)]">{name}</span>
+        </div>
+      ))}
+      <div className="font-sans text-xs text-[var(--color-ink-mute)] mt-1">{label}</div>
     </div>
   );
 }
 
-export default function KjcChart({ points, label }) {
+function Key({ color, children }) {
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span aria-hidden className="inline-block h-[2px] w-4" style={{ background: color }} />
+      {children}
+    </span>
+  );
+}
+
+export default function KjcChart({ points, names, label }) {
+  // A single equity sample draws no line, so it gets a dot to be seen at all.
+  const kjcPoints = points.filter((p) => p.kjc !== null).length;
   return (
     <figure className="m-0" aria-label={label}>
+      <div className="flex flex-wrap gap-x-6 gap-y-2 mb-4 font-sans text-sm text-[var(--color-ink-soft)]">
+        <Key color={KJC}>{names.kjc}</Key>
+        <Key color={CLOSED}>{names.closed}</Key>
+      </div>
       <div className="h-72 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={points} margin={{ top: 12, right: 12, bottom: 4, left: 0 }}>
+          <LineChart data={points} margin={{ top: 12, right: 12, bottom: 4, left: 0 }}>
             <CartesianGrid vertical={false} stroke={GRID} strokeWidth={1} />
             <XAxis
-              dataKey="month"
+              dataKey="label"
               tickLine={false}
               axisLine={{ stroke: GRID }}
               tick={{ fill: AXIS, fontSize: 11, fontFamily: "var(--font-sans)" }}
               interval="preserveStartEnd"
-              minTickGap={24}
+              minTickGap={28}
             />
             <YAxis
               width={52}
@@ -52,25 +73,27 @@ export default function KjcChart({ points, label }) {
               allowDecimals={false}
             />
             <ReferenceLine y={0} stroke={ZERO} strokeWidth={1} />
-            <Tooltip
-              content={<QuoteTooltip />}
-              cursor={{ stroke: AXIS, strokeWidth: 1 }}
-              isAnimationActive={false}
-            />
-            <Area
+            <Tooltip content={<Readout names={names} />} cursor={{ stroke: AXIS, strokeWidth: 1 }} isAnimationActive={false} />
+            <Line
               type="monotone"
-              dataKey="percent"
-              stroke={LINE}
+              dataKey="closed"
+              stroke={CLOSED}
               strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill={WASH}
-              fillOpacity={0.1}
               dot={false}
-              activeDot={{ r: 5, fill: LINE, stroke: SURFACE, strokeWidth: 2 }}
+              activeDot={{ r: 4, fill: CLOSED, stroke: SURFACE, strokeWidth: 2 }}
               isAnimationActive={false}
             />
-          </AreaChart>
+            <Line
+              type="monotone"
+              dataKey="kjc"
+              stroke={KJC}
+              strokeWidth={2}
+              connectNulls={false}
+              dot={kjcPoints === 1 ? { r: 5, fill: KJC, stroke: SURFACE, strokeWidth: 2 } : false}
+              activeDot={{ r: 5, fill: KJC, stroke: SURFACE, strokeWidth: 2 }}
+              isAnimationActive={false}
+            />
+          </LineChart>
         </ResponsiveContainer>
       </div>
     </figure>

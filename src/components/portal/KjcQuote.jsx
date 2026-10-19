@@ -10,14 +10,14 @@ const TONE = {
 // The quote reads like a ticker: the symbol, the move, and a sign and arrow so
 // the direction never rests on colour alone. The hero figure is sans, with
 // proportional digits; the breakdown below is a column, so it is tabular.
-export default function KjcQuote({ quote, currency, drawdown, copy, asAt }) {
+export default function KjcQuote({ quote, currency, copy, asAt, source }) {
   const dir = direction(quote.percent);
   const rows = [
     [copy.closed, money(quote.closed, currency, { signed: true })],
     [copy.floating, money(quote.floating, currency, { signed: true })],
     [copy.net, money(quote.net, currency, { signed: true })],
     [copy.equity, money(quote.capital + quote.net, currency)],
-    [copy.drawdown, signedPercent(drawdown)]
+    [copy.capital, money(quote.capital, currency)]
   ];
   return (
     <div className="grid gap-10 lg:grid-cols-[1fr_1fr] items-start">
@@ -53,7 +53,7 @@ export default function KjcQuote({ quote, currency, drawdown, copy, asAt }) {
           </tbody>
         </table>
         <p className="smallcaps mt-5 !normal-case !tracking-normal text-xs text-[var(--color-ink-mute)]">
-          {copy.asAt} {asAt}, {copy.source}
+          {copy.asAt} {asAt}, {source}
         </p>
       </div>
     </div>

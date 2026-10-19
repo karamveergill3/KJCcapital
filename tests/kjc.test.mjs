@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { kjcQuote, kjcHistory, maxDrawdown, signedPercent, money, direction } from "../src/lib/kjc.js";
+import { kjcQuote, signedPercent, money, direction, shortDay, dateTime } from "../src/lib/kjc.js";
 
 // The owner's own example: 50,000 made on 500,000, with 25,000 still open in
 // drawdown. The client sees the 25,000 that is not in drawdown, so +5.00%.
@@ -33,26 +33,9 @@ test("no capital means no quote, rather than a division by zero", () => {
   assert.throws(() => kjcQuote({ deposits: 100, withdrawals: 100, balance: 0, equity: 0 }));
 });
 
-test("history quotes every snapshot in order", () => {
-  const history = kjcHistory([
-    { at: "2026-08-31", deposits: 500000, balance: 540000, equity: 548000 },
-    { at: "2026-09-30", deposits: 500000, balance: 550000, equity: 525000 }
-  ]);
-  assert.deepEqual(history.map((h) => h.at), ["2026-08-31", "2026-09-30"]);
-  assert.equal(history[0].percent, 9.6);
-  assert.equal(history[1].percent, 5);
-});
-
-test("max drawdown is the worst fall in equity from a prior high", () => {
-  const dd = maxDrawdown([
-    { equity: 500000 },
-    { equity: 550000 },
-    { equity: 495000 },
-    { equity: 560000 },
-    { equity: 532000 }
-  ]);
-  assert.equal(Number(dd.toFixed(4)), -10);
-  assert.equal(maxDrawdown([{ equity: 1 }, { equity: 2 }]), 0);
+test("days and times read in UTC", () => {
+  assert.equal(shortDay("2026-10-19"), "19 Oct");
+  assert.equal(dateTime("2026-10-19T18:13:52.093+00:00"), "19 October 2026, 18:13 UTC");
 });
 
 test("figures format the way they are read", () => {
