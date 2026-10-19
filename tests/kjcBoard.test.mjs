@@ -1,54 +1,36 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { boardFigures, tapeItems, sparkLines } from "../src/lib/kjcBoard.js";
+import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
+import { tapeItems } from "../src/lib/kjcBoard.js";
 
-const COPY = {
-  symbol: "$KJC",
-  net: "Net gain",
-  closed: "Closed profit",
-  floating: "Open positions",
-  closedReturn: "Closed return",
-  openDrawdown: "Open drawdown",
-  equity: "Account value",
-  balance: "Balance",
-  capital: "Deposited"
-};
+const here = dirname(fileURLToPath(import.meta.url));
+const COPY = { symbol: "$KJC" };
 
-// The 500k account as Keystone held it: 168,508.15 closed on 500,010.20, with
-// 85,152.35 open against it.
-const V100 = { deposits: 1000000, withdrawals: 499989.8, balance: 668518.35, equity: 583366 };
-
-test("closed return and open drawdown add up to $KJC", () => {
-  const f = boardFigures(V100);
-  assert.equal(Number(f.percent.toFixed(2)), 16.67);
-  assert.equal(Number(f.closedPercent.toFixed(2)), 33.7);
-  assert.equal(Number(f.openPercent.toFixed(2)), -17.03);
-  assert.ok(Math.abs(f.closedPercent + f.openPercent - f.percent) < 1e-9);
+test("the tape carries the percentage gain and nothing else", () => {
+  const items = tapeItems(16.5852, COPY);
+  assert.equal(items.length, 1);
+  assert.deepEqual(items[0], { key: "kjc", term: "$KJC", value: "▲ +16.59%", tone: "up" });
 });
 
-test("the tape leads with $KJC and gives every figure a direction", () => {
-  const items = tapeItems(boardFigures(V100), "USD", COPY);
-  assert.equal(items[0].term, "$KJC");
-  assert.equal(items[0].value, "▲ +16.67%");
-  assert.equal(items[0].tone, "up");
-  const open = items.find((i) => i.key === "floating");
-  assert.equal(open.tone, "down");
-  assert.equal(open.value, "▼ −$85,152.35");
-  assert.equal(items.find((i) => i.key === "equity").tone, "flat");
-  assert.equal(new Set(items.map((i) => i.key)).size, items.length, "tape keys must be unique");
+test("a loss reads down with a real minus, and flat reads flat with no arrow", () => {
+  assert.deepEqual(tapeItems(-4, COPY)[0], { key: "kjc", term: "$KJC", value: "▼ −4.00%", tone: "down" });
+  assert.deepEqual(tapeItems(0, COPY)[0], { key: "kjc", term: "$KJC", value: "0.00%", tone: "flat" });
 });
 
-test("a flat account reads flat, with no arrow", () => {
-  const items = tapeItems(boardFigures({ deposits: 500000, balance: 500000, equity: 500000 }), "USD", COPY);
-  assert.equal(items[0].value, "0.00%");
-  assert.equal(items[0].tone, "flat");
-});
-
-test("sparklines share one scale, and a lone point still gets a place", () => {
-  const [closed, kjc] = sparkLines([[0, 10, 20], [null, null, 10]], { w: 100, h: 20, pad: 0 });
-  assert.equal(closed.d, "M0.0 20.0 L50.0 10.0 L100.0 0.0");
-  assert.equal(kjc.d, null);
-  assert.deepEqual(kjc.last, { x: 100, y: 10 });
-  assert.deepEqual(sparkLines([[]]), [{ d: null, last: null }]);
-  assert.deepEqual(sparkLines([[5]]), [{ d: null, last: null }]);
+// The owner asked for the percentage gain and nothing besides. The board, the
+// polling route and the data the page hands the browser must carry no money.
+test("no money figure reaches the board, the route or the page props", async () => {
+  const root = resolve(here, "..");
+  const board = await readFile(resolve(root, "src", "components", "portal", "KjcBoard.jsx"), "utf8");
+  const route = await readFile(resolve(root, "src", "app", "api", "kjc", "route.js"), "utf8");
+  const page = await readFile(resolve(root, "src", "app", "[lang]", "portal", "page.jsx"), "utf8");
+  for (const [name, src] of [["KjcBoard", board], ["api/kjc", route]]) {
+    assert.doesNotMatch(src, /\bmoney\(|balance|equity|deposit|floating|closed/i, `${name} handles a money figure`);
+  }
+  const boardProps = page.slice(page.indexOf("<KjcBoard"), page.indexOf("/>", page.indexOf("<KjcBoard")));
+  assert.match(boardProps, /initial=\{\{ percent: data\.percent, asAt: data\.asAt \}\}/);
+  const snapshot = JSON.parse(await readFile(resolve(root, "src", "lib", "keystoneSnapshot.json"), "utf8"));
+  assert.deepEqual(Object.keys(snapshot).sort(), ["as_at", "daily", "kjc"]);
 });

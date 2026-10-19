@@ -1,63 +1,57 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 import { feedToAccount, fetchSiteFeed, keystoneConfig } from "../src/lib/keystone.js";
-import { kjcQuote } from "../src/lib/kjc.js";
 
-// The shape site_feed returns, with the figures Keystone held for the tracked
-// account when the feed was designed (19 October 2026).
+const here = dirname(fileURLToPath(import.meta.url));
+
+// The shape site_feed returns: the percentage gain now, and at the end of each
+// day Keystone sampled equity. Nothing else.
 const FEED = {
-  currency: "USD",
-  as_at: "2026-10-19T18:13:52.093+00:00",
-  balance: 668518.35,
-  equity: 583570.24,
-  credit: 0,
-  deposits: 1000000,
-  withdrawals: 499989.8,
-  opened_at: "2026-06-28T21:49:17.911+00:00",
-  tracking_since: "2026-10-19T14:13:52.261+00:00",
+  as_at: "2026-10-19T18:49:52.618+00:00",
+  kjc: 16.5852,
   daily: [
-    { day: "2026-06-30", closed: 2150.03, capital: 500010.2, equity: null },
-    { day: "2026-10-16", closed: 168508.15, capital: 500010.2, equity: null },
-    { day: "2026-10-19", closed: 168508.15, capital: 500010.2, equity: 583570.24 }
+    { day: "2026-10-18", kjc: 16.1 },
+    { day: "2026-10-19", kjc: 16.4966 }
   ]
 };
 
-test("the feed becomes a $KJC quote measured on equity", () => {
+test("the feed becomes one percentage and its history", () => {
   const account = feedToAccount(FEED);
   assert.equal(account.mode, "live");
-  const q = kjcQuote(account.snapshot);
-  assert.equal(Number(q.capital.toFixed(2)), 500010.2);
-  assert.equal(Number(q.closed.toFixed(2)), 168508.15);
-  assert.equal(Number(q.floating.toFixed(2)), -84948.11);
-  assert.equal(Number(q.percent.toFixed(2)), 16.71);
-});
-
-test("history carries closed profit every day and $KJC only where equity was sampled", () => {
-  const { history } = feedToAccount(FEED);
-  assert.equal(history.length, 3);
-  assert.equal(history[0].kjc, null);
-  assert.equal(Number(history[1].closed.toFixed(2)), 33.7);
-  assert.equal(Number(history[2].kjc.toFixed(2)), 16.71);
+  assert.equal(account.percent, 16.5852);
+  assert.equal(account.asAt, FEED.as_at);
+  assert.deepEqual(account.history.map((h) => h.at), ["2026-10-18", "2026-10-19"]);
 });
 
 test("today's point matches the headline, not a sample a minute old", () => {
-  const account = feedToAccount({ ...FEED, equity: 583366 });
-  const headline = kjcQuote(account.snapshot).percent;
-  assert.equal(account.history.at(-1).kjc, headline);
-  assert.equal(Number(headline.toFixed(2)), 16.67);
-});
-
-test("broker credit is not the client's money", () => {
-  const withCredit = feedToAccount({ ...FEED, equity: 593570.24, credit: 10000 });
-  assert.equal(withCredit.snapshot.equity, 583570.24);
+  const { history, percent } = feedToAccount(FEED);
+  assert.equal(history.at(-1).kjc, percent);
+  assert.equal(history[0].kjc, 16.1);
 });
 
 test("a missing or malformed feed gives null, never a half-drawn page", () => {
   assert.equal(feedToAccount(null), null);
   assert.equal(feedToAccount([]), null);
-  assert.equal(feedToAccount({ ...FEED, equity: "not a number" }), null);
-  assert.equal(feedToAccount({ ...FEED, deposits: 100, withdrawals: 100 }), null);
+  assert.equal(feedToAccount({ ...FEED, kjc: "not a number" }), null);
+  assert.equal(feedToAccount({ ...FEED, kjc: null }), null);
   assert.deepEqual(feedToAccount({ ...FEED, daily: "nope" }).history, []);
+  assert.deepEqual(feedToAccount({ ...FEED, daily: [{ day: "x", kjc: 1 }, { day: "2026-10-19", kjc: "y" }] }).history, []);
+});
+
+// The owner wants the percentage shown and nothing else, so the function in
+// Keystone must not hand out money figures to the public key either.
+test("the Keystone function returns percentages only", async () => {
+  const sql = await readFile(resolve(here, "..", "supabase", "keystone", "site_feed.sql"), "utf8");
+  const body = sql.slice(sql.indexOf("as $$"), sql.lastIndexOf("$$;"));
+  const output = body.slice(body.indexOf("jsonb_build_object"));
+  const keys = [...output.matchAll(/'([a-z_]+)',/g)].map((m) => m[1]);
+  assert.deepEqual([...new Set(keys)].sort(), ["as_at", "daily", "day", "kjc"]);
+  assert.match(sql, /security definer/);
+  assert.match(sql, /set search_path = public, pg_temp/);
+  assert.match(sql, /grant execute on function public\.site_feed\(text\) to anon;/);
 });
 
 test("the feed is only read over https with both values set", () => {

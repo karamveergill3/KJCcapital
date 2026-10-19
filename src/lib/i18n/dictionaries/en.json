@@ -218,37 +218,17 @@
     "quote": {
       "symbol": "$KJC",
       "label": "Your return",
-      "on": "on",
-      "deposited": "deposited",
-      "closed": "Closed profit",
-      "floating": "Open positions",
-      "net": "Net gain",
-      "equity": "Account value",
-      "balance": "Balance",
-      "capital": "Deposited",
-      "asAt": "As at",
-      "closedReturn": "Closed return",
-      "openDrawdown": "Open drawdown",
       "boardLabel": "$KJC quote",
-      "sparkLabel": "$KJC against closed return",
       "statusLive": "Live",
       "statusSnapshot": "Snapshot",
-      "statusExample": "Example account",
-      "source": {
-        "live": "live from the account's trading terminal",
-        "snapshot": "a snapshot from the account's trading terminal, not live",
-        "example": "from your broker statement"
-      },
-      "explain": "$KJC counts open positions as well as closed ones. Profit already taken is offset by any loss still open, so the figure is what your account is worth now against what you put in."
+      "statusExample": "Example account"
     },
     "performance": {
       "label": "Performance",
-      "title": "$KJC and closed profit",
+      "title": "$KJC over time",
       "kjc": "$KJC",
-      "closed": "Closed profit",
       "date": "Date",
-      "table": "Show the figures as a table",
-      "equitySince": "Closed profit runs from the day the account opened. $KJC needs the account's equity, which has been recorded since"
+      "table": "Show the figures as a table"
     },
     "mandate": {
       "label": "Your mandate",
