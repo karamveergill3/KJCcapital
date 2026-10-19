@@ -28,10 +28,11 @@ export default function TermsPage() {
       </p>
       <h2 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Eligibility</h2>
       <p>
-        The investor portal on this site shows an example account, and every figure on it is
-        illustrative. A client&apos;s own figures are shown only to that client. The programme
-        is available only to persons who have passed the firm&apos;s identity and
-        anti-money-laundering checks.
+        The $KJC figure on the investor portal is a percentage return on the capital committed,
+        with any open drawdown counted against it. It is not a forecast, and past performance
+        is not a guide to future returns. Anything on the portal marked as an example is
+        illustrative. The programme is available only to persons who have passed the
+        firm&apos;s identity and anti-money-laundering checks.
       </p>
       <h2 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Intellectual property</h2>
       <p>

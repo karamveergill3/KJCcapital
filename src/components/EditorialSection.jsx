@@ -2,7 +2,9 @@ export default function EditorialSection({ label, tag, title, children }) {
   const labelContent = (
     <>
       {label}
-      {tag ? <span className="smallcaps-gold ml-3">{tag}</span> : null}
+      {/* The space keeps the label and tag apart for a screen reader, which
+          would otherwise read them as one run-together word. */}
+      {tag ? <>{" "}<span className="smallcaps-gold ml-2">{tag}</span></> : null}
     </>
   );
   return (
