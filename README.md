@@ -20,6 +20,10 @@ presents the firm.
 - Next.js 16 (App Router), plain JavaScript, `@/*` → `./src/*` via
   `jsconfig.json`. No TypeScript.
 - React 19, Tailwind CSS v4 with tokens in `src/app/styles/globals.css`.
+- Fonts through `next/font`, served from the site. All but the Source Serif 4
+  italic (in `src/app/fonts`) are downloaded from Google during `next build`,
+  so the build needs outbound access to fonts.googleapis.com and
+  fonts.gstatic.com and fails without it.
 - Supabase — `@supabase/ssr`, `@supabase/supabase-js`. Auth, Postgres, RLS.
 - Resend for outbound email. PDFKit for statements and legal PDFs.
 - Deployed on Vercel from a private GitHub repo. Node 24 in CI.
