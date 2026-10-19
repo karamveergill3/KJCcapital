@@ -43,7 +43,8 @@ Before pushing: `npm run scan:secrets`, `npm test`, `npm run lint`, then
 **Read this before adding any claim about the arrangement.** The scaffold this
 repo grew from described a pooled BVI Incubator Fund: 20 investors, USD 20m cap,
 units, a monthly NAV strike, subscriptions and redemptions. None of that was
-true. It was removed in two passes once the owner corrected it.
+true. It was removed from the copy in two passes once the owner corrected it,
+and from the data model in a third.
 
 What the firm actually does, as stated by the owner:
 
@@ -80,8 +81,9 @@ Still unconfirmed, and deliberately absent from the site rather than guessed:
 - How long client records must be kept, and under which anti-money-laundering
   framework. The privacy page used to claim seven years under the BVI regime;
   that number was never verified, so it now states the obligation without one.
-- Whether USD 20,000 is a real minimum. It survives only as a check constraint
-  in `supabase/schema.sql` and appears nowhere on the site.
+- Whether there is any minimum. None is stated anywhere, on the site or in the
+  schema. The scaffold's USD 20,000 was never confirmed and has been removed;
+  do not add a figure until the owner states one.
 - On what basis the firm is permitted to manage client accounts, and how the
   programme may lawfully be promoted.
 
@@ -98,24 +100,42 @@ The header tape is built in `src/lib/ticker.js` from `home.ledger` plus
 contradicts. `tests/ticker.test.mjs` rejects any digit or pooled-fund word on
 it: the tape carries terms, never figures.
 
-Two things are still modelled on a pooled fund and were left alone deliberately,
-because redesigning a data model is a bigger decision than correcting copy:
-
-- `supabase/schema.sql` — `units_ledger`, `high_water_marks`, `subscriptions`,
-  `redemptions`.
-- `src/lib/audit.js` — `SUBSCRIPTION_*`, `REDEMPTION_*`, `NAV_STRIKE_RECORDED`.
-
-Neither is consumed by anything yet (`audit.js` has only its own test, and
-`/[lang]/portal` is a holding page with no login behind it). Both need
-redesigning around per-client accounts before the portal is built. Do not
-extend either as-is.
-
 When it is built, the portal is the record of the **relationship**, not the
 record of the money: the mandate and its limits, a log of what the firm did
 under it, documents, fees with the matching broker statement reference,
 notices, and a desk note. Balances, positions and trades stay with the broker.
 The programme page promises there is no version of the numbers only the firm
 can see, and a second dashboard would break that the first time it disagreed.
+
+`supabase/schema.sql` is modelled on exactly that. Nothing consumes it yet
+(`/[lang]/portal` is a holding page with no login behind it):
+
+- `clients` — one row per enquiry or client, through the steps the contact
+  and portal pages describe: enquiry, agreement issued, account opening,
+  active, paused, ended, declined. US-person status is recorded for tax
+  reporting but refuses nobody: clients are accepted from any country.
+- `broker_accounts` — the client's own account: broker name as free text,
+  the last four characters of the account number, base currency, and when the
+  authority was granted or revoked. No credential of any kind and no full
+  account number.
+- `mandates` — the registers and limits the firm may trade under in one
+  account, tied to the client agreement. A check allows only a `trade_only`
+  authority scope. Terms are fixed once issued; an amendment is a new mandate
+  that supersedes the old one.
+- `mandate_activity` — append-only log of what the firm did under a mandate:
+  a kind, a summary and a broker reference, never a price, quantity or P&L.
+- `fee_charges` — the amount charged for a period, the agreement clause it
+  rests on, and the broker statement line that matches it, which is required
+  before a charge can be marked paid. No rate and no basis.
+- `documents`, `notices` with `notice_acknowledgements`, and `desk_notes`
+  (readable only by active clients, once published).
+- `kyc_checks` — the identity, address, source of funds and tax residence
+  checks the privacy page lists, plus the US-person determination. No regime
+  is named.
+
+`src/lib/audit.js` names its actions on the same model. Neither file has a
+table, column or action for units, NAV, subscriptions, redemptions, a balance
+or a valuation, and their tests fail if one appears.
 
 ## Conventions
 
@@ -134,4 +154,32 @@ can see, and a second dashboard would break that the first time it disagreed.
 ## Database
 
 `supabase/schema.sql` is applied by hand in the Supabase SQL editor. Written
-to be re-runnable. Row-level security on every table.
+to be re-runnable: `if not exists` throughout, enums guarded, policies and
+triggers dropped before they are created. Row-level security on every table.
+
+- **Reads.** Every policy is `for select to authenticated`, limited to the
+  caller's own rows through `clients.auth_user_id`. anon reads nothing.
+- **Writes.** The service role only, from server code. No role has a write
+  policy, and insert, update, delete and truncate are revoked from anon and
+  authenticated as well.
+- **Append-only.** `audit_events`, `mandate_activity` and
+  `notice_acknowledgements` refuse update, delete and truncate by trigger,
+  which binds the service role too. A correction is a new row. Because the
+  `on delete set null` on `audit_events.actor_user_id` is itself an update, an
+  auth user who appears in the audit trail cannot be deleted: ban them in
+  Supabase Auth instead.
+- **Authority.** `mandates.authority_scope` is checked to be `trade_only`,
+  because the governance and disclosures pages say so. If the real authority
+  is broader, those pages are corrected first and the check after.
+
+The schema replaces a pooled-fund draft (`investors`, `nav_strikes`,
+`subscriptions`, `redemptions`, `units_ledger`, `high_water_marks`). That draft
+was never applied to any project, and the file drops nothing. If it was ever
+applied somewhere, drop those tables and their enum types by hand.
+
+CI has no Postgres, so `tests/schema.test.mjs` parses the file. What a parse
+cannot show is behaviour: two clients isolated from each other in every table,
+the triggers firing, the US-person and authority checks refusing a row. That
+was exercised against a local Postgres 16, with Supabase's roles and
+`auth.uid()` stubbed, when this model was written. Do it again after any
+change to the schema.

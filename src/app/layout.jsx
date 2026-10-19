@@ -1,5 +1,47 @@
+import { Cormorant_Garamond, Source_Serif_4, Inter, JetBrains_Mono } from "next/font/google";
 import "@/app/styles/globals.css";
 import { SITE_URL, SITE_HOST, absolute } from "@/lib/site";
+
+// The faces are fetched from Google once, at build time, and served from
+// /_next/static/media with the rest of the site, so no page waits on a
+// third-party stylesheet. Each sets a CSS variable that the font tokens in
+// globals.css put at the head of their stacks. Every character in the copy
+// sits in the latin subset, so only latin is preloaded; the other subsets are
+// still declared by unicode-range and download only if a page uses a glyph
+// from one of them.
+const display = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+  variable: "--font-cormorant-garamond"
+});
+
+// Variable weight, because next/font only takes the opsz axis on the
+// variable font; the browser sets optical size from the font size.
+const serif = Source_Serif_4({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  axes: ["opsz"],
+  display: "swap",
+  variable: "--font-source-serif-4"
+});
+
+const sans = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+  variable: "--font-inter"
+});
+
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  display: "swap",
+  variable: "--font-jetbrains-mono"
+});
+
+// On <html>, not <body>: the tokens are declared on :root and resolve there.
+const FONT_VARIABLES = [display, serif, sans, mono].map((font) => font.variable).join(" ");
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
@@ -48,18 +90,8 @@ const ORGANISATION_LD = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className={FONT_VARIABLES}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        {/* no-page-custom-font is a Pages Router rule about pages/_document.
-            This is the App Router root layout, so the stylesheet is loaded once
-            for every route, which is what the rule asks for. */}
-        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
-        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANISATION_LD) }}
