@@ -9,8 +9,9 @@ import snapshotFeed from "@/lib/keystoneSnapshot.json" with { type: "json" };
 // site needs no key and no database grant to read it.
 //
 // Before Keystone began sampling equity, Keystone rebuilds the history from
-// the account's trades at the European Central Bank's daily reference rates,
-// an estimate; from the first sample on, the points are measured.
+// the account's trades, with open positions valued at the European Central
+// Bank's daily reference rates, an estimate; from the first sample on, the
+// points are measured.
 //
 // Anything wrong with the feed (unreachable, an unexpected shape) gives null,
 // and the portal falls back rather than showing a broken page or a stale
@@ -54,7 +55,12 @@ export function snapshotAccount() {
   return account ? { ...account, mode: "snapshot" } : null;
 }
 
-const number = (value) => (value === null || value === undefined || value === "" ? NaN : Number(value));
+// A figure is a number, or a plain decimal written as text. Anything else is
+// not a reading, however Number() would take it: true, [5], " " and "0x10"
+// would otherwise come out as 1, 5, 0 and 16.
+const DECIMAL = /^-?\d+(\.\d+)?([eE][-+]?\d+)?$/;
+const number = (value) =>
+  typeof value === "number" ? value : typeof value === "string" && DECIMAL.test(value) ? Number(value) : NaN;
 
 // A point is a full ISO time, not a bare day, so two points never share one.
 const timeOf = (at) => (/^\d{4}-\d{2}-\d{2}T/.test(at) ? Date.parse(at) : NaN);
@@ -89,7 +95,9 @@ export function feedToAccount(feed) {
 /**
  * One row per UTC month the series touches, oldest first: the month
  * ("2026-10") and the last $KJC in it. The month that `now` falls in is not
- * over yet, so it is marked as to date.
+ * over yet, so it is marked as to date. The portal passes the time its data
+ * was taken, not the clock, so a stale feed or snapshot still marks its last
+ * month as unfinished.
  */
 export function monthEnds(series, now = new Date()) {
   const current = now.toISOString().slice(0, 7);

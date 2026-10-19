@@ -126,6 +126,27 @@ test("a feed without a valid headline gives null", () => {
   assert.equal(feedToAccount({ ...FEED, as_at: "2026-13-45T99:00:00Z" }), null);
 });
 
+// Number() reads all of these as a figure (0, 1, 5, 16 and so on), and none
+// of them came from Keystone as one.
+const NOT_FIGURES = [false, true, " ", "", [], [5], "0x10", "1e", "Infinity", {}, NaN, Infinity];
+
+test("a headline that is not a number is refused, however Number() reads it", () => {
+  for (const kjc of NOT_FIGURES) {
+    assert.equal(feedToAccount({ ...FEED, kjc }), null, `kjc of ${JSON.stringify(kjc)} was read as a figure`);
+  }
+  // A plain decimal written as text is still a figure.
+  assert.equal(feedToAccount({ ...FEED, kjc: "16.5852" }).percent, 16.5852);
+  assert.equal(feedToAccount({ ...FEED, kjc: "-3" }).percent, -3);
+  assert.equal(feedToAccount({ ...FEED, kjc: "1.5e1" }).percent, 15);
+});
+
+test("a point that is not a number is dropped, however Number() reads it", () => {
+  for (const kjc of NOT_FIGURES) {
+    const { series } = feedToAccount({ ...FEED, series: [{ at: "2026-10-19T10:00:00Z", kjc }] });
+    assert.deepEqual(series, [{ at: FEED.as_at, kjc: FEED.kjc }], `a point of ${JSON.stringify(kjc)} was drawn`);
+  }
+});
+
 test("the committed snapshot has the feed's shape and nothing else", () => {
   assert.deepEqual(Object.keys(snapshot).sort(), ["as_at", "kjc", "series"]);
   assert.ok(snapshot.series.length > 10, "the snapshot should carry the measured readings");
@@ -158,6 +179,12 @@ test("the month table takes each UTC month's last reading and marks the current 
     { month: "2026-10", kjc: 16.63, toDate: true }
   ]);
   assert.equal(monthEnds(series, new Date("2026-11-02T00:00:00Z")).at(-1).toDate, false);
+
+  // Read at the data's own time, as the portal does, a feed that stopped
+  // syncing on 19 October still marks October as to date in November.
+  const asAt = series.at(-1).at;
+  assert.equal(monthEnds(series, new Date(asAt)).at(-1).toDate, true);
+  assert.deepEqual(monthEnds(series, new Date(asAt)).filter((m) => m.toDate).map((m) => m.month), ["2026-10"]);
 
   // The example's month ends are bare days.
   assert.deepEqual(monthEnds([{ at: "2025-09-30", kjc: 0 }, { at: "2025-10-31", kjc: 0.8 }], new Date("2026-10-19T00:00:00Z")), [

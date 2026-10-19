@@ -51,6 +51,13 @@ test("no money figure reaches the board, the route or the page props", async () 
   // The month table is percentages too.
   const months = page.slice(page.indexOf("months.length > 1"), page.indexOf("</section>", page.indexOf("months.length > 1")));
   assert.match(months, /signedPercent\(m\.kjc\)/);
+  // "To date" goes by when the data was taken, not the server's clock, so a
+  // stale feed or snapshot never shows a mid-month reading as a month end.
+  assert.match(
+    page,
+    /const months = monthEnds\(data\.series, mode === "example" \? undefined : new Date\(data\.asAt\)\);/,
+    "the month table does not mark to date from the data's own time"
+  );
   assert.doesNotMatch(months, /\bmoney\(|balance|equity|deposit|floating|closed/i, "the month table handles a money figure");
 
   const snapshot = JSON.parse(await read("src", "lib", "keystoneSnapshot.json"));

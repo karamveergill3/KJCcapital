@@ -245,9 +245,11 @@ zig-zags like a price chart rather than smoothing the moves away;
 headline figure, and hovering reads off any point.
 
 Below the board, **Month by month** is a table of $KJC at each UTC month's
-last reading, the current month marked "to date". It appears once the
-series reaches into a second calendar month, and it is percentages only, like
-everything else on the page that comes from the account. The Recharts chart
+last reading, the month of the latest reading marked "to date" (so a stale
+feed or snapshot never passes a mid-month reading off as a month end). It
+appears once the series reaches into a second calendar month, and it is
+percentages only, like everything else on the page that comes from the
+account. The Recharts chart
 that used to sit there is gone, and so is the dependency.
 
 **$KJC** (`src/lib/kjc.js`) is the client's return measured on equity:

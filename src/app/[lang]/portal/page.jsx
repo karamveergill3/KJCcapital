@@ -49,7 +49,11 @@ export default async function PortalPage({ params }) {
   // The board's chart, one stretch of the series per range tab. The series is
   // times and percentages only, so every range is too.
   const ranges = buildRanges(data.series);
-  const months = monthEnds(data.series);
+  // The month the data was taken in reads "to date", even when the feed has
+  // stopped syncing or the snapshot is weeks old, so a mid-month reading is
+  // never shown as a month end. The example's points are month ends already,
+  // so it goes by today's date.
+  const months = monthEnds(data.series, mode === "example" ? undefined : new Date(data.asAt));
 
   return (
     <>
