@@ -13,7 +13,7 @@ export async function generateMetadata({ params }) {
 
 export default function RiskPage() {
   return (
-    <LegalPage label="Legal" title="Risk warning" updated="18 September 2026">
+    <LegalPage label="Legal" title="Risk warning" updated="19 October 2026">
       <p className="lead">
         Capital committed to the KJC Capital programme is at risk. The programme is
         speculative, it is conducted in your own account, and it is possible to lose
@@ -24,9 +24,8 @@ export default function RiskPage() {
         The programme pursues a leveraged trading strategy across precious metals, proprietary
         systematic strategies, digital assets, and select alternatives. Leveraged strategies
         magnify both gains and losses, and realised returns in any period may differ materially
-        from the returns of the underlying markets traded. Past performance, whether of this
-        programme or of any prior programme run by the firm&apos;s principals, is not a guide
-        to future returns.
+        from the returns of the underlying markets traded. Past performance is not a guide to
+        future returns.
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Risks specific to the registers</h3>
       <p>
@@ -63,11 +62,10 @@ export default function RiskPage() {
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Regulatory status</h3>
       <p>
-        KJC Capital is based in the British Virgin Islands. Managing another person&apos;s
-        account at the manager&apos;s discretion is a regulated activity in most jurisdictions,
-        and the protections available to you depend on the basis on which the firm is permitted
-        to conduct it. Ask the firm directly what that basis is, and read the client agreement,
-        before granting any trading authority.
+        Managing another person&apos;s account at the manager&apos;s discretion is a regulated
+        activity in most jurisdictions, and the protections available to you depend on the basis
+        on which the firm is permitted to conduct it. Ask the firm directly what that basis is,
+        and read the client agreement, before granting any trading authority.
       </p>
       <h3 className="serif text-xl mt-10 mb-3 text-[var(--color-ink)]">Not for United States persons</h3>
       <p>

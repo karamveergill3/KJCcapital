@@ -2,6 +2,11 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
+  async redirects() {
+    // The Firm page described who the firm is and where it is from. The site
+    // no longer says either, so the page is gone and its old links land home.
+    return [{ source: "/:lang/firm", destination: "/:lang", permanent: true }];
+  },
   async headers() {
     return [
       {

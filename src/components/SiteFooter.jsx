@@ -46,9 +46,8 @@ export default function SiteFooter({ lang, footer, firmName, risk }) {
           </div>
         </div>
         <hr className="rule mt-10 mb-6" />
-        <div className="flex items-center justify-between text-xs text-[var(--color-ink-mute)]">
-          <div>© {year} {firmName}. All rights reserved.</div>
-          <div className="smallcaps">British Virgin Islands</div>
+        <div className="text-xs text-[var(--color-ink-mute)]">
+          © {year} {firmName}. All rights reserved.
         </div>
       </div>
     </footer>

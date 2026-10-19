@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-const CLOCKS = [
-  { label: "LDN", timeZone: "Europe/London" },
-  { label: "VG", timeZone: "America/Tortola" }
-];
+// UTC only. City clocks said where the firm sits, and the site does not.
+const CLOCKS = [{ label: "UTC", timeZone: "UTC" }];
 
 function fmt(date, timeZone) {
   return new Intl.DateTimeFormat("en-GB", {

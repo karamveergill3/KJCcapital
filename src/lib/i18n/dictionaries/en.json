@@ -3,10 +3,9 @@
     "firmName": "KJC Capital",
     "programmeName": "KJC Managed Account",
     "tagline": "Gold-led capital, managed in your own account.",
-    "story": "A firm managing private clients' own broker accounts across precious metals, proprietary algorithmic strategies, digital assets, and select alternatives, since 2023."
+    "story": "A firm managing private clients' own broker accounts across precious metals, proprietary algorithmic strategies, digital assets, and select alternatives."
   },
   "nav": {
-    "firm": "The Firm",
     "programme": "Programme",
     "governance": "Governance",
     "contact": "Contact",
@@ -19,7 +18,7 @@
       "ctaSecondary": "The programme",
       "meta": [
         { "label": "Strategy", "value": "Four registers" },
-        { "label": "Inception", "value": "2023" },
+        { "label": "Custody", "value": "Your broker" },
         { "label": "Account", "value": "In your name" },
         { "label": "Visibility", "value": "Live" }
       ],
@@ -35,7 +34,7 @@
           { "term": "Visibility", "value": "Your own login" },
           { "term": "Access", "value": "Revocable" }
         ],
-        "reference": "KJC · MMXXIII"
+        "reference": "KJC · Separate accounts"
       }
     },
     "registersLabel": "Registers",
@@ -138,25 +137,6 @@
       { "term": "United States persons", "value": "Not accepted" }
     ]
   },
-  "firm": {
-    "leadTitle": "The Firm",
-    "metaDescription": "KJC Capital is a private investment firm based in the British Virgin Islands, running a single gold-led programme across four registers since 2023.",
-    "leadIntro": "KJC Capital is a private investment firm based in the British Virgin Islands. The firm was established in 2023 and runs a single programme on behalf of its clients.",
-    "sections": [
-      {
-        "label": "History",
-        "body": "The firm's founding was unassuming. A quantitative approach that had been refined over several years, run first on personal capital and subsequently on the accounts of family and close acquaintances, was formalised in 2023. The purpose of the formalisation was not growth. It was to draw a clear line between the firm's capital and its clients', and to put in writing an arrangement that had until then rested on trust alone."
-      },
-      {
-        "label": "People",
-        "body": "The firm is small on purpose. Its principals run the same programme on their own capital, in their own accounts, alongside yours. The alignment of interest between the manager and the client is not an aspiration but a structural feature."
-      },
-      {
-        "label": "Domicile",
-        "body": "The firm is based in the British Virgin Islands. Client capital is never held by the firm at all: it sits in the client's own account with a broker, which is a stronger separation than any policy of ours could provide. The terms of the arrangement are set out in the client agreement rather than on this site."
-      }
-    ]
-  },
   "programme": {
     "leadTitle": "Programme",
     "metaDescription": "A gold-led programme across four registers: precious metals, proprietary algorithmic strategies, a bounded digital-asset allocation, and select alternatives.",
@@ -213,10 +193,6 @@
         "body": "director@kjccapital.co.uk"
       },
       {
-        "label": "By post",
-        "body": "KJC Capital, Craigmuir Chambers, Road Town, Tortola, British Virgin Islands, VG1110."
-      },
-      {
         "label": "What to expect",
         "body": "A director will reply personally. If, after that exchange, both parties consider the arrangement to be a fit, the firm will issue a client agreement setting out the fee basis and the scope of the trading authority, and will walk you through opening the account in your own name."
       }
@@ -251,7 +227,7 @@
       "risk": "Risk warning",
       "disclosures": "Disclosures"
     },
-    "regulatory": "KJC Capital is based in the British Virgin Islands. It manages clients' own broker accounts under a limited trading authority and does not hold client money. Terms are set out in the client agreement, provided on introduction."
+    "regulatory": "KJC Capital manages clients' own broker accounts under a limited trading authority and does not hold client money. Terms are set out in the client agreement, provided on introduction."
   },
   "risk": {
     "banner": "Capital is at risk. The programme is speculative and may result in the loss of everything committed to it. Past performance is not a guide to future returns. The programme is not available to US persons."
