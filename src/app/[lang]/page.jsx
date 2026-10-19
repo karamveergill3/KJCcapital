@@ -1,4 +1,5 @@
 import { getDictionary } from "@/lib/i18n/getDictionary";
+import { pageMeta } from "@/lib/pageMeta";
 import Hero from "@/components/Hero";
 import Registers from "@/components/Registers";
 import Principles from "@/components/Principles";
@@ -9,17 +10,12 @@ import Invitation from "@/components/Invitation";
 export async function generateMetadata({ params }) {
   const { lang } = await params;
   const dict = await getDictionary(lang);
-  return {
+  return pageMeta({
+    lang,
     // Absolute, or the root template appends the firm name a second time.
     title: { absolute: `${dict.meta.firmName} — ${dict.meta.tagline}` },
-    description: dict.meta.story,
-    alternates: { canonical: `/${lang}` },
-    openGraph: {
-      title: `${dict.meta.firmName} — ${dict.meta.tagline}`,
-      description: dict.meta.story,
-      url: `/${lang}`
-    }
-  };
+    description: dict.meta.story
+  });
 }
 
 export default async function Home({ params }) {

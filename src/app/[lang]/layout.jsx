@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 import { locales } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
-import SiteHeader from "@/components/SiteHeader";
-import SiteFooter from "@/components/SiteFooter";
+import SiteFrame from "@/components/SiteFrame";
+
+// Only the listed locales exist. Without this an unknown first segment, such
+// as a dot segment, is rendered on demand and fails instead of returning 404.
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
@@ -13,14 +16,8 @@ export default async function LocaleLayout({ children, params }) {
   if (!locales.includes(lang)) notFound();
   const dict = await getDictionary(lang);
   return (
-    <div className="min-h-screen flex flex-col">
-      <SiteHeader
-        lang={lang}
-        nav={dict.nav}
-        ticker={{ ...dict.ticker, rows: dict.home.ledger }}
-      />
-      <main className="flex-1">{children}</main>
-      <SiteFooter lang={lang} footer={dict.footer} firmName={dict.meta.firmName} risk={dict.risk} />
-    </div>
+    <SiteFrame lang={lang} dict={dict}>
+      {children}
+    </SiteFrame>
   );
 }

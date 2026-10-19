@@ -2,6 +2,9 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
+  // Inlined into the build, so /api/version reports when this build was made
+  // rather than when it was asked.
+  env: { BUILD_TIME: new Date().toISOString() },
   async redirects() {
     // The Firm page described who the firm is and where it is from. The site
     // no longer says either, so the page is gone and its old links land home.

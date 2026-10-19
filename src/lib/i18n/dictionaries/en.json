@@ -129,6 +129,7 @@
   },
   "ticker": {
     "label": "Terms of the arrangement",
+    "pause": "Pause the ticker",
     "extra": [
       { "term": "Client money we hold", "value": "None" },
       { "term": "Statements from", "value": "Your broker, not us" },

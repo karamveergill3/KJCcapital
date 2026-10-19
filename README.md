@@ -251,7 +251,11 @@ the other once the owner says which is right.
 - Supabase clients by context: `client.js` in the browser, `server.js` in
   RSCs and server actions, `admin.js` (service role) only in route handlers.
 - Business logic in `src/lib/*.js` with a matching `tests/<name>.test.mjs`.
-- No em-dashes in visible body copy.
+- Page metadata through `pageMeta` in `src/lib/pageMeta.js`. Next replaces a
+  page's `openGraph` and `twitter` rather than merging them, so a hand-built
+  block drops the site name, type and locale.
+- No em-dashes in visible body copy. `tests/i18n.test.mjs` reads the
+  dictionary and every `.jsx` file under `src/app` and `src/components`.
 - Commits: imperative, capitalised, no trailing period, no `feat:`/`fix:`
   prefixes, no emoji.
 

@@ -334,8 +334,16 @@
 
   /* Ticker. A trading floor puts prices on the tape; this one puts the terms of
      the arrangement, which is the thing the firm actually wants read. */
+  .ticker-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
   .ticker {
     position: relative;
+    flex: 1;
     overflow: hidden;
     min-width: 0;
     /* The fade has to stay a small fraction of the strip, or on a phone it eats
@@ -409,6 +417,37 @@
     color: var(--color-ink);
   }
 
+  /* Pause control for a moving tape: a small ring in the strip, still a full
+     24px target. The dark board swaps its colours below. */
+  .tape-toggle {
+    --toggle-ink: var(--color-ink-soft);
+    --toggle-ring: var(--color-rule-strong);
+    --toggle-hover: var(--color-gold-deep);
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 1px solid var(--toggle-ring);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--toggle-ink);
+    cursor: pointer;
+    transition: color 200ms ease, border-color 200ms ease;
+  }
+
+  .tape-toggle:hover {
+    color: var(--toggle-hover);
+    border-color: var(--toggle-hover);
+  }
+
+  .tape-toggle:focus-visible {
+    outline: 2px solid var(--toggle-hover);
+    outline-offset: 2px;
+  }
+
   /* The $KJC board. A dark band on a paper page, the one place the site looks
      like a trading screen, because it is the one place showing a price. Every
      text colour clears 4.5:1 on the background; the faintest grey is only ever
@@ -424,6 +463,12 @@
     background: var(--kjc-bg);
     color: var(--kjc-text);
     border-block: 1px solid var(--color-gold-deep);
+  }
+
+  .kjc-board .tape-toggle {
+    --toggle-ink: var(--kjc-muted);
+    --toggle-ring: var(--color-gold-deep);
+    --toggle-hover: var(--kjc-gold);
   }
 
   .kjc-board .tone-up { color: var(--kjc-gain); }
@@ -558,9 +603,12 @@
     }
 
     /* Stop the tape so a line can actually be read, and so keyboard focus
-       inside it does not get dragged off screen. */
+       inside it does not get dragged off screen. Hover is the pointer's
+       pause; the toggle beside the tape holds it for keyboard and touch.
+       Hovering the toggle itself does not pause, so a press visibly works. */
     .ticker:hover .ticker-track,
-    .ticker:focus-within .ticker-track {
+    .ticker:focus-within .ticker-track,
+    .ticker-wrap[data-paused="true"] .ticker-track {
       animation-play-state: paused;
     }
 
@@ -577,18 +625,20 @@
     }
   }
 
+  /* A still tape scrolls by hand. The scrollbar stays visible so a mouse
+     user can see there is more and reach it, and the edge fade goes, since it
+     would dim the first term and the ends of the scrollbar. Nothing moves, so
+     there is nothing for the toggle to pause. */
   @media (prefers-reduced-motion: reduce) {
     .ticker {
       overflow-x: auto;
-      scrollbar-width: none;
+      scrollbar-width: thin;
+      mask-image: none;
+      -webkit-mask-image: none;
     }
 
-    .ticker::-webkit-scrollbar {
-      display: none;
-    }
-
-    .ticker-run[aria-hidden="true"] {
-      display: none;
+    .ticker {
+      scrollbar-color: var(--color-ink-mute) transparent;
     }
   }
 }

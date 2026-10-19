@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+// The footer sits on paper-warm, where ink-mute only reaches 4.45:1, so all
+// of its text uses ink-soft to clear 4.5:1.
 export default function SiteFooter({ lang, footer, firmName, risk }) {
   const base = `/${lang}`;
   const year = new Date().getFullYear();
@@ -12,22 +14,22 @@ export default function SiteFooter({ lang, footer, firmName, risk }) {
         <hr className="rule my-10" />
         <div className="grid gap-10 md:grid-cols-3">
           <div>
-            <div className="smallcaps mb-3">Firm</div>
+            <div className="smallcaps mb-3 text-[var(--color-ink-soft)]">Firm</div>
             <div className="wordmark">
               KJC<span className="wordmark-sep">·</span>Capital
             </div>
-            <div className="text-sm text-[var(--color-ink-mute)] mt-2 max-w-xs leading-relaxed">
+            <div className="text-sm text-[var(--color-ink-soft)] mt-2 max-w-xs leading-relaxed">
               {footer.regulatory}
             </div>
           </div>
           <div>
-            <div className="smallcaps mb-3">Notice</div>
+            <div className="smallcaps mb-3 text-[var(--color-ink-soft)]">Notice</div>
             <p className="text-sm text-[var(--color-ink-soft)] max-w-xs leading-relaxed">
               {footer.notice}
             </p>
           </div>
           <div>
-            <div className="smallcaps mb-3">Legal</div>
+            <div className="smallcaps mb-3 text-[var(--color-ink-soft)]">Legal</div>
             <ul className="text-sm list-none pl-0">
               {[
                 [`${base}/legal/terms`, footer.legal.terms],
@@ -46,7 +48,7 @@ export default function SiteFooter({ lang, footer, firmName, risk }) {
           </div>
         </div>
         <hr className="rule mt-10 mb-6" />
-        <div className="text-xs text-[var(--color-ink-mute)]">
+        <div className="text-xs text-[var(--color-ink-soft)]">
           © {year} {firmName}. All rights reserved.
         </div>
       </div>

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { locales, defaultLocale, isLocale } from "../src/lib/i18n/config.js";
 import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
+import { dirname, join, resolve, sep } from "node:path";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -35,25 +35,39 @@ test("English dictionary is well-formed", async () => {
   assert.ok(dict.home.ledger.length >= 5, "home.ledger should list at least five rows");
 });
 
+// Visible copy lives in the dictionary and, on the legal pages, the layouts and
+// a few components, inline in JSX. Every one of those files is read line by
+// line. Comments are not copy, and a title may use the dash as a separator
+// ("Page — KJC Capital"), so a line that sets a title is let through.
 test("no em-dash in visible copy (except structural title separators)", async () => {
-  const path = resolve(here, "..", "src", "lib", "i18n", "dictionaries", "en.json");
-  const dict = JSON.parse(await readFile(path, "utf8"));
+  const src = resolve(here, "..", "src");
+  const entries = await readdir(src, { recursive: true });
+  const files = entries.filter(
+    (e) =>
+      e === join("lib", "i18n", "dictionaries", "en.json") ||
+      (e.startsWith(`app${sep}`) && e.endsWith(".jsx")) ||
+      (e.startsWith(`components${sep}`) && e.endsWith(".jsx"))
+  );
+  assert.ok(files.some((f) => f.endsWith(join("legal", "terms", "page.jsx"))), "legal pages are not being scanned");
+  assert.ok(files.some((f) => f.endsWith(join("[lang]", "layout.jsx"))), "the locale layout is not being scanned");
 
-  const visit = (node, path) => {
-    if (typeof node === "string") {
-      if (node.includes("—")) {
-        throw new Error(`Em-dash found in dictionary at ${path}: ${node}`);
-      }
-    } else if (Array.isArray(node)) {
-      node.forEach((child, i) => visit(child, `${path}[${i}]`));
-    } else if (node && typeof node === "object") {
-      for (const [k, v] of Object.entries(node)) {
-        visit(v, `${path}.${k}`);
-      }
+  const offenders = [];
+  for (const file of files) {
+    let body = await readFile(resolve(src, file), "utf8");
+    if (file.endsWith(".jsx")) {
+      // Blank out comments but keep their newlines, so line numbers hold. A
+      // // after a colon or quote is a URL, not a comment.
+      body = body
+        .replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, " "))
+        .replace(/(^|[^:"'`])\/\/.*$/gm, "$1");
     }
-  };
-
-  visit(dict, "root");
+    body.split("\n").forEach((line, i) => {
+      if (!line.includes("—")) return;
+      if (/\b(title|absolute|template)\s*:/.test(line)) return;
+      offenders.push(`${file}:${i + 1}: ${line.trim()}`);
+    });
+  }
+  assert.deepEqual(offenders, [], `em-dash in visible copy:\n${offenders.join("\n")}`);
 });
 
 // The firm has clients, not investors: it manages each client's own account and

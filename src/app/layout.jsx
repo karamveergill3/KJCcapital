@@ -1,7 +1,8 @@
 import { Cormorant_Garamond, Source_Serif_4, Inter, JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "@/app/styles/globals.css";
-import { SITE_URL, SITE_HOST, absolute } from "@/lib/site";
+import { SITE_URL, SITE_HOST } from "@/lib/site";
+import en from "@/lib/i18n/dictionaries/en.json" with { type: "json" };
 
 // The Google faces are fetched once, at build time, and served from
 // /_next/static/media with the rest of the site, so no page waits on a
@@ -65,27 +66,25 @@ export const metadata = {
     default: "KJC Capital",
     template: "%s — KJC Capital"
   },
-  description: "Gold-led capital, managed with discipline.",
+  // The tagline is read from the dictionary so the fallback description, the
+  // share cards and the structured data cannot drift from the page copy.
+  description: en.meta.tagline,
   applicationName: "KJC Capital",
-  alternates: {
-    canonical: "/en"
-  },
+  // No canonical, share URL or robots here. Every page sets its own canonical
+  // and URL, and root ones were inherited by every 404, pointing it at the home
+  // page. Robots default to index and follow, and an explicit pair here was
+  // printed beside the noindex Next adds to a 404.
   openGraph: {
     type: "website",
     siteName: "KJC Capital",
-    url: absolute("/en"),
     title: "KJC Capital",
-    description: "Gold-led capital, managed with discipline.",
+    description: en.meta.tagline,
     locale: "en_GB"
   },
   twitter: {
     card: "summary",
     title: "KJC Capital",
-    description: "Gold-led capital, managed with discipline."
-  },
-  robots: {
-    index: true,
-    follow: true
+    description: en.meta.tagline
   },
   // Set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION in Vercel to the token Search
   // Console gives you; the meta tag only renders once it is present.
@@ -99,7 +98,7 @@ const ORGANISATION_LD = {
   "@type": "Organization",
   name: "KJC Capital",
   url: SITE_URL,
-  slogan: "Gold-led capital, managed with discipline.",
+  slogan: en.meta.tagline,
   email: `director@${SITE_HOST.replace(/^www\./, "")}`,
   areaServed: "Global"
 };
@@ -108,6 +107,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={FONT_VARIABLES}>
       <head>
+        {/* Reveal blocks start hidden and only the client script uncovers
+            them, so without JavaScript they would stay invisible. */}
+        <noscript>
+          <style>{".fade-up{opacity:1 !important;transform:none !important}"}</style>
+        </noscript>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANISATION_LD) }}

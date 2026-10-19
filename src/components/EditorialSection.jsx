@@ -1,17 +1,29 @@
 export default function EditorialSection({ label, tag, title, children }) {
+  const labelContent = (
+    <>
+      {label}
+      {/* The space keeps the label and tag apart for a screen reader, which
+          would otherwise read them as one run-together word. */}
+      {tag ? <>{" "}<span className="smallcaps-gold ml-2">{tag}</span></> : null}
+    </>
+  );
   return (
     <section className="shell py-12 md:py-16 border-t border-[var(--color-rule)]">
       <div className="grid gap-8 md:grid-cols-[12rem_1fr]">
         <div>
-          <div className="smallcaps">
-            {label}
-            {tag ? <span className="smallcaps-gold ml-3">{tag}</span> : null}
-          </div>
+          {/* Without a title the label is the section's only heading, so it
+              is the h2. .smallcaps sets the same face, size and tracking
+              either way. */}
           {title ? (
-            <h2 className="serif text-2xl md:text-3xl mt-3 leading-tight text-[var(--color-ink)]">
-              {title}
-            </h2>
-          ) : null}
+            <>
+              <div className="smallcaps">{labelContent}</div>
+              <h2 className="serif text-2xl md:text-3xl mt-3 leading-tight text-[var(--color-ink)]">
+                {title}
+              </h2>
+            </>
+          ) : (
+            <h2 className="smallcaps">{labelContent}</h2>
+          )}
         </div>
         {/* min-w-0: a grid column grows to fit its widest child unless told it
             may shrink, so a wide table would push the page off the screen

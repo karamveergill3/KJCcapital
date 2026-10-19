@@ -61,8 +61,9 @@ test("every link in the site navigation has a page and a label", async () => {
   assert.deepEqual(missingLabel, [], `offered in the nav but unlabelled: ${missingLabel.join(", ")}`);
 });
 
-// The portal is client-only, so it must stay out of the sitemap as well as out
-// of robots.txt. Advertising it would undo the disallow.
+// The portal is public but kept out of the index by its own noindex, so it
+// must stay out of the sitemap too: advertising a page while asking for it not
+// to be indexed sends crawlers both answers.
 test("the portal is reachable from the nav but never advertised", () => {
   assert.ok(NAV_ITEMS.some((i) => i.path === "/portal"));
   assert.ok(!PUBLIC_PATHS.includes("/portal"));
@@ -109,14 +110,24 @@ test("no published address sits on a domain the firm does not hold", async () =>
   assert.deepEqual(offenders, [], `domain the firm does not hold, published in: ${offenders.join(", ")}`);
 });
 
-test("robots points at the sitemap on the same origin and keeps the portal out", async () => {
+test("robots points at the sitemap on the same origin and lets crawlers reach the portal", async () => {
   const { default: robots } = await import("../src/app/robots.js");
   const result = robots();
   assert.equal(result.sitemap, `${SITE_URL}/sitemap.xml`);
   assert.equal(result.host, SITE_URL);
   assert.doesNotMatch(result.host, /\/$/);
   const disallow = result.rules.flatMap((r) => r.disallow ?? []);
-  assert.ok(disallow.some((d) => d.includes("portal")));
+  assert.ok(disallow.includes("/api/"));
+  assert.ok(!disallow.some((d) => d.includes("portal")), "portal must stay crawlable so its noindex is seen");
+});
+
+// robots.txt used to disallow the portal as well, which hid this noindex from
+// every crawler that obeyed it, while the nav link on every page still let the
+// URL be listed. The noindex is now the only thing keeping the portal out of
+// the index, so it has to be there.
+test("the portal page asks not to be indexed", async () => {
+  const body = await readFile(resolve(appDir, "portal", "page.jsx"), "utf8");
+  assert.match(body, /robots:\s*\{\s*index:\s*false,\s*follow:\s*false\s*\}/);
 });
 
 // The site says what the firm does, never who it is or where it is from: no
