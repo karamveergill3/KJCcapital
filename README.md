@@ -26,7 +26,7 @@ presents the firm.
   fonts.gstatic.com and fails without it.
 - Supabase — `@supabase/ssr`, `@supabase/supabase-js`. Auth, Postgres, RLS.
 - Resend for outbound email. PDFKit for statements and legal PDFs.
-- Deployed on Vercel from a private GitHub repo. Node 24 in CI.
+- Deployed on Vercel from a public GitHub repo. Node 24 in CI.
 
 ## Commands
 
@@ -329,10 +329,7 @@ What the owner does, on the PC where MT5 runs:
    `py -m pip install MetaTrader5`. If it finds no matching distribution, the
    newest Python is ahead of the MetaTrader5 package: install the Python
    release before it instead and run this again.
-3. Download the script. Its raw link is
-   https://raw.githubusercontent.com/karamveergill3/KJCcapital/main/scripts/mt5_history.py,
-   but the repository is private, so that link opens only through GitHub:
-   signed in, open
+3. Download the script: open
    https://github.com/karamveergill3/KJCcapital/blob/main/scripts/mt5_history.py
    and click **Download raw file**. It lands in Downloads.
 4. Open MT5 logged in to the account. The investor (read-only) password is
