@@ -26,7 +26,7 @@ presents the firm.
   fonts.gstatic.com and fails without it.
 - Supabase — `@supabase/ssr`, `@supabase/supabase-js`. Auth, Postgres, RLS.
 - Resend for outbound email. PDFKit for statements and legal PDFs.
-- Deployed on Vercel from a private GitHub repo. Node 24 in CI.
+- Deployed on Vercel from a public GitHub repo. Node 24 in CI.
 
 ## Commands
 
@@ -198,6 +198,10 @@ needed no change to the MT5 expert advisor; Keystone works from what it
 already records. Keystone keeps every reading from the last two days and
 thins older ones (hourly to a month back, every four hours to a year, daily
 before that), each stretch keeping its last reading, like a closing price.
+That is the feed. The board draws it only where the committed snapshot
+(below) does not reach: across the stretch the snapshot covers, the
+snapshot's points are drawn instead, so once the snapshot is the owner's MT5
+rebuild, the ECB estimate is no longer on the page.
 
 The page has three modes, chosen in order, and the board's status light
 says which:
@@ -206,13 +210,37 @@ says which:
   and flashes whatever moved, so a visitor sees it change without
   reloading.
 - **snapshot**: the feed did not answer, so the page shows
-  `src/lib/keystoneSnapshot.json`, the feed's own shape (`as_at`, `kjc` and
-  a `series` of `at` and `kjc`) read once from Keystone and committed; the
-  status reads "Snapshot" with the time it was taken. Refresh it by saving
-  the feed's response over the file.
+  `src/lib/keystoneSnapshot.json`, committed in the feed's own shape
+  (`as_at`, `pct` and a `series` of `at` and `pct`); the status reads
+  "Snapshot" with the time it was taken. The file is to be the owner's
+  `kjc-history.json` from `scripts/mt5_history.py`, the exact history (see
+  "Exact history from the MT5 terminal"), and is refreshed by running that
+  script again and committing its file. Do not save the feed's response over
+  it: that would put Keystone's ECB estimate back under the live line as
+  well. Until the owner's file arrives it holds one read of the feed, a day
+  of 19 October 2026.
 - **example**: only if the snapshot is missing too; the invented account in
   `src/lib/portalExample.js`, one point per month end, with the status
   reading "Example account".
+
+**In live mode the line is drawn on the committed history.** The committed
+snapshot is meant to be the exact history rebuilt in the owner's MT5 terminal
+(see "Exact history from the MT5 terminal"), so `withHistory(live, snapshot)`
+in `src/lib/keystone.js` draws the snapshot's points from its first to its
+last, none of the feed's in between, and the feed's points after that.
+The feed's points from before the snapshot's first one stay in front of it:
+once the snapshot is the MT5 file, which starts at the account's first deal,
+there are next to none, and until then they are the account's whole earlier
+history, so the board keeps its months and range tabs. The headline, its
+time and the "Live" status stay the feed's, and the line always ends on the
+headline: if the feed has fallen behind the snapshot's end, the snapshot is
+drawn only up to the headline's time. The board's ranges and the month table
+are both built from the merged series. If the snapshot is missing the feed
+is drawn as it is, and if the feed is down the page falls back to the
+snapshot, then the example, as above. `tests/keystone.test.mjs` covers the
+overlap, a feed starting after the snapshot, a feed behind it, an empty
+snapshot, and the committed snapshot under a feed that covers the account's
+whole life.
 
 The owner removed the notice box that used to sit above the board, so the
 status light is the only label; `tests/portal.test.mjs` fails if the board
@@ -281,6 +309,99 @@ log, fees, documents, notices and a desk note. Two rules the owner set:
 The home and programme pages still describe a gold-led programme across four
 registers; the portal's example registers are forex and stocks. Align one to
 the other once the owner says which is right.
+
+## Exact history from the MT5 terminal
+
+Keystone's history before 19 October 2026 is an estimate (see **Where the
+history comes from** above). `scripts/mt5_history.py` gives the exact one,
+without any change to the KeystoneSync EA. Run once on the owner's Windows PC
+with MT5 open, it reads the terminal's own deal history and the broker's own
+hourly prices, rebuilds the account's equity at the close of every hour since
+its first deal, and writes `kjc-history.json`: $KJC and its times in the
+snapshot's shape (`as_at`, `pct`, and a `series` of `at` and `pct`), and
+nothing else. Commit that file over `src/lib/keystoneSnapshot.json`.
+
+What the owner does, on the PC where MT5 runs:
+
+1. Install Python from https://www.python.org/downloads/, ticking **Add
+   python.exe to PATH** on the installer's first screen.
+2. Open Command Prompt (Start, type `cmd`, Enter) and run
+   `py -m pip install MetaTrader5`. If it finds no matching distribution, the
+   newest Python is ahead of the MetaTrader5 package: install the Python
+   release before it instead and run this again.
+3. Download the script: open
+   https://github.com/karamveergill3/KJCcapital/blob/main/scripts/mt5_history.py
+   and click **Download raw file**. It lands in Downloads.
+4. Open MT5 logged in to the account. The investor (read-only) password is
+   enough. Wait until Market Watch shows prices moving.
+5. In Command Prompt run `cd Downloads`, then `py mt5_history.py`. It takes
+   about a minute and ends with a short summary.
+6. Send back `kjc-history.json`, which is next to the script. It holds only
+   times and percentages.
+
+Options, none of them needed in the usual case:
+
+- `--login 12345678` stops the run if MT5 is logged in to any other account.
+- `--terminal "C:\Program Files\...\terminal64.exe"` picks the MT5 to read
+  when more than one is installed.
+- `--utc-offset 3` gives the broker server's hours ahead of UTC (see below).
+- `--timeframe` (H1 by default, M1 to D1) and `--out C:\path\file.json`.
+
+**It never trades.** The only MetaTrader5 functions in the file read:
+`initialize`, `shutdown`, `last_error`, `account_info`, `history_deals_get`,
+`positions_get`, `symbols_get`, `symbol_info`, `symbol_info_tick` and
+`copy_rates_range`, plus `symbol_select`, which only adds a hidden symbol to
+Market Watch so that the terminal will serve its prices.
+`scripts/test_mt5_history.py` fails if any other appears. With the investor
+password the terminal could not trade anyway. The EA, its settings and its
+charts are not touched.
+
+**What it reads:** the account's currency, equity, credit and open profit (for
+the headline and the check, never written); every deal since the account
+opened; each open position's swap; each traded symbol's contract size, point
+and currencies; and hourly bars (bid close and spread) for every traded symbol
+and for the pairs that convert their profit into the account currency. It
+sends nothing anywhere, and the JSON file is the only thing it writes.
+
+**The sum.** At each hour's close, equity is the balance from the deals (every
+deal except broker credit), plus each open position marked at that hour's close
+(the bid for a buy, the bid plus the spread for a sell), converted at the same
+hour's close of a conversion pair (USDJPY for a yen profit, NZDUSD for a New
+Zealand dollar one, the traded symbol's own suffix preferred), plus its swap
+spread evenly over its life. MT5 books swap nightly, so spreading it is within
+a day's swap. $KJC divides by the net deposits made by then. An hour where a
+price is missing or over a week old is left out, never guessed, and the summary
+counts them. The headline is the terminal's own equity less credit at the time
+of the run. The points are thinned as Keystone thins its own: all of the last
+two days, then hourly to a month, every four hours to a year, daily before that.
+
+**The server's clock.** MT5 stamps deals and bars in the broker server's clock.
+The script reads its offset from UTC from prices seen arriving while it watches,
+so it needs a market open; at a weekend or on a holiday it stops and asks for
+`--utc-offset`, which the broker can confirm, or for a run on a weekday. One
+offset, today's, serves the whole history, so if the server changed between
+winter and summer time inside it, the points before the change sit an hour out.
+The EA has the same limit.
+
+**The check line.** Before writing, the script values the open positions from
+the deals at the current prices, adds their swap, and sets that beside the open
+profit the terminal reports. They agree to within spread and rounding when the
+deals, contract sizes and conversions were all read right. A difference over
+0.5% of net deposits prints a WARNING; the file is still written, and the owner
+should mention the warning when sending it. The check prints money amounts on
+the owner's screen only; none reaches the file.
+
+**When it stops**, it says what happened and what to do, and writes nothing:
+MT5 not running or not found, not logged in, logged in to another account than
+`--login`, the history not downloaded yet (Toolbox, History tab, right-click,
+All History), no prices yet for a symbol (open its chart and scroll back), no
+pair to convert a currency (it names the currency), or the market shut without
+`--utc-offset`.
+
+Its tests, `python3 -m unittest scripts/test_mt5_history.py` from the
+repository root, need neither MetaTrader5 nor numpy: every sum is a plain
+function of plain data, and the terminal is a fake. `npm test` does not run
+them.
 
 ## Conventions
 

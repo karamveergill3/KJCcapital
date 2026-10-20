@@ -19,3 +19,6 @@ coverage/
 __*.mjs
 backups/
 investors-export-*
+
+# Python test runs
+__pycache__/
