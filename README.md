@@ -378,7 +378,12 @@ two days, then hourly to a month, every four hours to a year, daily before that.
 **The server's clock.** MT5 stamps deals and bars in the broker server's clock.
 The script reads its offset from UTC from prices seen arriving while it watches,
 so it needs a market open; at a weekend or on a holiday it stops and asks for
-`--utc-offset`, which the broker can confirm, or for a run on a weekday. One
+`--utc-offset`, which the broker can confirm, or for a run on a weekday. The
+offset is the server's clock less the PC's, rounded to a quarter hour, so a PC
+clock some minutes out can read a UTC+3 server as UTC+2:45 and put every point
+a quarter hour out. Broker servers almost always keep whole hours, so an offset
+that is not one prints a WARNING (the file is still written): turn on **Set
+time automatically** in Windows and run it again, or give `--utc-offset`. One
 offset, today's, serves the whole history, so if the server changed between
 winter and summer time inside it, the points before the change sit an hour out.
 The EA has the same limit.

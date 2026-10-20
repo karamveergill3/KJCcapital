@@ -338,6 +338,24 @@ class ClockTest(unittest.TestCase):
             m.server_offset(observations)
         self.assertIn("Set time automatically", str(caught.exception))
 
+    def test_a_pc_clock_minutes_out_reads_a_quarter_hour_and_is_doubted(self):
+        # A UTC+3 server read from a PC 8 minutes fast rounds to UTC+2:45.
+        pc = self.NOW + 8 * 60
+        observations = [(pc + i, {"EURUSD": self.NOW + 3 * H + i - 0.3}) for i in range(3)]
+        offset = m.server_offset(observations)
+        self.assertEqual(offset, int(2.75 * H))
+        doubt = m.clock_doubt(offset)
+        for words in ("UTC+2:45", "about 15 minutes", "Set time automatically", "--utc-offset 3"):
+            self.assertIn(words, doubt)
+
+    def test_only_an_offset_off_the_hour_is_doubted(self):
+        self.assertEqual([m.clock_doubt(s) for s in (0, 3 * H, -4 * H, 14 * H)], [None] * 4)
+        doubt = m.clock_doubt(int(-3.5 * H))
+        for words in ("UTC-3:30", "about 30 minutes", "--utc-offset -3", "is on UTC-3:30"):
+            self.assertIn(words, doubt)
+        self.assertIn("about 15 minutes", m.clock_doubt(int(5.25 * H)))
+        self.assertIn("--utc-offset 6", m.clock_doubt(int(5.75 * H)))
+
     def test_labels(self):
         self.assertEqual([m.utc_label(s) for s in (0, 3 * H, -4 * H, int(5.5 * H))], ["UTC", "UTC+3", "UTC-4", "UTC+5:30"])
 
@@ -450,6 +468,7 @@ class FakeMT5:
         self.not_ready = {"USDJPY.r": 1}  # first request comes back empty
         self.no_history = set()
         self.extra_positions = []
+        self.pc_fast = 0  # seconds this PC's clock runs ahead of true UTC
         server_now = clock.now + self.OFFSET
         self.start = int(server_now - 10 * D) // H * H
         s = self.start
@@ -521,7 +540,7 @@ class FakeMT5:
             return None
         bid, spread = self.prices[name]
         point = self.symbol_info(name).point
-        t = self.clock.now + self.OFFSET - 0.2 if self.live else self.start + 9 * D
+        t = self.clock.now - self.pc_fast + self.OFFSET - 0.2 if self.live else self.start + 9 * D
         return Tick(int(t), bid, bid + spread * point, 0.0, 0, int(t * 1000))
 
     def copy_rates_range(self, name, timeframe, date_from, date_to):
@@ -580,6 +599,7 @@ class TerminalTest(unittest.TestCase):
         self.assertEqual(data["open_swaps"], {100: -3.0})
         self.assertEqual(data["offset_s"], 3 * H)
         self.assertEqual(data["tf_seconds"], H)
+        self.assertEqual(data["warnings"], [])
 
         # EURJPY.r converts through the USDJPY with its own suffix, hidden
         # from Market Watch until the script adds it, not the visible ones.
@@ -666,6 +686,16 @@ class TerminalTest(unittest.TestCase):
         data = self.load(utc_offset=3)
         self.assertEqual(data["offset_s"], 3 * H)
 
+    def test_a_pc_clock_minutes_out_is_warned_about(self):
+        self.mt5.pc_fast = 8 * 60
+        data = self.load()
+        self.assertEqual(data["offset_s"], int(2.75 * H))
+        self.assertEqual(len(data["warnings"]), 1)
+        self.assertIn("UTC+2:45", data["warnings"][0])
+        # An offset the owner gives is taken as meant, half hours included.
+        self.mt5.calls = []
+        self.assertEqual(self.load(utc_offset=5.5)["warnings"], [])
+
     def test_positions_the_deals_do_not_explain(self):
         self.mt5.extra_positions = [TradePosition(999, 0, 1, 0, 999, 0.3, 1.1, 1.1, 0.0, 0.0, "EURUSD.r")]
         message = self.stop()
@@ -712,6 +742,17 @@ class MainTest(unittest.TestCase):
         self.assertIn("WARNING", said)
         self.assertIn("0.900% of net deposits", said)
 
+    def test_a_doubtful_server_clock_warns_and_still_writes(self):
+        clock = FakeClock(1760000000.0)
+        mt5 = FakeMT5(clock)
+        mt5.pc_fast = 8 * 60
+        with tempfile.TemporaryDirectory() as folder:
+            out = os.path.join(folder, "kjc-history.json")
+            code, said = self.run_main(mt5, clock, "--out", out)
+            self.assertEqual(code, 0, said)
+            self.assertTrue(os.path.exists(out))
+        self.assertIn("WARNING: The broker server's clock read as UTC+2:45", said)
+
     def test_a_stop_writes_nothing(self):
         clock = FakeClock(1760000000.0)
         mt5 = FakeMT5(clock)
@@ -734,6 +775,40 @@ class MainTest(unittest.TestCase):
     def test_a_utc_offset_no_zone_has_is_refused(self):
         with mock.patch("sys.stderr"), self.assertRaises(SystemExit):
             m.parse_args(["--utc-offset", "20"])
+
+
+class WindowTest(unittest.TestCase):
+    PY = r"C:\Windows\py.exe"
+    PYTHON = r"C:\Users\owner\AppData\Local\Programs\Python\Python312\python.exe"
+    CMD = r"C:\Windows\System32\cmd.exe"
+    POWERSHELL = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+
+    def test_a_double_click_has_only_python_launchers_on_its_console(self):
+        self.assertTrue(m._double_clicked([]))  # .py opened by python.exe itself
+        self.assertTrue(m._double_clicked([self.PY]))
+        self.assertTrue(m._double_clicked([self.PY, r"C:\kjc\venv\Scripts\python.exe"]))
+        self.assertTrue(m._double_clicked([r"C:\Python39\PYTHON3.9.EXE"]))
+
+    def test_a_command_typed_into_a_shell_has_the_shell_there(self):
+        # python typed into Command Prompt is two programs, as many as a
+        # double-click through py.exe, and still needs no Enter.
+        self.assertFalse(m._double_clicked([self.CMD]))
+        self.assertFalse(m._double_clicked([self.CMD, self.PY]))
+        self.assertFalse(m._double_clicked([self.POWERSHELL]))
+        self.assertFalse(m._double_clicked([r"C:\Program Files\PowerShell\7\pwsh.exe", self.PY]))
+        self.assertFalse(m._double_clicked([r"C:\Program Files\JetBrains\bin\pycharm64.exe"]))
+
+    def test_it_waits_only_on_its_own_window(self):
+        tty = SimpleNamespace(isatty=lambda: True)
+        cases = [([self.PY], True), ([self.CMD], False), (None, False), (OSError("no console"), False)]
+        for programs, waits in cases:
+            found = {"side_effect": programs} if isinstance(programs, Exception) else {"return_value": programs}
+            with mock.patch.object(m.os, "name", "nt"), mock.patch.object(m.sys, "stdin", tty), \
+                    mock.patch.object(m, "_console_programs", **found):
+                self.assertIs(m._own_window(), waits, programs)
+        with mock.patch.object(m, "_console_programs", return_value=[self.PY]):
+            if os.name != "nt":
+                self.assertFalse(m._own_window(), "only a Windows console closes by itself")
 
 
 class GuardTest(unittest.TestCase):
