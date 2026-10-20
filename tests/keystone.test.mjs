@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import snapshot from "../src/lib/keystoneSnapshot.json" with { type: "json" };
 import { feedToAccount, fetchSiteFeed, keystoneFeedUrl, monthEnds, snapshotAccount, withHistory } from "../src/lib/keystone.js";
+import { buildRanges } from "../src/lib/trend.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -211,12 +212,16 @@ const HISTORY = {
   mode: "snapshot"
 };
 
-test("the live line is the committed history, then only the feed's points after it", () => {
+test("across the history's stretch the line is the history, with the feed's points only either side of it", () => {
   const live = feedToAccount({
     as_at: "2026-10-20T09:00:00Z",
     pct: 11,
     series: [
+      // Before the history starts: kept, as there is nothing else to draw.
+      { at: "2026-06-29T12:00:00Z", pct: 0.1 },
+      // Inside the history's stretch: the history's own points win.
       { at: "2026-06-30T12:00:00Z", pct: 0.8 },
+      { at: "2026-07-15T12:00:00Z", pct: 2.9 },
       { at: "2026-10-19T11:00:00Z", pct: 9.4 },
       // The same instant as the history's last point, written another way.
       { at: "2026-10-19T14:00:00+02:00", pct: 9.9 },
@@ -228,6 +233,7 @@ test("the live line is the committed history, then only the feed's points after 
   const historyBefore = structuredClone(HISTORY);
   const merged = withHistory(live, HISTORY);
   assert.deepEqual(merged.series, [
+    { at: "2026-06-29T12:00:00Z", kjc: 0.1 },
     { at: "2026-06-30T12:00:00Z", kjc: 1 },
     { at: "2026-08-31T12:00:00Z", kjc: 5 },
     { at: "2026-10-19T11:00:00Z", kjc: 9.5 },
@@ -272,17 +278,34 @@ test("a feed that starts after the history carries the line on from where it end
   assert.equal(merged.asAt, "2026-10-19T14:00:00Z");
 });
 
-test("a feed behind the history adds nothing to the line but keeps its headline", () => {
+test("a feed behind the history's end cuts the history at its headline, which ends the line", () => {
+  // The history runs into November; the feed stopped syncing in October.
+  const history = { ...HISTORY, series: [...HISTORY.series, { at: "2026-11-02T12:00:00Z", kjc: 12 }] };
   const live = feedToAccount({
-    as_at: "2026-10-19T10:00:00Z",
-    pct: 9.3,
-    series: [{ at: "2026-10-19T09:00:00Z", pct: 9.2 }]
+    as_at: "2026-10-30T10:00:00Z",
+    pct: 10.8,
+    series: [{ at: "2026-10-30T09:00:00Z", pct: 10.7 }]
   });
-  const merged = withHistory(live, HISTORY);
-  assert.deepEqual(merged.series, HISTORY.series);
+  const merged = withHistory(live, history);
+  assert.deepEqual(merged.series, [...HISTORY.series, { at: "2026-10-30T10:00:00Z", kjc: 10.8 }]);
   assert.equal(merged.mode, "live");
-  assert.equal(merged.percent, 9.3);
-  assert.equal(merged.asAt, "2026-10-19T10:00:00Z");
+  assert.equal(merged.percent, 10.8);
+  assert.equal(merged.asAt, "2026-10-30T10:00:00Z");
+  assert.deepEqual(merged.series.at(-1), { at: merged.asAt, kjc: merged.percent });
+  // So the month of the headline is the one to date, and none after it shows.
+  assert.deepEqual(monthEnds(merged.series, new Date(merged.asAt)), [
+    { month: "2026-06", kjc: 1, toDate: false },
+    { month: "2026-08", kjc: 5, toDate: false },
+    { month: "2026-10", kjc: 10.8, toDate: true }
+  ]);
+
+  // A headline between two of the history's points, on the same day.
+  const sameDay = withHistory(feedToAccount({ as_at: "2026-10-19T11:30:00Z", pct: 9.7, series: [] }), HISTORY);
+  assert.deepEqual(sameDay.series, [...HISTORY.series.slice(0, 3), { at: "2026-10-19T11:30:00Z", kjc: 9.7 }]);
+
+  // A headline older than the whole history has none of it to draw on.
+  const older = feedToAccount({ as_at: "2026-06-01T10:00:00Z", pct: 0.2, series: [{ at: "2026-05-31T10:00:00Z", pct: 0.1 }] });
+  assert.equal(withHistory(older, HISTORY), older);
 });
 
 test("with no history to draw on, the live account comes back as it is", () => {
@@ -296,13 +319,38 @@ test("with no history to draw on, the live account comes back as it is", () => {
   assert.equal(withHistory(null, null), null);
 });
 
-test("the committed snapshot is where the live line starts", () => {
+test("the committed snapshot sits on the feed's own earlier points", () => {
   const snap = snapshotAccount();
+  const first = Date.parse(snap.series[0].at);
   const later = new Date(Date.parse(snap.series.at(-1).at) + 60_000).toISOString();
   const merged = withHistory(feedToAccount({ ...FEED, as_at: later, pct: 17 }), snap);
-  assert.deepEqual(merged.series, [...snap.series, { at: later, kjc: 17 }]);
+  const earlier = feedToAccount(FEED).series.filter((p) => Date.parse(p.at) < first);
+  assert.ok(earlier.length > 0, "the fixture has no feed point before the snapshot");
+  assert.deepEqual(merged.series, [...earlier, ...snap.series, { at: later, kjc: 17 }]);
   assert.equal(merged.mode, "live");
   assert.equal(merged.percent, 17);
+});
+
+// The feed covers the account's whole life. While the committed snapshot is
+// shorter than that, drawing the live line on it must not cost the board its
+// range tabs or the month table, which the page shows only past one month.
+test("a snapshot shorter than the feed keeps every range and month the feed alone gives", () => {
+  const snap = snapshotAccount();
+  const series = [];
+  const stop = Date.parse("2026-10-20T06:00:00Z");
+  for (let t = Date.parse("2026-06-29T00:00:00Z"); t <= stop; t += 6 * 3_600_000) {
+    series.push({ at: new Date(t).toISOString(), pct: Number(((t - stop) / 1e9 + 17).toFixed(4)) });
+  }
+  const live = feedToAccount({ as_at: "2026-10-20T06:30:00.000Z", pct: 17.1, series });
+  const merged = withHistory(live, snap);
+  const now = new Date(live.asAt);
+  assert.deepEqual(monthEnds(merged.series, now).map((m) => m.month), monthEnds(live.series, now).map((m) => m.month));
+  assert.ok(monthEnds(merged.series, now).length > 1);
+  const enabled = (data) => buildRanges(data.series).filter((r) => r.enabled).map((r) => r.key);
+  assert.deepEqual(enabled(merged), enabled(live));
+  assert.deepEqual(enabled(merged), ["1D", "1W", "1M", "3M", "All"]);
+  assert.equal(merged.series[0].at, live.series[0].at);
+  assert.deepEqual(merged.series.at(-1), { at: live.asAt, kjc: 17.1 });
 });
 
 // Keystone owns the feed now; the website keeps no SQL of its own for it.

@@ -100,11 +100,25 @@ export function feedToAccount(feed) {
  * is meant to be the exact history, rebuilt from the deals and the broker's
  * own prices in the owner's MT5 terminal (scripts/mt5_history.py), where
  * Keystone's feed values the stretch before its first equity sample at the
- * ECB's daily rates. So the series is the snapshot's points up to and
- * including its last one, then only the feed's points after that: up to that
- * last point the feed's own points are not drawn at all. The headline, its
- * time and the mode stay the live ones, since the feed is what the board
- * polls.
+ * ECB's daily rates. So across the stretch the snapshot covers, from its
+ * first point to its last, the line is the snapshot's points and none of the
+ * feed's; after it, the feed's. The headline, its time and the mode stay the
+ * live ones, since the feed is what the board polls.
+ *
+ * The feed's points from before the snapshot's first one are kept in front
+ * of it. Once the snapshot is the MT5 file, which starts at the account's
+ * first deal, there are next to none; until then (the committed snapshot is
+ * one day of the feed itself) they are the account's whole earlier history,
+ * and without them the board would lose its months and every range tab but
+ * All.
+ *
+ * The line still ends on the headline when the feed has fallen behind the
+ * snapshot's end: the snapshot is drawn only up to the headline's time,
+ * which then closes the line. Otherwise the board would show one figure and
+ * time while its line ran on to a newer one, the month table could pass a
+ * mid-month reading after the headline off as a month end, and polling could
+ * not move the line until the feed caught up, since it ignores readings
+ * older than the line's last point.
  *
  * Both arguments are what feedToAccount gives (oldest first, one point per
  * instant), so neither series needs sorting again. If either is missing, or
@@ -114,11 +128,23 @@ export function withHistory(live, snapshot) {
   if (!live) return snapshot;
   if (!snapshot) return live;
   const history = Array.isArray(snapshot.series) ? snapshot.series : [];
+  const start = history.length ? timeOf(history[0].at) : NaN;
   const end = history.length ? timeOf(history[history.length - 1].at) : NaN;
-  if (!Number.isFinite(end)) return live;
-  // A feed that has fallen behind the snapshot adds nothing to the line.
-  const later = (Array.isArray(live.series) ? live.series : []).filter((p) => timeOf(p.at) > end);
-  return { ...live, series: [...history, ...later] };
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return live;
+  const asAt = timeOf(live.asAt);
+  const cut = Math.min(end, asAt);
+  // A headline older than the whole snapshot has none of it to draw on.
+  if (!(cut >= start)) return live;
+
+  const feed = Array.isArray(live.series) ? live.series : [];
+  const series = [
+    ...feed.filter((p) => timeOf(p.at) < start),
+    ...history.filter((p) => timeOf(p.at) <= cut),
+    ...feed.filter((p) => timeOf(p.at) > cut)
+  ];
+  // As in feedToAccount: the line ends on the headline, not short of it.
+  if (asAt > timeOf(series[series.length - 1].at)) series.push({ at: live.asAt, kjc: live.percent });
+  return { ...live, series };
 }
 
 /**

@@ -42,10 +42,10 @@ export default async function PortalPage({ params }) {
   const { portal } = dict;
 
   // Live from Keystone when the feed answers, drawn over the committed
-  // history: the snapshot's exact points up to its last one, then the feed's
-  // after it, with the feed's headline. Otherwise the committed snapshot of
-  // the real account, labelled with its time, and only if that is missing
-  // too, the labelled example.
+  // history: the snapshot's exact points across the stretch it covers, the
+  // feed's either side of it, ending on the feed's headline. Otherwise the
+  // committed snapshot of the real account, labelled with its time, and only
+  // if that is missing too, the labelled example.
   const live = await fetchSiteFeed(keystoneFeedUrl());
   const data = live ? withHistory(live, snapshotAccount()) : snapshotAccount() ?? exampleAccount();
   const { mode } = data;
