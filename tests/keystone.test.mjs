@@ -4,7 +4,7 @@ import { access } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import snapshot from "../src/lib/keystoneSnapshot.json" with { type: "json" };
-import { feedToAccount, fetchSiteFeed, keystoneFeedUrl, monthEnds, snapshotAccount } from "../src/lib/keystone.js";
+import { feedToAccount, fetchSiteFeed, keystoneFeedUrl, monthEnds, snapshotAccount, withHistory } from "../src/lib/keystone.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -194,6 +194,115 @@ test("the month table takes each UTC month's last reading and marks the current 
     { month: "2025-10", kjc: 0.8, toDate: false }
   ]);
   assert.deepEqual(monthEnds(undefined), []);
+});
+
+// The committed history as the page reads it, and a live feed whose earliest
+// points are Keystone's ECB estimate of the same months.
+const HISTORY = {
+  ...feedToAccount({
+    as_at: "2026-10-19T12:00:00Z",
+    pct: 10,
+    series: [
+      { at: "2026-06-30T12:00:00Z", pct: 1 },
+      { at: "2026-08-31T12:00:00Z", pct: 5 },
+      { at: "2026-10-19T11:00:00Z", pct: 9.5 }
+    ]
+  }),
+  mode: "snapshot"
+};
+
+test("the live line is the committed history, then only the feed's points after it", () => {
+  const live = feedToAccount({
+    as_at: "2026-10-20T09:00:00Z",
+    pct: 11,
+    series: [
+      { at: "2026-06-30T12:00:00Z", pct: 0.8 },
+      { at: "2026-10-19T11:00:00Z", pct: 9.4 },
+      // The same instant as the history's last point, written another way.
+      { at: "2026-10-19T14:00:00+02:00", pct: 9.9 },
+      { at: "2026-10-19T18:00:00Z", pct: 10.5 },
+      { at: "2026-10-20T08:00:00Z", pct: 10.9 }
+    ]
+  });
+  const liveBefore = structuredClone(live);
+  const historyBefore = structuredClone(HISTORY);
+  const merged = withHistory(live, HISTORY);
+  assert.deepEqual(merged.series, [
+    { at: "2026-06-30T12:00:00Z", kjc: 1 },
+    { at: "2026-08-31T12:00:00Z", kjc: 5 },
+    { at: "2026-10-19T11:00:00Z", kjc: 9.5 },
+    { at: "2026-10-19T12:00:00Z", kjc: 10 },
+    { at: "2026-10-19T18:00:00Z", kjc: 10.5 },
+    { at: "2026-10-20T08:00:00Z", kjc: 10.9 },
+    { at: "2026-10-20T09:00:00Z", kjc: 11 }
+  ]);
+  // The headline, its time and the mode are the feed's, and the line ends on it.
+  assert.deepEqual(Object.keys(merged).sort(), ["asAt", "mode", "percent", "series"]);
+  assert.equal(merged.mode, "live");
+  assert.equal(merged.percent, 11);
+  assert.equal(merged.asAt, "2026-10-20T09:00:00Z");
+  assert.deepEqual(merged.series.at(-1), { at: merged.asAt, kjc: merged.percent });
+  for (const p of merged.series) assert.deepEqual(Object.keys(p).sort(), ["at", "kjc"]);
+  // Neither account is changed in place.
+  assert.deepEqual(live, liveBefore);
+  assert.deepEqual(HISTORY, historyBefore);
+
+  // The month table reads the same series, so its months are the history's.
+  assert.deepEqual(monthEnds(merged.series, new Date(merged.asAt)), [
+    { month: "2026-06", kjc: 1, toDate: false },
+    { month: "2026-08", kjc: 5, toDate: false },
+    { month: "2026-10", kjc: 11, toDate: true }
+  ]);
+});
+
+test("a feed that starts after the history carries the line on from where it ends", () => {
+  const live = feedToAccount({
+    as_at: "2026-10-19T14:00:00Z",
+    pct: 10.4,
+    series: [{ at: "2026-10-19T13:00:00Z", pct: 10.2 }]
+  });
+  const merged = withHistory(live, HISTORY);
+  assert.deepEqual(merged.series, [
+    ...HISTORY.series,
+    { at: "2026-10-19T13:00:00Z", kjc: 10.2 },
+    { at: "2026-10-19T14:00:00Z", kjc: 10.4 }
+  ]);
+  assert.equal(merged.mode, "live");
+  assert.equal(merged.percent, 10.4);
+  assert.equal(merged.asAt, "2026-10-19T14:00:00Z");
+});
+
+test("a feed behind the history adds nothing to the line but keeps its headline", () => {
+  const live = feedToAccount({
+    as_at: "2026-10-19T10:00:00Z",
+    pct: 9.3,
+    series: [{ at: "2026-10-19T09:00:00Z", pct: 9.2 }]
+  });
+  const merged = withHistory(live, HISTORY);
+  assert.deepEqual(merged.series, HISTORY.series);
+  assert.equal(merged.mode, "live");
+  assert.equal(merged.percent, 9.3);
+  assert.equal(merged.asAt, "2026-10-19T10:00:00Z");
+});
+
+test("with no history to draw on, the live account comes back as it is", () => {
+  const live = feedToAccount(FEED);
+  assert.equal(withHistory(live, null), live);
+  assert.equal(withHistory(live, undefined), live);
+  assert.equal(withHistory(live, { ...HISTORY, series: [] }), live);
+  assert.equal(withHistory(live, { ...HISTORY, series: undefined }), live);
+  // And with no live account, the history comes back as it is.
+  assert.equal(withHistory(null, HISTORY), HISTORY);
+  assert.equal(withHistory(null, null), null);
+});
+
+test("the committed snapshot is where the live line starts", () => {
+  const snap = snapshotAccount();
+  const later = new Date(Date.parse(snap.series.at(-1).at) + 60_000).toISOString();
+  const merged = withHistory(feedToAccount({ ...FEED, as_at: later, pct: 17 }), snap);
+  assert.deepEqual(merged.series, [...snap.series, { at: later, kjc: 17 }]);
+  assert.equal(merged.mode, "live");
+  assert.equal(merged.percent, 17);
 });
 
 // Keystone owns the feed now; the website keeps no SQL of its own for it.

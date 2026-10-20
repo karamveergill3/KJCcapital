@@ -1,6 +1,6 @@
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import { longDate, money, signedPercent } from "@/lib/kjc";
-import { fetchSiteFeed, keystoneFeedUrl, monthEnds, snapshotAccount } from "@/lib/keystone";
+import { fetchSiteFeed, keystoneFeedUrl, monthEnds, snapshotAccount, withHistory } from "@/lib/keystone";
 import { pageMeta } from "@/lib/pageMeta";
 import { account as example, activity, deskNote, documents, exampleAccount, fees, notices, registers, rules } from "@/lib/portalExample";
 import { buildRanges } from "@/lib/trend";
@@ -41,13 +41,17 @@ export default async function PortalPage({ params }) {
   const dict = await getDictionary(lang);
   const { portal } = dict;
 
-  // Live from Keystone when the feed answers. Otherwise the committed snapshot
-  // of the real account, labelled with its time, and only if that is missing
+  // Live from Keystone when the feed answers, drawn over the committed
+  // history: the snapshot's exact points up to its last one, then the feed's
+  // after it, with the feed's headline. Otherwise the committed snapshot of
+  // the real account, labelled with its time, and only if that is missing
   // too, the labelled example.
-  const data = (await fetchSiteFeed(keystoneFeedUrl())) ?? snapshotAccount() ?? exampleAccount();
+  const live = await fetchSiteFeed(keystoneFeedUrl());
+  const data = live ? withHistory(live, snapshotAccount()) : snapshotAccount() ?? exampleAccount();
   const { mode } = data;
-  // The board's chart, one stretch of the series per range tab. The series is
-  // times and percentages only, so every range is too.
+  // The board's chart, one stretch of the series per range tab, and the month
+  // table below, both from that one series. It is times and percentages only,
+  // so every range and every month is too.
   const ranges = buildRanges(data.series);
   // The month the data was taken in reads "to date", even when the feed has
   // stopped syncing or the snapshot is weeks old, so a mid-month reading is

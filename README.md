@@ -214,6 +214,22 @@ says which:
   `src/lib/portalExample.js`, one point per month end, with the status
   reading "Example account".
 
+**In live mode the line is drawn on the committed history.** The committed
+snapshot is meant to be the exact history rebuilt in the owner's MT5 terminal
+(see "Exact history from the MT5 terminal"), so `withHistory(live, snapshot)`
+in `src/lib/keystone.js` takes the snapshot's points up to and including its
+last one, then only the feed's points after that. Up to that last point none
+of the feed's own points are drawn: Keystone's feed is used only for what
+came later.
+The headline, its time and the "Live" status stay the feed's, and the board's
+ranges and the month table are both built from the merged series. If the
+snapshot is missing the feed is drawn as it is, and if the feed is down the
+page falls back to the snapshot, then the example, as above. A feed that has
+fallen behind the snapshot adds nothing to the line, and until the snapshot
+reaches back to the account's first deal the line starts where the snapshot
+does. `tests/keystone.test.mjs` covers the overlap, a feed starting after the
+snapshot, a feed behind it and an empty snapshot.
+
 The owner removed the notice box that used to sit above the board, so the
 status light is the only label; `tests/portal.test.mjs` fails if the board
 stops rendering it in any mode. The sections still

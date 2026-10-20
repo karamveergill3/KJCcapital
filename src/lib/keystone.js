@@ -47,9 +47,11 @@ export async function fetchSiteFeed(url, fetchImpl = fetch) {
 }
 
 /**
- * The same feed, read once from Keystone and committed with the time it was
- * taken. The portal shows it, labelled as a snapshot with that time, while the
- * live feed is not answering. It is never presented as live.
+ * The committed history, in the feed's own shape, with the time it was taken.
+ * The portal shows it, labelled as a snapshot with that time, while the live
+ * feed is not answering; its headline is never presented as live. While the
+ * feed answers, its points are the history the live line is drawn on (see
+ * withHistory).
  */
 export function snapshotAccount() {
   const account = feedToAccount(snapshotFeed);
@@ -91,6 +93,32 @@ export function feedToAccount(feed) {
   }
 
   return { mode: "live", asAt, percent, series };
+}
+
+/**
+ * The live account drawn over the committed history. The committed snapshot
+ * is meant to be the exact history, rebuilt from the deals and the broker's
+ * own prices in the owner's MT5 terminal (scripts/mt5_history.py), where
+ * Keystone's feed values the stretch before its first equity sample at the
+ * ECB's daily rates. So the series is the snapshot's points up to and
+ * including its last one, then only the feed's points after that: up to that
+ * last point the feed's own points are not drawn at all. The headline, its
+ * time and the mode stay the live ones, since the feed is what the board
+ * polls.
+ *
+ * Both arguments are what feedToAccount gives (oldest first, one point per
+ * instant), so neither series needs sorting again. If either is missing, or
+ * the snapshot has no points, the other comes back as it is.
+ */
+export function withHistory(live, snapshot) {
+  if (!live) return snapshot;
+  if (!snapshot) return live;
+  const history = Array.isArray(snapshot.series) ? snapshot.series : [];
+  const end = history.length ? timeOf(history[history.length - 1].at) : NaN;
+  if (!Number.isFinite(end)) return live;
+  // A feed that has fallen behind the snapshot adds nothing to the line.
+  const later = (Array.isArray(live.series) ? live.series : []).filter((p) => timeOf(p.at) > end);
+  return { ...live, series: [...history, ...later] };
 }
 
 /**

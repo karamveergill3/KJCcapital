@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { ILLUSTRATIVE, account, activity, deskNote, exampleAccount, registers } from "../src/lib/portalExample.js";
 import { kjcQuote } from "../src/lib/kjc.js";
-import { feedToAccount, snapshotAccount } from "../src/lib/keystone.js";
+import { feedToAccount, snapshotAccount, withHistory } from "../src/lib/keystone.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "..");
@@ -47,6 +47,13 @@ test("no money figure reaches the board, the route or the page props", async () 
   // text so this holds whatever lib/trend does inside buildRanges.
   assert.match(page, /import \{ buildRanges \} from "@\/lib\/trend";/);
   assert.match(page, /const ranges = buildRanges\(data\.series\);/, "the ranges are not built from the series alone");
+  // That series is the committed history with the live feed after it, and the
+  // page still falls back to the snapshot, then the example.
+  assert.match(
+    page,
+    /const data = live \? withHistory\(live, snapshotAccount\(\)\) : snapshotAccount\(\) \?\? exampleAccount\(\);/,
+    "the page no longer draws the live feed on the committed history, or lost a fallback"
+  );
 
   // The month table is percentages too.
   const months = page.slice(page.indexOf("months.length > 1"), page.indexOf("</section>", page.indexOf("months.length > 1")));
@@ -75,7 +82,9 @@ test("the series is times and percentages in every mode", () => {
     series: [{ at: "2026-10-19T19:17:53.777+00:00", pct: 16.5715, equity: 583154.5, deposits: 500000 }]
   });
   assert.deepEqual(Object.keys(live).sort(), ["asAt", "mode", "percent", "series"]);
-  for (const data of [live, snapshotAccount(), exampleAccount()]) {
+  const merged = withHistory(live, snapshotAccount());
+  assert.deepEqual(Object.keys(merged).sort(), ["asAt", "mode", "percent", "series"]);
+  for (const data of [live, merged, snapshotAccount(), exampleAccount()]) {
     assert.ok(data.series.length > 0, `the ${data.mode} series is empty`);
     for (const p of data.series) assert.deepEqual(Object.keys(p).sort(), ["at", "kjc"], `the ${data.mode} series carries more than at and kjc`);
   }
