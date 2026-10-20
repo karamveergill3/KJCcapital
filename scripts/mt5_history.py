@@ -31,7 +31,9 @@ MetaTrader5; load_from_terminal() is the only code that talks to the terminal.
 
 import argparse
 import json
+import ntpath
 import os
+import re
 import sys
 import time
 import traceback
@@ -488,6 +490,29 @@ def server_offset(observations, utc_offset_hours=None):
     return offset
 
 
+def clock_doubt(offset_s):
+    """A warning when an offset read from live prices is not a whole number of hours, else None.
+
+    The offset is the server's clock less this PC's, rounded to a quarter
+    hour, so a PC clock 8 minutes fast reads a UTC+3 server as UTC+2:45 and
+    every time in the file comes out a quarter hour late. All but a rare few
+    broker servers keep whole hours, so a quarter or half hour is far more
+    likely to be this PC's clock than the server's zone. The file is still
+    written: the owner can fix the clock or give --utc-offset and run again.
+    """
+    if offset_s % HOUR == 0:
+        return None
+    nearest = (offset_s + HOUR // 2) // HOUR
+    return (
+        "The broker server's clock read as %s, which is not a whole number of hours and rare for a broker. "
+        "Most likely this PC's clock is some minutes out, and then the times in the file are out by about %d "
+        "minutes. Turn on Settings > Time & language > Date & time > Set time automatically and run this again, "
+        "or give the server's hours ahead of UTC, for example --utc-offset %d. If the broker confirms its server "
+        "is on %s, the file is right as it is."
+        % (utc_label(offset_s), abs(offset_s - nearest * HOUR) // 60, nearest, utc_label(offset_s))
+    )
+
+
 def utc_label(offset_s):
     """Names an offset: UTC+3, UTC+5:30, UTC-4 or plain UTC."""
     if offset_s == 0:
@@ -875,6 +900,9 @@ def _read(mt5, args, tf_name, clock, sleep, say):
         say("Reading the broker server's clock from live prices (up to %d seconds)..." % CLOCK_WAIT_S)
         offset_s = server_offset(_watch_prices(mt5, watched, clock, sleep))
         say("Server clock: %s, read from live prices." % utc_label(offset_s))
+        doubt = clock_doubt(offset_s)
+        if doubt:
+            warnings.append(doubt)
     else:
         # Nothing was ever traded, so there are no points to place in time
         # and the file is the headline alone.
@@ -1051,19 +1079,77 @@ def main(argv=None, clock=time.time, sleep=time.sleep, say=print):
     return 0
 
 
+# The programs that start Python in the console they were given, rather than
+# a shell someone typed into: the py launcher, and python.exe, which in a
+# virtual environment starts the real python.exe beneath it.
+_LAUNCHER = re.compile(r"^(pyw?|python[0-9.]*w?)\.exe$", re.I)
+
+
+def _double_clicked(programs):
+    """Whether a console whose other programs are these was opened for this script alone.
+
+    A double-clicked script gets a console of its own that closes the moment
+    the script ends, taking any message with it, so it waits for Enter. The
+    only other programs on such a console are Python launchers. A command
+    typed into Command Prompt or PowerShell has that shell there too, and the
+    window stays open by itself. Counting cannot tell them apart: py.exe and
+    python.exe from a double-click are two, and so are cmd.exe and python.exe.
+    """
+    return all(_LAUNCHER.match(ntpath.basename(path)) for path in programs)
+
+
+def _console_programs():
+    """The paths of the programs other than this one attached to this console, or None if unknown."""
+    import ctypes
+    from ctypes import wintypes
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.GetConsoleProcessList.argtypes = (ctypes.POINTER(wintypes.DWORD), wintypes.DWORD)
+    kernel32.GetConsoleProcessList.restype = wintypes.DWORD
+    kernel32.OpenProcess.argtypes = (wintypes.DWORD, wintypes.BOOL, wintypes.DWORD)
+    kernel32.OpenProcess.restype = wintypes.HANDLE
+    kernel32.QueryFullProcessImageNameW.argtypes = (
+        wintypes.HANDLE,
+        wintypes.DWORD,
+        wintypes.LPWSTR,
+        ctypes.POINTER(wintypes.DWORD),
+    )
+    kernel32.QueryFullProcessImageNameW.restype = wintypes.BOOL
+    kernel32.CloseHandle.argtypes = (wintypes.HANDLE,)
+    kernel32.CloseHandle.restype = wintypes.BOOL
+    query_limited_information = 0x1000
+
+    ids = (wintypes.DWORD * 16)()
+    count = kernel32.GetConsoleProcessList(ids, len(ids))
+    # 0 is a failure; more than the buffer holds fills nothing in.
+    if not 0 < count <= len(ids):
+        return None
+    programs = []
+    for pid in ids[:count]:
+        if pid == os.getpid():
+            continue
+        handle = kernel32.OpenProcess(query_limited_information, False, pid)
+        if not handle:
+            return None
+        try:
+            size = wintypes.DWORD(1024)
+            path = ctypes.create_unicode_buffer(size.value)
+            if not kernel32.QueryFullProcessImageNameW(handle, 0, path, ctypes.byref(size)):
+                return None
+        finally:
+            kernel32.CloseHandle(handle)
+        programs.append(path.value)
+    return programs
+
+
 def _own_window():
-    # A double-clicked script gets a console of its own that closes the
-    # moment it ends, taking any message with it. Only this process and the
-    # py launcher are attached to such a console; a Command Prompt adds itself.
     if os.name != "nt" or not sys.stdin or not sys.stdin.isatty():
         return False
     try:
-        import ctypes
-
-        ids = (ctypes.c_uint * 4)()
-        return 0 < ctypes.windll.kernel32.GetConsoleProcessList(ids, 4) <= 2
+        programs = _console_programs()
     except Exception:
         return False
+    return programs is not None and _double_clicked(programs)
 
 
 if __name__ == "__main__":
